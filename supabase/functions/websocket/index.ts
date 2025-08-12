@@ -45,12 +45,12 @@ Deno.serve(async (req: Request) => {
 
     socket.onclose = () => {
       console.log(`WebSocket closed for user ${userId}, session ${sessionId}`);
-      WebSocketService.handleDisconnection(userId, sessionId);
+      WebSocketService.handleUserDisconnection(userId, sessionId);
     };
 
     socket.onerror = (error) => {
       console.error('WebSocket error:', error);
-      WebSocketService.handleDisconnection(userId, sessionId);
+      WebSocketService.handleUserDisconnection(userId, sessionId);
     };
 
     return response;

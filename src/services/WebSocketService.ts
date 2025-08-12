@@ -69,7 +69,7 @@ export class WebSocketService {
   }
 
   // Handle disconnection from edge function  
-  static handleDisconnection(userId: string, sessionId: string) {
+  static handleUserDisconnection(userId: string, sessionId: string) {
     const connectionId = `${userId}_${sessionId}`;
     this.handleDisconnection(connectionId);
   }
