@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import {
   Menu,
   X,
@@ -12,7 +12,9 @@ import {
   Settings,
   Target,
   LineChart,
-  DollarSign
+  DollarSign,
+  MessageCircle,
+  Zap
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -21,8 +23,11 @@ interface SidebarProps {
 }
 
 const menuItems = [
-  { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
+  { path: '/', icon: LayoutDashboard, label: 'Business Plan' },
+  { path: '/dashboard', icon: DollarSign, label: 'Dashboard' },
+  { path: '/document-memory', icon: MessageCircle, label: 'AI Document Memory' },
   { path: '/proforma', icon: LineChart, label: 'Financial Proforma' },
+  { path: '/integrations', icon: Zap, label: 'API Integrations' },
   { path: '/ai-processing', icon: Brain, label: 'AI Processing' },
   { path: '/documents', icon: FileText, label: 'Documents' },
   { path: '/customers', icon: Users, label: 'Customers' },
@@ -32,6 +37,8 @@ const menuItems = [
 ];
 
 export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
+  const location = useLocation();
+
   return (
     <>
       <button
@@ -67,17 +74,27 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
               </div>
 
               <nav className="space-y-2">
-                {menuItems.map((item) => (
-                  <Link
-                    key={item.path}
-                    to={item.path}
-                    onClick={() => setIsOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors"
-                  >
-                    <item.icon className="w-5 h-5" />
-                    <span>{item.label}</span>
-                  </Link>
-                ))}
+                {menuItems.map((item) => {
+                  const isActive = location.pathname === item.path || 
+                    (item.path === '/proforma' && location.pathname.startsWith('/proforma')) ||
+                    (item.path === '/integrations' && location.pathname.startsWith('/integrations'));
+                  
+                  return (
+                    <Link
+                      key={item.path}
+                      to={item.path}
+                      onClick={() => setIsOpen(false)}
+                      className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                        isActive
+                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                          : 'text-gray-600 hover:bg-gray-50'
+                      }`}
+                    >
+                      <item.icon className="w-5 h-5" />
+                      <span>{item.label}</span>
+                    </Link>
+                  );
+                })}
               </nav>
             </motion.div>
           </>

@@ -17,7 +17,7 @@ export async function getScenario(id: string): Promise<Scenario | null> {
     .from('proforma_scenarios')
     .select('*')
     .eq('id', id)
-    .single();
+    .maybeSingle();
 
   if (error) throw error;
   return data;
@@ -64,12 +64,12 @@ export async function deleteScenario(id: string): Promise<void> {
   if (error) throw error;
 }
 
-export async function getFinancialMetrics(scenarioId: string): Promise<FinancialMetrics> {
+export async function getFinancialMetrics(scenarioId: string): Promise<FinancialMetrics | null> {
   const { data, error } = await supabase
     .from('proforma_financials')
     .select('*')
     .eq('scenario_id', scenarioId)
-    .single();
+    .maybeSingle();
 
   if (error) throw error;
   return data;

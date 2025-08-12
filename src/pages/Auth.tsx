@@ -66,7 +66,6 @@ export default function Auth() {
       toast.success('Password reset instructions sent to your email');
       setIsForgotPassword(false);
     } catch (error: any) {
-      console.error('Reset password error:', error);
       toast.error(error.message || 'Failed to send reset instructions');
     } finally {
       setLoading(false);
@@ -122,7 +121,6 @@ export default function Auth() {
         }
       }
     } catch (error: any) {
-      console.error('Authentication error:', error);
       toast.error(
         error.message || 
         'An unexpected error occurred. Please try again later.'
