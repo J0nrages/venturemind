@@ -7,79 +7,86 @@ export function useBusinessData() {
   const [profile, setProfile] = useState<BusinessProfile | null>(null);
   const [metrics, setMetrics] = useState<BusinessMetric[]>([]);
   const [dimensions, setDimensions] = useState<BusinessDimension[]>([]);
-  const [dashboardData, setDashboardData] = useState<any>(null);
-  const [customerData, setCustomerData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const [dashboardData, setDashboardData] = useState<any>({
+    mrr: 0,
+    arr: 0,
+    customers: 0,
+    churnRate: 0,
+    revenueChange: 0,
+    customerChange: 0
+  });
+  const [customerData, setCustomerData] = useState<any>({
+    totalCustomers: 0,
+    newCustomers: 0,
+    churned: 0,
+    activeUsers: 0,
+    segmentBreakdown: {}
+  });
+  const [loading, setLoading] = useState(false); // Start with false for instant render
   const [error, setError] = useState<string | null>(null);
   const [needsSetup, setNeedsSetup] = useState(false);
 
   const loadBusinessData = async () => {
     try {
-      setLoading(true);
+      // Don't set loading to true - let UI render immediately
       setError(null);
 
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No user found');
 
-      // Load profile first
-      const profileData = await BusinessService.getBusinessProfile(user.id);
-      
-      if (!profileData) {
-        // Set flag that setup is needed instead of redirecting
-        setNeedsSetup(true);
-        setProfile(null);
-        // Set default data for components that need it
-        setDashboardData({
-          mrr: 0,
-          arr: 0,
-          customers: 0,
-          churnRate: 0,
-          revenueChange: 0,
-          customerChange: 0
-        });
-        setCustomerData({
-          totalCustomers: 0,
-          newCustomers: 0,
-          churned: 0,
-          activeUsers: 0,
-          segmentBreakdown: {}
-        });
-        setMetrics([]);
-        setDimensions([]);
-        return;
-      }
-
-      setProfile(profileData);
-      setNeedsSetup(false);
-
-      // Load other data in parallel
+      // Batch load all data in parallel for speed
       const [
+        profileData,
         metricsData,
         dimensionsData,
         dashboardMetrics,
         customerMetrics
-      ] = await Promise.all([
+      ] = await Promise.allSettled([
+        BusinessService.getBusinessProfile(user.id),
         BusinessService.getBusinessMetrics(user.id),
         BusinessService.getBusinessDimensions(user.id),
         BusinessService.getDashboardMetrics(user.id),
         BusinessService.getCustomerMetrics(user.id)
       ]);
 
-      setMetrics(metricsData);
-      setDimensions(dimensionsData);
-      setDashboardData(dashboardMetrics);
-      setCustomerData(customerMetrics);
+      // Process profile first (most important)
+      if (profileData.status === 'fulfilled' && profileData.value) {
+        setProfile(profileData.value);
+        setNeedsSetup(false);
+      } else {
+        setNeedsSetup(true);
+        setProfile(null);
+      }
+
+      // Update other data as it arrives (progressive loading)
+      if (metricsData.status === 'fulfilled') {
+        setMetrics(metricsData.value || []);
+      }
+
+      if (dimensionsData.status === 'fulfilled') {
+        setDimensions(dimensionsData.value || []);
+      }
+
+      if (dashboardMetrics.status === 'fulfilled' && dashboardMetrics.value) {
+        setDashboardData(dashboardMetrics.value);
+      }
+
+      if (customerMetrics.status === 'fulfilled' && customerMetrics.value) {
+        setCustomerData(customerMetrics.value);
+      }
 
       // Initialize default metrics if none exist (but don't reload in the same call)
-      if (metricsData.length === 0) {
-        BusinessService.initializeBusinessDefaults(user.id, profileData).then(() => {
-          // Reload metrics after initialization in next tick
-          setTimeout(() => {
-            BusinessService.getBusinessMetrics(user.id).then(newMetrics => {
-              setMetrics(newMetrics);
-            });
-          }, 100);
-        });
+      if (metricsData.status === 'fulfilled' && (!metricsData.value || metricsData.value.length === 0)) {
+        if (profileData.status === 'fulfilled' && profileData.value) {
+          BusinessService.initializeBusinessDefaults(user.id, profileData.value).then(() => {
+            // Reload metrics after initialization in next tick
+            setTimeout(() => {
+              BusinessService.getBusinessMetrics(user.id).then(newMetrics => {
+                setMetrics(newMetrics);
+              });
+            }, 100);
+          });
+        }
       }
 
     } catch (err: any) {

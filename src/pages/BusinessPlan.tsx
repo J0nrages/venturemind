@@ -107,17 +107,7 @@ export default function BusinessPlan() {
     );
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="flex items-center gap-2">
-          <Loader2 className="w-6 h-6 animate-spin text-emerald-600" />
-          <span className="text-gray-600">Loading business plan...</span>
-        </div>
-      </div>
-    );
-  }
-
+  // Remove the loading state entirely - render UI immediately
   if (businessError && !needsSetup) {
     return (
       <div className="flex items-center justify-center h-64">

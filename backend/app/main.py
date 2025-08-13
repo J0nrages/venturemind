@@ -19,6 +19,7 @@ from app.core.middleware import (
 from app.core.redis_manager import redis_manager
 from app.api.v1 import conversations, agents, tasks, auth, marketplace
 from app.api.v1.websocket import websocket_router
+from app.api import events
 
 # Configure logging
 logging.basicConfig(
@@ -126,6 +127,7 @@ app.include_router(agents.router, prefix="/api/v1/agents", tags=["Agents"])
 app.include_router(tasks.router, prefix="/api/v1/tasks", tags=["Tasks"])
 app.include_router(marketplace.router, prefix="/api/v1/marketplace", tags=["Marketplace"])
 app.include_router(websocket_router, prefix="/ws", tags=["WebSocket"])
+app.include_router(events.router, prefix="/api", tags=["SSE"])
 
 # Error handlers
 @app.exception_handler(404)

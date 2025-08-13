@@ -25,7 +25,7 @@ function App() {
   return (
     <ThemeProvider>
       <DialogProvider>
-        <Router>
+        <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <Routes>
             <Route path="/auth" element={<Auth />} />
             
@@ -36,7 +36,7 @@ function App() {
                 element={
                   <>
                     <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
-                    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
+                    <div className="min-h-screen bg-background transition-colors">
                       <main className="p-8 pl-16">
                         <BusinessPlan />
                       </main>
@@ -51,7 +51,7 @@ function App() {
               element={
                 <>
                   <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
-                  <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
+                  <div className="min-h-screen bg-background transition-colors">
                     <main className="p-8 pl-16">
                       <Dashboard />
                     </main>
@@ -66,7 +66,7 @@ function App() {
               element={
                 <>
                   <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
-                  <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
+                  <div className="min-h-screen bg-background transition-colors">
                     <DocumentMemory />
                   </div>
                 </>
@@ -79,7 +79,7 @@ function App() {
               element={
                 <>
                   <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
-                  <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
+                  <div className="min-h-screen bg-background transition-colors">
                     <main className="p-8 pl-16">
                       <ProformaPage />
                     </main>
@@ -94,7 +94,7 @@ function App() {
               element={
                 <>
                   <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
-                  <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
+                  <div className="min-h-screen bg-background transition-colors">
                     <main className="p-8 pl-16">
                       <Integrations />
                     </main>
@@ -109,7 +109,7 @@ function App() {
               element={
                 <>
                   <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
-                  <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
+                  <div className="min-h-screen bg-background transition-colors">
                     <main className="p-8 pl-16">
                       <AIProcessing />
                     </main>
@@ -124,7 +124,7 @@ function App() {
               element={
                 <>
                   <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
-                  <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
+                  <div className="min-h-screen bg-background transition-colors">
                     <main className="p-8 pl-16">
                       <Documents />
                     </main>
@@ -139,7 +139,7 @@ function App() {
               element={
                 <>
                   <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
-                  <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
+                  <div className="min-h-screen bg-background transition-colors">
                     <main className="p-8 pl-16">
                       <Customers />
                     </main>
@@ -154,7 +154,7 @@ function App() {
               element={
                 <>
                   <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
-                  <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
+                  <div className="min-h-screen bg-background transition-colors">
                     <main className="p-8 pl-16">
                       <Metrics />
                     </main>
@@ -169,7 +169,7 @@ function App() {
               element={
                 <>
                   <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
-                  <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
+                  <div className="min-h-screen bg-background transition-colors">
                     <main className="p-8 pl-16">
                       <Strategy />
                     </main>
@@ -184,7 +184,7 @@ function App() {
               element={
                 <>
                   <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
-                  <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
+                  <div className="min-h-screen bg-background transition-colors">
                     <main className="p-8 pl-16">
                       <Settings />
                     </main>
@@ -199,7 +199,7 @@ function App() {
               element={
                 <>
                   <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
-                  <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
+                  <div className="min-h-screen bg-background transition-colors">
                     <main className="p-8 pl-16">
                       <SwotAnalysis />
                     </main>
