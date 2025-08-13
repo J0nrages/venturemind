@@ -67,3 +67,36 @@ Located in `/supabase/functions/`:
 - Shared components in `/src/components/`
 - Feature-specific components in subdirectories (e.g., `/src/components/proforma/`)
 - Context providers in `/src/contexts/`
+
+## MCP (Model Context Protocol) Servers
+
+This project includes configuration for MCP servers to enhance AI assistance capabilities.
+
+### Installed MCP Packages
+- **@supabase/mcp-server-supabase@0.4.5** - Direct Supabase integration for database operations
+- **@upstash/context7-mcp@1.0.14** - Up-to-date documentation fetching for libraries
+- **@testsprite/testsprite-mcp@0.0.11** - Automated testing integration
+
+### Configuration
+MCP servers are configured in `.mcp.json` at the project root. This file is checked into version control for team sharing.
+
+#### Required Environment Variables
+For Supabase MCP:
+- `SUPABASE_ACCESS_TOKEN` - Personal access token from Supabase dashboard
+- Replace `YOUR_PROJECT_REF` in `.mcp.json` with your actual Supabase project ID
+
+For TestSprite MCP:
+- `API_KEY` - Your TestSprite API key
+
+### Usage in Claude Code
+- Run `/mcp` to check configured servers
+- Context7: Add "use context7" to prompts for current documentation
+- Supabase: Interact with database, auth, and storage directly
+- TestSprite: Generate and run automated tests
+
+### Troubleshooting
+If `/mcp` shows no servers:
+1. Ensure `.mcp.json` exists in project root
+2. Check JSON syntax is valid
+3. Try restarting Claude Code or reloading the project
+4. Run `/doctor` for diagnostics

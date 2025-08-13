@@ -14,6 +14,7 @@ desktop.ini
 !.env.example
 !.env.template
 *.local
+.mcp.json
 
 # ---- Node / Bun / JavaScript ----
 node_modules/
