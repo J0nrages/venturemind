@@ -1,4 +1,5 @@
 import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { supabase } from '../lib/supabase';
@@ -112,41 +113,43 @@ export default function Settings() {
   return (
     <div className="max-w-4xl mx-auto space-y-8">
       <div>
-        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Settings</h1>
-        <p className="text-gray-500 dark:text-gray-400 mt-1">Manage your application settings and integrations</p>
+        <h1 className="text-2xl font-semibold text-foreground">Settings</h1>
+        <p className="text-muted-foreground mt-1">Manage your application settings and integrations</p>
       </div>
 
       <div className="bg-card/80 backdrop-blur-xl rounded-xl shadow-sm p-6 space-y-6">
         <div className="pb-6 border-b border-border/50">
-          <h2 className="text-lg font-medium text-gray-900 dark:text-white">Account Information</h2>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Manage your account details and preferences</p>
+          <h2 className="text-lg font-medium text-foreground">Account Information</h2>
+          <p className="mt-1 text-sm text-muted-foreground">Manage your account details and preferences</p>
           
           <div className="mt-4">
-            <p className="text-sm text-gray-600 dark:text-gray-400">Email: {user?.email}</p>
+            <p className="text-sm text-muted-foreground">Email: {user?.email}</p>
           </div>
           
-          <button
+          <Button
+            type="button"
             onClick={handleSignOut}
-            className="mt-4 px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors"
+            variant="destructive"
+            className="mt-4"
           >
             Sign Out
-          </button>
+          </Button>
         </div>
 
         <form onSubmit={handleSaveSettings} className="space-y-6">
           <div>
-            <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">AI Integrations</h2>
+          <h2 className="text-lg font-medium text-foreground mb-4">AI Integrations</h2>
             
             <div className="space-y-6">
               {/* Gemini API Key Section */}
-              <div className="border border-border/50 rounded-lg p-4 bg-gradient-to-r from-blue-50 to-purple-50">
+              <div className="border border-border/50 rounded-lg p-4 bg-card/70 backdrop-blur-xl">
                 <div className="flex items-center gap-3 mb-3">
                   <Brain className="w-5 h-5 text-purple-600" />
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">
+                    <label className="block text-sm font-medium text-foreground">
                       Google Gemini API Key
                     </label>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                    <p className="text-xs text-muted-foreground">
                       Required for AI-powered document analysis and smart responses
                     </p>
                   </div>
@@ -157,16 +160,17 @@ export default function Settings() {
                     type="password"
                     value={geminiApiKey}
                     onChange={(e) => setGeminiApiKey(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                   className="w-full px-4 py-2 border border-border/50 rounded-lg bg-card/60 backdrop-blur-md focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                     placeholder="Enter your Gemini API key (AIza...)"
                   />
                   
                   <div className="flex items-center gap-3">
-                    <button
+                    <Button
                       type="button"
                       onClick={handleTestGemini}
                       disabled={testing || !geminiApiKey.trim()}
-                      className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                      variant="glass"
+                      className="gap-2"
                     >
                       {testing ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -174,13 +178,13 @@ export default function Settings() {
                         <TestTube className="w-4 h-4" />
                       )}
                       <span>{testing ? 'Testing...' : 'Test Integration'}</span>
-                    </button>
+                    </Button>
                     
                     {testResult && (
                       <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm ${
                         testResult.success 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-red-100 text-red-800'
+                          ? 'bg-green-500/15 text-green-700 dark:text-green-300' 
+                          : 'bg-red-500/15 text-red-700 dark:text-red-300'
                       }`}>
                         {testResult.success ? (
                           <CheckCircle className="w-4 h-4" />
@@ -196,19 +200,19 @@ export default function Settings() {
                     <motion.div
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: 'auto' }}
-                      className={`p-3 rounded-lg text-sm ${
+                      className={`p-3 rounded-lg text-sm border ${
                         testResult.success 
-                          ? 'bg-green-50 text-green-700 border border-green-200'
-                          : 'bg-red-50 text-red-700 border border-red-200'
+                          ? 'bg-green-500/10 text-green-700 dark:text-green-300 border-green-500/20'
+                          : 'bg-red-500/10 text-red-700 dark:text-red-300 border-red-500/20'
                       }`}
                     >
                       {testResult.message}
                     </motion.div>
                   )}
                   
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                    <h4 className="text-sm font-medium text-blue-900 mb-2">How to get your Gemini API key:</h4>
-                    <ol className="text-xs text-blue-800 space-y-1 list-decimal list-inside">
+                  <div className="bg-card/60 border border-blue-500/20 rounded-lg p-3 backdrop-blur-xl">
+                    <h4 className="text-sm font-medium text-foreground mb-2">How to get your Gemini API key:</h4>
+                    <ol className="text-xs text-muted-foreground space-y-1 list-decimal list-inside">
                       <li>Visit <a href="https://makersuite.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="underline">Google AI Studio</a></li>
                       <li>Sign in with your Google account</li>
                       <li>Click "Create API key"</li>
@@ -223,10 +227,10 @@ export default function Settings() {
                 <div className="flex items-center gap-3 mb-3">
                   <FileText className="w-5 h-5 text-blue-600" />
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">
+                    <label className="block text-sm font-medium text-foreground">
                       Google Docs Integration Token
                     </label>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                    <p className="text-xs text-muted-foreground">
                       Optional: For advanced Google Docs integration
                     </p>
                   </div>
@@ -236,7 +240,7 @@ export default function Settings() {
                   type="password"
                   value={googleDocsToken}
                   onChange={(e) => setGoogleDocsToken(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-4 py-2 border border-border/50 rounded-lg bg-card/60 backdrop-blur-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Enter your Google Docs token (optional)"
                 />
               </div>
@@ -244,21 +248,21 @@ export default function Settings() {
           </div>
 
           <div className="flex justify-end">
-            <button
+            <Button
               type="submit"
               disabled={loading}
-              className="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-6"
             >
               {loading ? 'Saving...' : 'Save Settings'}
-            </button>
+            </Button>
           </div>
         </form>
       </div>
 
       {/* API Usage Guidelines */}
-      <div className="bg-amber-50 border border-amber-200 rounded-xl p-6">
-        <h3 className="text-lg font-medium text-amber-900 mb-3">AI Integration Guidelines</h3>
-        <div className="space-y-2 text-sm text-amber-800">
+      <div className="bg-card/80 border border-border/50 rounded-xl p-6 backdrop-blur-xl">
+        <h3 className="text-lg font-medium text-foreground mb-3">AI Integration Guidelines</h3>
+        <div className="space-y-2 text-sm text-muted-foreground">
           <p>• <strong>Privacy:</strong> Your API key is stored securely and only used for your AI requests</p>
           <p>• <strong>Usage:</strong> API calls are made directly from your browser to Google's servers</p>
           <p>• <strong>Costs:</strong> You'll be charged according to Google's Gemini API pricing</p>

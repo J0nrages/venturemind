@@ -281,6 +281,80 @@ export function createSSEConnection(endpoint: string): EventSource {
   return eventSource;
 }
 
+// Threading endpoints
+export const threadingApi = {
+  // Archive/restore messages
+  async archiveMessage(messageId: string) {
+    return apiClient.post(`/api/v1/messages/${messageId}/archive`);
+  },
+
+  async restoreMessage(messageId: string) {
+    return apiClient.post(`/api/v1/messages/${messageId}/restore`);
+  },
+
+  // Create replies and branches
+  async createReply(data: {
+    replyToMessageId: string;
+    content: string;
+    quotedText?: string;
+  }) {
+    return apiClient.post('/api/v1/messages/reply', data);
+  },
+
+  async createBranch(data: {
+    parentMessageId: string;
+    selectedText: string;
+    initialMessage: string;
+  }) {
+    return apiClient.post('/api/v1/messages/branch', data);
+  },
+
+  // Thread management
+  async getThreads(params?: {
+    limit?: number;
+    status?: 'active' | 'archived';
+  }) {
+    const searchParams = new URLSearchParams();
+    if (params?.limit) searchParams.set('limit', params.limit.toString());
+    if (params?.status) searchParams.set('status', params.status);
+    
+    return apiClient.get(`/api/v1/threads?${searchParams}`);
+  },
+
+  async getThread(threadId: string) {
+    return apiClient.get(`/api/v1/threads/${threadId}`);
+  },
+
+  async getThreadMessages(threadId: string, includeArchived = false) {
+    return apiClient.get(`/api/v1/threads/${threadId}/messages?includeArchived=${includeArchived}`);
+  },
+
+  async updateThread(threadId: string, data: { title?: string; status?: string }) {
+    return apiClient.patch(`/api/v1/threads/${threadId}`, data);
+  },
+
+  // Summarization queue
+  async queueSummarization(data: {
+    jobId: string;
+    type: 'thread_summarization';
+    context: {
+      messageId: string;
+      threadId: string;
+      selectedText: string;
+      initialMessage: string;
+      parentMessageId: string;
+      userId: string;
+    };
+  }) {
+    return apiClient.post('/api/v1/queue/summarization', data);
+  },
+
+  // Get summarization job status
+  async getSummarizationStatus(jobId: string) {
+    return apiClient.get(`/api/v1/queue/summarization/${jobId}/status`);
+  }
+};
+
 // Health check
 export async function checkApiHealth(): Promise<boolean> {
   try {

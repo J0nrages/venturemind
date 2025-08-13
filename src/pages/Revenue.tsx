@@ -5,7 +5,7 @@ import MetricCard from '../components/MetricCard';
 
 export default function Revenue() {
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 pt-14">
       <div>
         <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Revenue Analytics</h1>
         <p className="text-gray-500 dark:text-gray-400 mt-1">Track your business revenue and financial metrics</p>

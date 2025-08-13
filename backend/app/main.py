@@ -17,9 +17,10 @@ from app.core.middleware import (
     ErrorHandlingMiddleware,
 )
 from app.core.redis_manager import redis_manager
-from app.api.v1 import conversations, agents, tasks, auth, marketplace
+from app.api.v1 import conversations, agents, tasks, auth, marketplace, threading
 from app.api.v1.websocket import websocket_router
 from app.api import events
+from app.services.thread_summarization import run_summarization_worker
 
 # Configure logging
 logging.basicConfig(
@@ -48,10 +49,29 @@ async def lifespan(app: FastAPI):
         logger.error(f"Failed to connect to Redis: {e}")
         # Continue without Redis if it's not critical
     
+    # Start background workers
+    import asyncio
+    summarization_task = None
+    try:
+        summarization_task = asyncio.create_task(run_summarization_worker())
+        logger.info("Thread summarization worker started")
+    except Exception as e:
+        logger.error(f"Failed to start summarization worker: {e}")
+    
     # TODO: Initialize Supabase client
     # TODO: Initialize observability
     
     yield
+    
+    # Stop background workers
+    if summarization_task:
+        summarization_task.cancel()
+        try:
+            await summarization_task
+        except asyncio.CancelledError:
+            logger.info("Summarization worker stopped")
+        except Exception as e:
+            logger.error(f"Error stopping summarization worker: {e}")
     
     # Cleanup
     logger.info("Shutting down...")
@@ -126,6 +146,7 @@ app.include_router(conversations.router, prefix="/api/v1/conversations", tags=["
 app.include_router(agents.router, prefix="/api/v1/agents", tags=["Agents"])
 app.include_router(tasks.router, prefix="/api/v1/tasks", tags=["Tasks"])
 app.include_router(marketplace.router, prefix="/api/v1/marketplace", tags=["Marketplace"])
+app.include_router(threading.router, tags=["Threading"])
 app.include_router(websocket_router, prefix="/ws", tags=["WebSocket"])
 app.include_router(events.router, prefix="/api", tags=["SSE"])
 

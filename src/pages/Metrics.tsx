@@ -11,7 +11,9 @@ import {
   Loader2,
   RefreshCw,
   Plus,
-  Filter
+  Filter,
+  ArrowUpRight,
+  ArrowDownRight,
 } from 'lucide-react';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import MetricCard from '../components/MetricCard';
@@ -160,8 +162,8 @@ export default function Metrics() {
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Error Loading Metrics</h3>
-          <p className="text-gray-600 dark:text-gray-400 mb-4">{error}</p>
+          <h3 className="text-lg font-semibold text-foreground mb-2">Error Loading Metrics</h3>
+          <p className="text-muted-foreground mb-4">{error}</p>
           <button
             onClick={loadMetrics}
             className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
@@ -174,16 +176,16 @@ export default function Metrics() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 pt-14">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Business Metrics</h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1">Monitor key performance indicators</p>
+          <h1 className="text-2xl font-semibold text-foreground">Business Metrics</h1>
+          <p className="text-muted-foreground mt-1">Monitor key performance indicators</p>
         </div>
         <div className="flex items-center gap-3">
           <button
             onClick={() => setShowNewMetricForm(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+            className="flex items-center gap-2 px-4 py-2 bg-muted text-foreground rounded-lg hover:bg-muted/80"
           >
             <Plus className="w-4 h-4" />
             Add Metric
@@ -200,7 +202,7 @@ export default function Metrics() {
 
       {/* Metric Categories Filter */}
       <div className="flex items-center gap-2 overflow-x-auto pb-2">
-        <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
+        <div className="text-sm text-muted-foreground flex items-center">
           <Filter className="w-4 h-4 mr-1" />
           Filter:
         </div>
@@ -209,7 +211,7 @@ export default function Metrics() {
           className={`px-3 py-1 text-sm rounded-lg whitespace-nowrap ${
             activeCategory === 'all' 
               ? 'bg-emerald-100 text-emerald-800'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              : 'bg-muted text-foreground hover:bg-muted/80'
           }`}
         >
           All Metrics
@@ -219,7 +221,7 @@ export default function Metrics() {
           className={`px-3 py-1 text-sm rounded-lg whitespace-nowrap ${
             activeCategory === 'revenue' 
               ? 'bg-emerald-100 text-emerald-800'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              : 'bg-muted text-foreground hover:bg-muted/80'
           }`}
         >
           Revenue
@@ -229,7 +231,7 @@ export default function Metrics() {
           className={`px-3 py-1 text-sm rounded-lg whitespace-nowrap ${
             activeCategory === 'customer' 
               ? 'bg-emerald-100 text-emerald-800'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              : 'bg-muted text-foreground hover:bg-muted/80'
           }`}
         >
           Customer
@@ -239,7 +241,7 @@ export default function Metrics() {
           className={`px-3 py-1 text-sm rounded-lg whitespace-nowrap ${
             activeCategory === 'operational' 
               ? 'bg-emerald-100 text-emerald-800'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              : 'bg-muted text-foreground hover:bg-muted/80'
           }`}
         >
           Operational
@@ -249,7 +251,7 @@ export default function Metrics() {
           className={`px-3 py-1 text-sm rounded-lg whitespace-nowrap ${
             activeCategory === 'financial' 
               ? 'bg-emerald-100 text-emerald-800'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              : 'bg-muted text-foreground hover:bg-muted/80'
           }`}
         >
           Financial
@@ -259,7 +261,7 @@ export default function Metrics() {
           className={`px-3 py-1 text-sm rounded-lg whitespace-nowrap ${
             activeCategory === 'growth' 
               ? 'bg-emerald-100 text-emerald-800'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              : 'bg-muted text-foreground hover:bg-muted/80'
           }`}
         >
           Growth
@@ -272,29 +274,29 @@ export default function Metrics() {
           animate={{ opacity: 1, y: 0 }}
           className="bg-card/80 backdrop-blur-xl rounded-xl shadow-sm p-6 border border-border/50"
         >
-          <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Create New Metric</h2>
+          <h2 className="text-lg font-medium text-foreground mb-4">Create New Metric</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-foreground mb-1">
                   Metric Name
                 </label>
                 <input
                   type="text"
                   value={newMetric.name}
                   onChange={(e) => setNewMetric({ ...newMetric, name: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                  className="w-full px-3 py-2 border border-border/50 rounded-lg bg-card/50 backdrop-blur-md focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                   placeholder="e.g., Customer Lifetime Value"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-foreground mb-1">
                   Description
                 </label>
                 <textarea
                   value={newMetric.description}
                   onChange={(e) => setNewMetric({ ...newMetric, description: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                  className="w-full px-3 py-2 border border-border/50 rounded-lg bg-card/50 backdrop-blur-md focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                   rows={3}
                   placeholder="What does this metric measure?"
                 />
@@ -302,13 +304,13 @@ export default function Metrics() {
             </div>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-foreground mb-1">
                   Metric Type
                 </label>
                 <select
                   value={newMetric.metric_type}
                   onChange={(e) => setNewMetric({ ...newMetric, metric_type: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                  className="w-full px-3 py-2 border border-border/50 rounded-lg bg-card/50 backdrop-blur-md focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 >
                   <option value="revenue">Revenue</option>
                   <option value="customer">Customer</option>
@@ -318,13 +320,13 @@ export default function Metrics() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-foreground mb-1">
                   Unit
                 </label>
                 <select
                   value={newMetric.unit}
                   onChange={(e) => setNewMetric({ ...newMetric, unit: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                  className="w-full px-3 py-2 border border-border/50 rounded-lg bg-card/50 backdrop-blur-md focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 >
                   <option value="dollars">Dollars ($)</option>
                   <option value="percentage">Percentage (%)</option>
@@ -334,14 +336,14 @@ export default function Metrics() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-foreground mb-1">
                   Target Value
                 </label>
                 <input
                   type="number"
                   value={newMetric.target_value}
                   onChange={(e) => setNewMetric({ ...newMetric, target_value: parseFloat(e.target.value) })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                  className="w-full px-3 py-2 border border-border/50 rounded-lg bg-card/50 backdrop-blur-md focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                   placeholder="Target value"
                 />
               </div>
@@ -350,7 +352,7 @@ export default function Metrics() {
           <div className="flex justify-end gap-2 mt-6">
             <button
               onClick={() => setShowNewMetricForm(false)}
-              className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
+              className="px-4 py-2 text-foreground hover:bg-accent/40 rounded-lg"
             >
               Cancel
             </button>
@@ -414,9 +416,9 @@ export default function Metrics() {
 
       {filteredMetrics.length === 0 && (
         <div className="bg-card/80 backdrop-blur-xl rounded-xl shadow-sm p-8 text-center">
-          <BarChart3 className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">No Metrics Found</h2>
-          <p className="text-gray-600 dark:text-gray-400 max-w-md mx-auto mb-6">
+          <BarChart3 className="w-16 h-16 text-muted-foreground/60 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-foreground mb-2">No Metrics Found</h2>
+          <p className="text-muted-foreground max-w-md mx-auto mb-6">
             {activeCategory === 'all'
               ? "You haven't created any metrics yet. Add your first metric to start tracking."
               : `You don't have any metrics in the '${activeCategory}' category.`}
@@ -436,7 +438,7 @@ export default function Metrics() {
         <div className="space-y-8">
           {/* MRR Chart */}
           <div className="bg-card/80 backdrop-blur-xl p-6 rounded-xl shadow-sm">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+            <h2 className="text-lg font-semibold text-foreground mb-6 flex items-center gap-2">
               <DollarSign className="w-5 h-5 text-emerald-600" />
               Monthly Recurring Revenue
             </h2>
@@ -467,9 +469,9 @@ export default function Metrics() {
             ) : (
               <div className="h-80 flex items-center justify-center">
                 <div className="text-center">
-                  <AlertCircle className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-600 dark:text-gray-400">No revenue data available</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                  <AlertCircle className="w-12 h-12 text-muted-foreground/60 mx-auto mb-4" />
+                    <p className="text-muted-foreground">No revenue data available</p>
+                    <p className="text-sm text-muted-foreground mt-2">
                     Connect payment integrations to see revenue metrics
                   </p>
                 </div>
@@ -479,7 +481,7 @@ export default function Metrics() {
 
           {/* Customer Metrics */}
           <div className="bg-card/80 backdrop-blur-xl p-6 rounded-xl shadow-sm">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+            <h2 className="text-lg font-semibold text-foreground mb-6 flex items-center gap-2">
               <Users className="w-5 h-5 text-blue-600" />
               Customer Metrics
             </h2>
@@ -505,9 +507,9 @@ export default function Metrics() {
             ) : (
               <div className="h-80 flex items-center justify-center">
                 <div className="text-center">
-                  <AlertCircle className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-600 dark:text-gray-400">No customer segmentation data available</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                  <AlertCircle className="w-12 h-12 text-muted-foreground/60 mx-auto mb-4" />
+                  <p className="text-muted-foreground">No customer segmentation data available</p>
+                  <p className="text-sm text-muted-foreground mt-2">
                     Add customer data to see segment metrics
                   </p>
                 </div>
@@ -517,15 +519,15 @@ export default function Metrics() {
 
           {/* Performance Metrics */}
           <div className="bg-card/80 backdrop-blur-xl p-6 rounded-xl shadow-sm">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+            <h2 className="text-lg font-semibold text-foreground mb-6 flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-purple-600" />
               Performance Metrics
             </h2>
             {liveMetrics.performance.hasData ? (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="p-4 bg-gray-50 rounded-lg">
+                <div className="p-4 bg-card/70 backdrop-blur-xl border border-border/50 rounded-lg">
                   <div className="flex justify-between items-center mb-2">
-                    <h3 className="font-medium text-gray-900 dark:text-white">Processing Speed</h3>
+                    <h3 className="font-medium text-foreground">Processing Speed</h3>
                     <span className="text-emerald-600 text-sm flex items-center">
                       <ArrowDownRight className="w-4 h-4 mr-0.5" />
                       5.2%
@@ -533,16 +535,16 @@ export default function Metrics() {
                   </div>
                   <div className="flex items-baseline gap-1">
                     <span className="text-2xl font-bold">{liveMetrics.performance.processingSpeed}</span>
-                    <span className="text-gray-500 dark:text-gray-400">ms</span>
+                      <span className="text-muted-foreground">ms</span>
                   </div>
-                  <div className="mt-2 bg-gray-200 h-2 rounded-full overflow-hidden">
+                  <div className="mt-2 bg-muted h-2 rounded-full overflow-hidden">
                     <div className="bg-emerald-500 h-full" style={{ width: '75%' }}></div>
                   </div>
                 </div>
                 
-                <div className="p-4 bg-gray-50 rounded-lg">
+                <div className="p-4 bg-card/70 backdrop-blur-xl border border-border/50 rounded-lg">
                   <div className="flex justify-between items-center mb-2">
-                    <h3 className="font-medium text-gray-900 dark:text-white">Accuracy Rate</h3>
+                    <h3 className="font-medium text-foreground">Accuracy Rate</h3>
                     <span className="text-emerald-600 text-sm flex items-center">
                       <ArrowUpRight className="w-4 h-4 mr-0.5" />
                       1.3%
@@ -550,16 +552,16 @@ export default function Metrics() {
                   </div>
                   <div className="flex items-baseline gap-1">
                     <span className="text-2xl font-bold">{liveMetrics.performance.accuracyRate}</span>
-                    <span className="text-gray-500 dark:text-gray-400">%</span>
+                      <span className="text-muted-foreground">%</span>
                   </div>
-                  <div className="mt-2 bg-gray-200 h-2 rounded-full overflow-hidden">
+                  <div className="mt-2 bg-muted h-2 rounded-full overflow-hidden">
                     <div className="bg-blue-500 h-full" style={{ width: `${liveMetrics.performance.accuracyRate}%` }}></div>
                   </div>
                 </div>
                 
-                <div className="p-4 bg-gray-50 rounded-lg">
+                <div className="p-4 bg-card/70 backdrop-blur-xl border border-border/50 rounded-lg">
                   <div className="flex justify-between items-center mb-2">
-                    <h3 className="font-medium text-gray-900 dark:text-white">API Uptime</h3>
+                    <h3 className="font-medium text-foreground">API Uptime</h3>
                     <span className="text-emerald-600 text-sm flex items-center">
                       <ArrowUpRight className="w-4 h-4 mr-0.5" />
                       0.1%
@@ -567,18 +569,18 @@ export default function Metrics() {
                   </div>
                   <div className="flex items-baseline gap-1">
                     <span className="text-2xl font-bold">{liveMetrics.performance.apiUptime}</span>
-                    <span className="text-gray-500 dark:text-gray-400">%</span>
+                      <span className="text-muted-foreground">%</span>
                   </div>
-                  <div className="mt-2 bg-gray-200 h-2 rounded-full overflow-hidden">
+                  <div className="mt-2 bg-muted h-2 rounded-full overflow-hidden">
                     <div className="bg-purple-500 h-full" style={{ width: `${liveMetrics.performance.apiUptime}%` }}></div>
                   </div>
                 </div>
               </div>
             ) : (
               <div className="py-8 text-center">
-                <AlertCircle className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-600 dark:text-gray-400">No performance data available</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                <AlertCircle className="w-12 h-12 text-muted-foreground/60 mx-auto mb-4" />
+                <p className="text-muted-foreground">No performance data available</p>
+                <p className="text-sm text-muted-foreground mt-2">
                   Use API features to generate performance metrics
                 </p>
               </div>

@@ -667,7 +667,7 @@ export default function ProformaPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 pt-14">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-semibold text-foreground">Financial Proforma Model</h1>

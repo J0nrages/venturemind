@@ -9,6 +9,24 @@ export interface WebSocketMessage {
   document_id?: string;
   metadata?: Record<string, any>;
   timestamp?: string;
+  // Threading specific
+  message_id?: string;
+  thread_id?: string;
+  user_id?: string;
+}
+
+// Extended message types for threading
+export interface ThreadingWebSocketMessage extends WebSocketMessage {
+  type: 
+    | 'thread_title_updated'
+    | 'message_archived'
+    | 'message_restored'
+    | 'branch_created' 
+    | 'reply_created'
+    | 'thread_updated'
+    | 'summarization_started'
+    | 'summarization_completed'
+    | 'summarization_failed';
 }
 
 export interface AgentState {
@@ -159,6 +177,36 @@ export class WebSocketService extends EventEmitter {
         this.handleEditConflict(message);
         break;
       
+      case 'thread_title_updated':
+        this.handleThreadTitleUpdate(message);
+        break;
+      
+      case 'message_archived':
+        this.handleMessageArchived(message);
+        break;
+      
+      case 'message_restored':
+        this.handleMessageRestored(message);
+        break;
+      
+      case 'branch_created':
+        this.handleBranchCreated(message);
+        break;
+      
+      case 'reply_created':
+        this.handleReplyCreated(message);
+        break;
+      
+      case 'thread_updated':
+        this.handleThreadUpdated(message);
+        break;
+      
+      case 'summarization_started':
+      case 'summarization_completed':
+      case 'summarization_failed':
+        this.handleSummarizationUpdate(message);
+        break;
+      
       case 'error':
         this.handleError(message);
         break;
@@ -243,6 +291,76 @@ export class WebSocketService extends EventEmitter {
   private handleError(message: WebSocketMessage): void {
     console.error('Server error:', message.content);
     this.emit('server:error', message.content);
+  }
+
+  // ===== THREADING MESSAGE HANDLERS =====
+
+  private handleThreadTitleUpdate(message: WebSocketMessage): void {
+    this.emit('thread:title_updated', {
+      messageId: message.message_id,
+      threadId: message.thread_id,
+      title: message.content.title,
+      summary: message.content.summary,
+      status: message.content.status
+    });
+  }
+
+  private handleMessageArchived(message: WebSocketMessage): void {
+    this.emit('message:archived', {
+      messageId: message.message_id,
+      threadId: message.thread_id,
+      archivedBy: message.content.archived_by,
+      timestamp: message.timestamp
+    });
+  }
+
+  private handleMessageRestored(message: WebSocketMessage): void {
+    this.emit('message:restored', {
+      messageId: message.message_id,
+      threadId: message.thread_id,
+      restoredBy: message.content.restored_by,
+      timestamp: message.timestamp
+    });
+  }
+
+  private handleBranchCreated(message: WebSocketMessage): void {
+    this.emit('thread:branch_created', {
+      newThreadId: message.content.new_thread_id,
+      parentMessageId: message.content.parent_message_id,
+      branchContext: message.content.branch_context,
+      createdBy: message.content.created_by,
+      initialMessage: message.content.initial_message
+    });
+  }
+
+  private handleReplyCreated(message: WebSocketMessage): void {
+    this.emit('message:reply_created', {
+      replyId: message.message_id,
+      threadId: message.thread_id,
+      replyToMessageId: message.content.reply_to_message_id,
+      quotedText: message.content.quoted_text,
+      content: message.content.content,
+      sender: message.content.sender
+    });
+  }
+
+  private handleThreadUpdated(message: WebSocketMessage): void {
+    this.emit('thread:updated', {
+      threadId: message.thread_id,
+      updates: message.content.updates,
+      timestamp: message.timestamp
+    });
+  }
+
+  private handleSummarizationUpdate(message: WebSocketMessage): void {
+    this.emit('summarization:update', {
+      messageId: message.message_id,
+      threadId: message.thread_id,
+      status: message.type.replace('summarization_', ''),
+      title: message.content.title,
+      summary: message.content.summary,
+      error: message.content.error
+    });
   }
 
   /**

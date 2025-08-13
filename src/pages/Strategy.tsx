@@ -124,7 +124,7 @@ export default function Strategy() {
       <div className="flex items-center justify-center h-64">
         <div className="flex items-center gap-2">
           <Loader2 className="w-6 h-6 animate-spin text-emerald-600" />
-          <span className="text-gray-600 dark:text-gray-400">Loading strategy data...</span>
+          <span className="text-muted-foreground">Loading strategy data...</span>
         </div>
       </div>
     );
@@ -135,8 +135,8 @@ export default function Strategy() {
       <div className="flex items-center justify-center h-64">
         <div className="text-center max-w-md">
           <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Error Loading Strategy</h3>
-          <p className="text-gray-600 dark:text-gray-400 mb-4">{error}</p>
+          <h3 className="text-lg font-semibold text-foreground mb-2">Error Loading Strategy</h3>
+          <p className="text-muted-foreground mb-4">{error}</p>
           {error.includes('Authentication') ? (
             <a 
               href="/auth"
@@ -162,15 +162,15 @@ export default function Strategy() {
     technical: 'bg-blue-100 text-blue-800',
     marketing: 'bg-emerald-100 text-emerald-800',
     business: 'bg-orange-100 text-orange-800',
-    general: 'bg-gray-100 text-gray-900 dark:text-white'
+    general: 'bg-muted text-foreground'
   };
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Strategic Planning</h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1">Manage strategic initiatives and SWOT analysis</p>
+          <h1 className="text-2xl font-semibold text-foreground">Strategic Planning</h1>
+          <p className="text-muted-foreground mt-1">Manage strategic initiatives and SWOT analysis</p>
         </div>
         <button
           onClick={refreshData}
@@ -240,7 +240,7 @@ export default function Strategy() {
           {activeTab === 'initiatives' && (
             <div className="space-y-6">
               <div className="flex justify-between items-center">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Strategic Initiatives</h2>
+                <h2 className="text-lg font-semibold text-foreground">Strategic Initiatives</h2>
                 <button
                   onClick={() => {
                     setShowNewItem(true);
@@ -263,36 +263,36 @@ export default function Strategy() {
                   className="bg-card/70 backdrop-blur-xl border border-border/50 p-4 rounded-lg space-y-4"
                 >
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-foreground mb-1">
                       Title
                     </label>
                     <input
                       type="text"
                       value={newItemData.title}
                       onChange={(e) => setNewItemData({ ...newItemData, title: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      className="w-full px-3 py-2 border border-border/50 rounded-lg bg-card/50 backdrop-blur-md focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-foreground mb-1">
                       Description
                     </label>
                     <textarea
                       value={newItemData.description}
                       onChange={(e) => setNewItemData({ ...newItemData, description: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      className="w-full px-3 py-2 border border-border/50 rounded-lg bg-card/50 backdrop-blur-md focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                       rows={3}
                     />
                   </div>
                   <div className="grid grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-foreground mb-1">
                         Category
                       </label>
                       <select
                         value={newItemData.category}
                         onChange={(e) => setNewItemData({ ...newItemData, category: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                        className="w-full px-3 py-2 border border-border/50 rounded-lg bg-card/50 backdrop-blur-md focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                       >
                         <option value="product">Product</option>
                         <option value="technical">Technical</option>
@@ -302,13 +302,13 @@ export default function Strategy() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-foreground mb-1">
                         Priority
                       </label>
                       <select
                         value={newItemData.priority}
                         onChange={(e) => setNewItemData({ ...newItemData, priority: parseInt(e.target.value) })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                        className="w-full px-3 py-2 border border-border/50 rounded-lg bg-card/50 backdrop-blur-md focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                       >
                         <option value="1">Highest</option>
                         <option value="2">High</option>
@@ -318,14 +318,14 @@ export default function Strategy() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-foreground mb-1">
                         Due Date (optional)
                       </label>
                       <input
                         type="date"
                         value={newItemData.dueDate}
                         onChange={(e) => setNewItemData({ ...newItemData, dueDate: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                        className="w-full px-3 py-2 border border-border/50 rounded-lg bg-card/50 backdrop-blur-md focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                       />
                     </div>
                   </div>
@@ -353,7 +353,7 @@ export default function Strategy() {
                   
                   return (
                     <div key={category} className="space-y-2">
-                      <h3 className="text-md font-medium text-gray-700 capitalize">
+                       <h3 className="text-md font-medium text-foreground capitalize">
                         {category} Initiatives
                       </h3>
                       
@@ -379,7 +379,7 @@ export default function Strategy() {
                                     className={`w-5 h-5 rounded-full border flex items-center justify-center ${
                                       initiative.status === 'completed'
                                         ? 'bg-emerald-600 border-emerald-600'
-                                        : 'border-gray-300'
+                                        : 'border-border/50'
                                     }`}
                                   >
                                     {initiative.status === 'completed' && (
@@ -389,12 +389,12 @@ export default function Strategy() {
                                 </div>
                                 <div>
                                   <h4 className={`font-medium ${
-                                    initiative.status === 'completed' ? 'text-gray-500 dark:text-gray-400 line-through' : 'text-gray-900 dark:text-white'
+                                      initiative.status === 'completed' ? 'text-muted-foreground line-through' : 'text-foreground'
                                   }`}>
                                     {initiative.title}
                                   </h4>
                                   {initiative.description && (
-                                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">
+                                    <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
                                       {initiative.description}
                                     </p>
                                   )}
@@ -408,8 +408,8 @@ export default function Strategy() {
                                         Priority
                                       </span>
                                     )}
-                                    {initiative.due_date && (
-                                      <span className="text-xs flex items-center text-gray-500 dark:text-gray-400">
+                                     {initiative.due_date && (
+                                      <span className="text-xs flex items-center text-muted-foreground">
                                         <Calendar className="w-3 h-3 mr-0.5" />
                                         {new Date(initiative.due_date).toLocaleDateString()}
                                       </span>
@@ -429,35 +429,35 @@ export default function Strategy() {
                                     e.stopPropagation();
                                     handleDeleteItem(initiative.id, 'initiative');
                                   }}
-                                  className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded"
+                                  className="p-1 text-muted-foreground hover:text-red-600 hover:bg-red-50 rounded"
                                 >
                                   <Trash2 className="w-4 h-4" />
                                 </button>
                                 {showItemDetails === initiative.id ? (
-                                  <ChevronDown className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                                  <ChevronDown className="w-5 h-5 text-muted-foreground" />
                                 ) : (
-                                  <ChevronRight className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                                  <ChevronRight className="w-5 h-5 text-muted-foreground" />
                                 )}
                               </div>
                             </div>
                             
                             {showItemDetails === initiative.id && (
-                              <div className="p-4 bg-gray-50">
+                              <div className="p-4 bg-card/70 backdrop-blur-xl border border-border/50">
                                 <div className="space-y-4">
                                   {initiative.description && (
                                     <div>
-                                      <h5 className="text-sm font-medium text-gray-700">Description</h5>
-                                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{initiative.description}</p>
+                                      <h5 className="text-sm font-medium text-foreground">Description</h5>
+                                      <p className="text-sm text-muted-foreground mt-1">{initiative.description}</p>
                                     </div>
                                   )}
                                   
                                   <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                      <h5 className="text-sm font-medium text-gray-700">Status</h5>
+                                      <h5 className="text-sm font-medium text-foreground">Status</h5>
                                       <p className="text-sm capitalize">{initiative.status}</p>
                                     </div>
                                     <div>
-                                      <h5 className="text-sm font-medium text-gray-700">Priority</h5>
+                                      <h5 className="text-sm font-medium text-foreground">Priority</h5>
                                       <p className="text-sm">{
                                         initiative.priority === 1 ? 'Highest' :
                                         initiative.priority === 2 ? 'High' :
@@ -467,7 +467,7 @@ export default function Strategy() {
                                     </div>
                                     {initiative.created_at && (
                                       <div>
-                                        <h5 className="text-sm font-medium text-gray-700">Created</h5>
+                                      <h5 className="text-sm font-medium text-foreground">Created</h5>
                                         <p className="text-sm">
                                           {new Date(initiative.created_at).toLocaleDateString()}
                                         </p>
@@ -475,7 +475,7 @@ export default function Strategy() {
                                     )}
                                     {initiative.completed_at && (
                                       <div>
-                                        <h5 className="text-sm font-medium text-gray-700">Completed</h5>
+                                      <h5 className="text-sm font-medium text-foreground">Completed</h5>
                                         <p className="text-sm">
                                           {new Date(initiative.completed_at).toLocaleDateString()}
                                         </p>
@@ -494,9 +494,9 @@ export default function Strategy() {
                 
                 {initiatives.length === 0 && (
                   <div className="text-center py-8">
-                    <Target className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                    <p className="text-gray-600 dark:text-gray-400">No strategic initiatives yet</p>
-                    <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Create your first initiative to get started</p>
+                    <Target className="w-12 h-12 text-muted-foreground/60 mx-auto mb-4" />
+                    <p className="text-muted-foreground">No strategic initiatives yet</p>
+                    <p className="text-muted-foreground text-sm mt-1">Create your first initiative to get started</p>
                     <button
                       onClick={() => {
                         setShowNewItem(true);
@@ -519,7 +519,7 @@ export default function Strategy() {
           {activeTab === 'swot' && (
             <div className="space-y-6">
               <div className="flex justify-between items-center">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">SWOT Analysis</h2>
+                <h2 className="text-lg font-semibold text-foreground">SWOT Analysis</h2>
                 <button
                   onClick={() => {
                     setShowNewItem(true);
@@ -539,39 +539,39 @@ export default function Strategy() {
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
-                  className="bg-gray-50 p-4 rounded-lg space-y-4"
+                  className="bg-card/70 backdrop-blur-xl border border-border/50 p-4 rounded-lg space-y-4"
                 >
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-foreground mb-1">
                       Title
                     </label>
                     <input
                       type="text"
                       value={newItemData.title}
                       onChange={(e) => setNewItemData({ ...newItemData, title: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      className="w-full px-3 py-2 border border-border/50 rounded-lg bg-card/50 backdrop-blur-md focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-foreground mb-1">
                       Description
                     </label>
                     <textarea
                       value={newItemData.description}
                       onChange={(e) => setNewItemData({ ...newItemData, description: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      className="w-full px-3 py-2 border border-border/50 rounded-lg bg-card/50 backdrop-blur-md focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                       rows={3}
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-foreground mb-1">
                         Category
                       </label>
                       <select
                         value={newItemData.category}
                         onChange={(e) => setNewItemData({ ...newItemData, category: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                        className="w-full px-3 py-2 border border-border/50 rounded-lg bg-card/50 backdrop-blur-md focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                       >
                         <option value="strengths">Strengths</option>
                         <option value="weaknesses">Weaknesses</option>
@@ -580,13 +580,13 @@ export default function Strategy() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-foreground mb-1">
                         Priority
                       </label>
                       <select
                         value={newItemData.priority}
                         onChange={(e) => setNewItemData({ ...newItemData, priority: parseInt(e.target.value) })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                        className="w-full px-3 py-2 border border-border/50 rounded-lg bg-card/50 backdrop-blur-md focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                       >
                         <option value="1">Highest</option>
                         <option value="2">High</option>
@@ -599,7 +599,7 @@ export default function Strategy() {
                   <div className="flex justify-end gap-2">
                     <button
                       onClick={() => setShowNewItem(false)}
-                      className="px-4 py-2 text-sm bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+                      className="px-4 py-2 text-sm bg-muted text-foreground rounded-lg hover:bg-muted/80"
                     >
                       Cancel
                     </button>
@@ -641,16 +641,16 @@ export default function Strategy() {
                         className="bg-card/80 backdrop-blur-xl p-3 rounded border border-blue-200"
                       >
                         <div className="flex justify-between">
-                          <h4 className="font-medium text-gray-900 dark:text-white">{item.title}</h4>
+                          <h4 className="font-medium text-foreground">{item.title}</h4>
                           <button
                             onClick={() => handleDeleteItem(item.id, 'swot')}
-                            className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded"
+                            className="p-1 text-muted-foreground hover:text-red-600 hover:bg-red-50 rounded"
                           >
                             <Trash2 className="w-3 h-3" />
                           </button>
                         </div>
                         {item.description && (
-                          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{item.description}</p>
+                          <p className="text-sm text-muted-foreground mt-1">{item.description}</p>
                         )}
                         <div className="flex items-center gap-2 mt-2 text-xs text-blue-600">
                           {item.source === 'ai' && (
@@ -665,7 +665,7 @@ export default function Strategy() {
                     
                     {swotByCategory.strengths.length === 0 && (
                       <div className="text-center py-4">
-                        <p className="text-gray-500 dark:text-gray-400 text-sm">No strengths added yet</p>
+                        <p className="text-muted-foreground text-sm">No strengths added yet</p>
                       </div>
                     )}
                   </div>
@@ -697,16 +697,16 @@ export default function Strategy() {
                         className="bg-card/80 backdrop-blur-xl p-3 rounded border border-orange-200"
                       >
                         <div className="flex justify-between">
-                          <h4 className="font-medium text-gray-900 dark:text-white">{item.title}</h4>
+                          <h4 className="font-medium text-foreground">{item.title}</h4>
                           <button
                             onClick={() => handleDeleteItem(item.id, 'swot')}
-                            className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded"
+                            className="p-1 text-muted-foreground hover:text-red-600 hover:bg-red-50 rounded"
                           >
                             <Trash2 className="w-3 h-3" />
                           </button>
                         </div>
                         {item.description && (
-                          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{item.description}</p>
+                          <p className="text-sm text-muted-foreground mt-1">{item.description}</p>
                         )}
                         <div className="flex items-center gap-2 mt-2 text-xs text-orange-600">
                           {item.source === 'ai' && (
@@ -721,7 +721,7 @@ export default function Strategy() {
                     
                     {swotByCategory.weaknesses.length === 0 && (
                       <div className="text-center py-4">
-                        <p className="text-gray-500 dark:text-gray-400 text-sm">No weaknesses added yet</p>
+                        <p className="text-muted-foreground text-sm">No weaknesses added yet</p>
                       </div>
                     )}
                   </div>
@@ -753,16 +753,16 @@ export default function Strategy() {
                         className="bg-card/80 backdrop-blur-xl p-3 rounded border border-green-200"
                       >
                         <div className="flex justify-between">
-                          <h4 className="font-medium text-gray-900 dark:text-white">{item.title}</h4>
+                          <h4 className="font-medium text-foreground">{item.title}</h4>
                           <button
                             onClick={() => handleDeleteItem(item.id, 'swot')}
-                            className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded"
+                            className="p-1 text-muted-foreground hover:text-red-600 hover:bg-red-50 rounded"
                           >
                             <Trash2 className="w-3 h-3" />
                           </button>
                         </div>
                         {item.description && (
-                          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{item.description}</p>
+                          <p className="text-sm text-muted-foreground mt-1">{item.description}</p>
                         )}
                         <div className="flex items-center gap-2 mt-2 text-xs text-green-600">
                           {item.source === 'ai' && (
@@ -777,7 +777,7 @@ export default function Strategy() {
                     
                     {swotByCategory.opportunities.length === 0 && (
                       <div className="text-center py-4">
-                        <p className="text-gray-500 dark:text-gray-400 text-sm">No opportunities added yet</p>
+                        <p className="text-muted-foreground text-sm">No opportunities added yet</p>
                       </div>
                     )}
                   </div>
@@ -809,16 +809,16 @@ export default function Strategy() {
                         className="bg-card/80 backdrop-blur-xl p-3 rounded border border-red-200"
                       >
                         <div className="flex justify-between">
-                          <h4 className="font-medium text-gray-900 dark:text-white">{item.title}</h4>
+                          <h4 className="font-medium text-foreground">{item.title}</h4>
                           <button
                             onClick={() => handleDeleteItem(item.id, 'swot')}
-                            className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded"
+                            className="p-1 text-muted-foreground hover:text-red-600 hover:bg-red-50 rounded"
                           >
                             <Trash2 className="w-3 h-3" />
                           </button>
                         </div>
                         {item.description && (
-                          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{item.description}</p>
+                          <p className="text-sm text-muted-foreground mt-1">{item.description}</p>
                         )}
                         <div className="flex items-center gap-2 mt-2 text-xs text-red-600">
                           {item.source === 'ai' && (
@@ -833,7 +833,7 @@ export default function Strategy() {
                     
                     {swotByCategory.threats.length === 0 && (
                       <div className="text-center py-4">
-                        <p className="text-gray-500 dark:text-gray-400 text-sm">No threats added yet</p>
+                        <p className="text-muted-foreground text-sm">No threats added yet</p>
                       </div>
                     )}
                   </div>
@@ -846,11 +846,11 @@ export default function Strategy() {
 
       {/* Strategic Dashboard */}
       <div className="bg-card/80 backdrop-blur-xl rounded-xl shadow-sm p-6">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Strategic Overview</h2>
+        <h2 className="text-lg font-semibold text-foreground mb-4">Strategic Overview</h2>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div>
-            <h3 className="text-md font-medium text-gray-700 mb-4">Initiative Progress</h3>
+            <h3 className="text-md font-medium text-foreground mb-4">Initiative Progress</h3>
             
             <div className="space-y-4">
               {/* Calculate stats from actual data */}
@@ -868,10 +868,10 @@ export default function Strategy() {
                   <>
                     <div>
                       <div className="flex justify-between mb-2">
-                        <span className="text-sm text-gray-600 dark:text-gray-400">Completed</span>
+                        <span className="text-sm text-muted-foreground">Completed</span>
                         <span className="text-sm font-medium">{completed} of {total} ({Math.round(completedPercent)}%)</span>
                       </div>
-                      <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                      <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
                         <div 
                           className="h-full bg-green-500 rounded-full"
                           style={{ width: `${completedPercent}%` }}
@@ -881,10 +881,10 @@ export default function Strategy() {
                     
                     <div>
                       <div className="flex justify-between mb-2">
-                        <span className="text-sm text-gray-600 dark:text-gray-400">In Progress</span>
+                        <span className="text-sm text-muted-foreground">In Progress</span>
                         <span className="text-sm font-medium">{inProgress} of {total} ({Math.round(inProgressPercent)}%)</span>
                       </div>
-                      <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                      <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
                         <div 
                           className="h-full bg-blue-500 rounded-full"
                           style={{ width: `${inProgressPercent}%` }}
@@ -894,12 +894,12 @@ export default function Strategy() {
                     
                     <div>
                       <div className="flex justify-between mb-2">
-                        <span className="text-sm text-gray-600 dark:text-gray-400">Planned</span>
+                        <span className="text-sm text-muted-foreground">Planned</span>
                         <span className="text-sm font-medium">{planned} of {total} ({Math.round(plannedPercent)}%)</span>
                       </div>
-                      <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                      <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
                         <div 
-                          className="h-full bg-gray-500 rounded-full"
+                          className="h-full bg-muted-foreground rounded-full"
                           style={{ width: `${plannedPercent}%` }}
                         ></div>
                       </div>
@@ -910,8 +910,8 @@ export default function Strategy() {
               
               {initiatives.length === 0 && (
                 <div className="text-center py-4">
-                  <AlertCircle className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-                  <p className="text-gray-500 dark:text-gray-400">No initiatives yet</p>
+                  <AlertCircle className="w-8 h-8 text-muted-foreground/60 mx-auto mb-2" />
+                  <p className="text-muted-foreground">No initiatives yet</p>
                   <button
                     onClick={() => {
                       setActiveTab('initiatives');
@@ -927,7 +927,7 @@ export default function Strategy() {
           </div>
           
           <div>
-            <h3 className="text-md font-medium text-gray-700 mb-4">SWOT Analysis Summary</h3>
+            <h3 className="text-md font-medium text-foreground mb-4">SWOT Analysis Summary</h3>
             
             <div className="space-y-4">
               {/* Calculate stats from actual data */}
@@ -965,10 +965,10 @@ export default function Strategy() {
                     {aiGenerated > 0 && (
                       <div>
                         <div className="flex justify-between mb-2">
-                          <span className="text-sm text-gray-600 dark:text-gray-400">AI-Generated Insights</span>
+                          <span className="text-sm text-muted-foreground">AI-Generated Insights</span>
                           <span className="text-sm font-medium">{aiGenerated} of {totalItems} ({Math.round(aiPercent)}%)</span>
                         </div>
-                        <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
                           <div 
                             className="h-full bg-purple-500 rounded-full"
                             style={{ width: `${aiPercent}%` }}

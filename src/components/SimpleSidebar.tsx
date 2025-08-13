@@ -276,7 +276,7 @@ export function SimpleSidebar({ children }: SimpleSidebarProps) {
       {/* Main Content - Shift to accommodate open side panels on large screens */}
       <div
         className={cn(
-          "flex-1 bg-background transition-[margin] duration-300",
+          "flex-1 bg-background transition-[margin] duration-300 pt-14",
           // Reserve space for chat on large screens
           isChatOpen && chatPosition === 'right' ? 'lg:mr-96' : '',
           isChatOpen && chatPosition === 'left' ? 'lg:ml-96' : '',

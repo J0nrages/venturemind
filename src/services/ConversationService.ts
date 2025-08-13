@@ -12,6 +12,42 @@ export interface ConversationMessage {
   document_updates: string[];
   context_confidence: number;
   created_at: string;
+  // Threading fields
+  thread_id?: string;
+  parent_message_id?: string;
+  reply_to_message_id?: string;
+  branch_context?: string;
+  quoted_text?: string;
+  thread_title?: string;
+  thread_title_status?: 'pending' | 'processing' | 'completed' | 'failed';
+  thread_summary?: string;
+  summarization_job_id?: string;
+  message_order?: number;
+  archived_at?: string;
+  archived_by?: string;
+}
+
+export interface ConversationThread {
+  id: string;
+  user_id: string;
+  root_message_id: string;
+  title: string;
+  summary?: string;
+  status: 'active' | 'archived' | 'merged';
+  participant_count: number;
+  message_count: number;
+  last_activity_at: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ThreadParticipant {
+  id: string;
+  thread_id: string;
+  user_id: string;
+  role: 'owner' | 'participant' | 'viewer';
+  joined_at: string;
+  last_read_at: string;
 }
 
 export interface AIProcessingResult {
@@ -470,6 +506,247 @@ export class ConversationService {
 
     } catch (error) {
       console.error('Error tracking conversation metrics:', error);
+    }
+  }
+
+  // ===== THREADING & BRANCHING METHODS =====
+
+  // Archive a message (soft delete)
+  static async archiveMessage(messageId: string, userId: string): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from('conversation_messages')
+        .update({
+          archived_at: new Date().toISOString(),
+          archived_by: userId
+        })
+        .eq('id', messageId)
+        .eq('user_id', userId); // Security: only archive own messages
+
+      return !error;
+    } catch (error) {
+      console.error('Error archiving message:', error);
+      return false;
+    }
+  }
+
+  // Restore archived message
+  static async restoreMessage(messageId: string, userId: string): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from('conversation_messages')
+        .update({
+          archived_at: null,
+          archived_by: null
+        })
+        .eq('id', messageId)
+        .eq('user_id', userId);
+
+      return !error;
+    } catch (error) {
+      console.error('Error restoring message:', error);
+      return false;
+    }
+  }
+
+  // Create reply to specific message
+  static async createReply(
+    replyToMessageId: string,
+    content: string,
+    userId: string,
+    quotedText?: string
+  ): Promise<ConversationMessage | null> {
+    try {
+      // Get the message being replied to for thread context
+      const { data: parentMessage } = await supabase
+        .from('conversation_messages')
+        .select('thread_id, user_id')
+        .eq('id', replyToMessageId)
+        .single();
+
+      if (!parentMessage) {
+        throw new Error('Parent message not found');
+      }
+
+      const replyMessage: Omit<ConversationMessage, 'id' | 'created_at'> = {
+        user_id: userId,
+        content,
+        sender: 'user',
+        document_updates: [],
+        context_confidence: 0,
+        thread_id: parentMessage.thread_id,
+        reply_to_message_id: replyToMessageId,
+        quoted_text: quotedText
+      };
+
+      return await this.saveMessage(replyMessage);
+    } catch (error) {
+      console.error('Error creating reply:', error);
+      return null;
+    }
+  }
+
+  // Create branch from selected text
+  static async createBranch(
+    parentMessageId: string,
+    selectedText: string,
+    initialMessage: string,
+    userId: string
+  ): Promise<{ message: ConversationMessage; jobId: string } | null> {
+    try {
+      const newThreadId = crypto.randomUUID();
+      const jobId = crypto.randomUUID();
+
+      const branchMessage: Omit<ConversationMessage, 'id' | 'created_at'> = {
+        user_id: userId,
+        content: initialMessage,
+        sender: 'user',
+        document_updates: [],
+        context_confidence: 0,
+        thread_id: newThreadId,
+        parent_message_id: parentMessageId,
+        branch_context: selectedText,
+        thread_title: 'Analyzing context...',
+        thread_title_status: 'pending',
+        summarization_job_id: jobId,
+        message_order: 0
+      };
+
+      const message = await this.saveMessage(branchMessage);
+
+      // Queue summarization job using existing Redis infrastructure
+      await this.queueThreadSummarization(jobId, {
+        messageId: message.id,
+        threadId: newThreadId,
+        selectedText,
+        initialMessage,
+        parentMessageId,
+        userId
+      });
+
+      return { message, jobId };
+    } catch (error) {
+      console.error('Error creating branch:', error);
+      return null;
+    }
+  }
+
+  // Queue thread summarization job
+  private static async queueThreadSummarization(
+    jobId: string,
+    context: {
+      messageId: string;
+      threadId: string;
+      selectedText: string;
+      initialMessage: string;
+      parentMessageId: string;
+      userId: string;
+    }
+  ): Promise<void> {
+    try {
+      // Use the new threading API
+      const { threadingApi } = await import('../lib/api');
+      
+      const response = await threadingApi.queueSummarization({
+        jobId,
+        type: 'thread_summarization',
+        context
+      });
+
+      if (!response.data?.success) {
+        throw new Error('Failed to queue summarization job');
+      }
+    } catch (error) {
+      console.error('Error queuing summarization:', error);
+      // Mark job as failed
+      await this.markSummarizationFailed(context.messageId);
+    }
+  }
+
+  // Mark summarization as failed
+  private static async markSummarizationFailed(messageId: string): Promise<void> {
+    try {
+      await supabase
+        .from('conversation_messages')
+        .update({
+          thread_title_status: 'failed',
+          thread_title: 'Discussion' // Fallback title
+        })
+        .eq('id', messageId);
+    } catch (error) {
+      console.error('Error marking summarization as failed:', error);
+    }
+  }
+
+  // Get thread messages
+  static async getThreadMessages(
+    threadId: string,
+    userId: string,
+    includeArchived = false
+  ): Promise<ConversationMessage[]> {
+    try {
+      let query = supabase
+        .from('conversation_messages')
+        .select('*')
+        .eq('thread_id', threadId)
+        .eq('user_id', userId)
+        .order('message_order', { ascending: true });
+
+      if (!includeArchived) {
+        query = query.is('archived_at', null);
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Error getting thread messages:', error);
+      return [];
+    }
+  }
+
+  // Get conversation threads
+  static async getConversationThreads(
+    userId: string,
+    limit = 20
+  ): Promise<ConversationThread[]> {
+    try {
+      const { data, error } = await supabase
+        .from('conversation_threads')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('status', 'active')
+        .order('last_activity_at', { ascending: false })
+        .limit(limit);
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Error getting conversation threads:', error);
+      return [];
+    }
+  }
+
+  // Update thread title after summarization
+  static async updateThreadTitleFromSummarization(
+    messageId: string,
+    title: string,
+    summary?: string
+  ): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from('conversation_messages')
+        .update({
+          thread_title: title,
+          thread_summary: summary,
+          thread_title_status: 'completed'
+        })
+        .eq('id', messageId);
+
+      return !error;
+    } catch (error) {
+      console.error('Error updating thread title:', error);
+      return false;
     }
   }
 
