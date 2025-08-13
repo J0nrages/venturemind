@@ -33,59 +33,44 @@ const MetricCard: React.FC<MetricCardProps> = ({
       onHoverStart={() => setIsHovered(true)}
       onHoverEnd={() => setIsHovered(false)}
     >
-      <div className={cn(
-        "glass-card glass-card-hover rounded-2xl p-6 relative overflow-hidden group cursor-pointer",
-        "border border-white/10"
-      )}>
-        <motion.div 
-          className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-          style={{
-            background: `radial-gradient(circle at ${isHovered ? '50%' : '0%'} 50%, ${color}20, transparent)`,
-          }}
-        />
-        
-        <div className="relative z-10">
-          <div className="flex items-start justify-between mb-4">
-            <div className={cn(
-              "p-3 rounded-xl glass transition-all duration-300",
-              "group-hover:scale-110 group-hover:rotate-3"
-            )}>
-              <Icon className="w-5 h-5 text-white" />
-            </div>
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-white/60 hover:text-white">
-              <MoreVertical className="h-4 w-4" />
-            </Button>
+      <Card className="p-6 hover:shadow-lg transition-all duration-200">
+        <div className="flex items-start justify-between mb-4">
+          <div className="p-3 rounded-xl bg-gray-100 dark:bg-gray-800">
+            <Icon className="w-5 h-5" style={{ color }} />
           </div>
-          
-          <div className="space-y-2">
-            <p className="text-sm text-white/60 font-medium">{title}</p>
-            <div className="flex items-baseline gap-2">
-              <motion.p 
-                className="text-3xl font-bold text-white"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: delay + 0.2 }}
+          <Button variant="ghost" size="icon" className="h-8 w-8 -mt-1 -mr-2">
+            <MoreVertical className="h-4 w-4" />
+          </Button>
+        </div>
+        
+        <div className="space-y-2">
+          <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">{title}</p>
+          <div className="flex items-baseline gap-2">
+            <motion.p 
+              className="text-3xl font-bold text-gray-900 dark:text-white"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: delay + 0.2 }}
+            >
+              {value}
+            </motion.p>
+            {change !== undefined && (
+              <motion.span 
+                className={cn(
+                  "flex items-center text-sm font-medium",
+                  change >= 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
+                )}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: delay + 0.3 }}
               >
-                {value}
-              </motion.p>
-              {change !== undefined && (
-                <motion.span 
-                  className={cn(
-                    "flex items-center text-sm font-medium",
-                    change >= 0 ? "text-green-400" : "text-red-400"
-                  )}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: delay + 0.3 }}
-                >
-                  {change >= 0 ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownRight className="w-4 h-4" />}
-                  {Math.abs(change)}%
-                </motion.span>
-              )}
-            </div>
+                {change >= 0 ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownRight className="w-4 h-4" />}
+                {Math.abs(change)}%
+              </motion.span>
+            )}
           </div>
         </div>
-      </div>
+      </Card>
     </motion.div>
   );
 };
@@ -102,34 +87,35 @@ const ProgressCard: React.FC<ProgressCardProps> = ({ title, metrics, delay = 0 }
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.5, delay }}
-      className="glass-card rounded-2xl p-6 border border-white/10"
     >
-      <h3 className="text-lg font-semibold text-white mb-6">{title}</h3>
-      <div className="space-y-4">
-        {metrics.map((metric, index) => (
-          <motion.div 
-            key={metric.label}
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: delay + 0.1 * (index + 1) }}
-            className="space-y-2"
-          >
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-white/70">{metric.label}</span>
-              <span className="text-sm font-semibold text-white">{metric.value}%</span>
-            </div>
-            <div className="relative h-2 bg-white/10 rounded-full overflow-hidden">
-              <motion.div
-                className="absolute h-full rounded-full"
-                style={{ background: metric.color }}
-                initial={{ width: 0 }}
-                animate={{ width: `${metric.value}%` }}
-                transition={{ duration: 1, delay: delay + 0.2 + 0.1 * index }}
-              />
-            </div>
-          </motion.div>
-        ))}
-      </div>
+      <Card className="p-6">
+        <h3 className="text-lg font-semibold mb-6">{title}</h3>
+        <div className="space-y-4">
+          {metrics.map((metric, index) => (
+            <motion.div 
+              key={metric.label}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: delay + 0.1 * (index + 1) }}
+              className="space-y-2"
+            >
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-muted-foreground">{metric.label}</span>
+                <span className="text-sm font-semibold">{metric.value}%</span>
+              </div>
+              <div className="relative h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                <motion.div
+                  className="absolute h-full rounded-full"
+                  style={{ background: metric.color }}
+                  initial={{ width: 0 }}
+                  animate={{ width: `${metric.value}%` }}
+                  transition={{ duration: 1, delay: delay + 0.2 + 0.1 * index }}
+                />
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </Card>
     </motion.div>
   );
 };
@@ -159,7 +145,7 @@ const ModernDashboard: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen p-8 text-white">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-8">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -168,14 +154,14 @@ const ModernDashboard: React.FC = () => {
         {/* Header */}
         <div className="mb-8">
           <motion.h1 
-            className="text-4xl font-bold mb-2 gradient-text"
+            className="text-4xl font-bold mb-2 text-gray-900 dark:text-white"
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
           >
             Boltdev
           </motion.h1>
           <motion.p 
-            className="text-white/60"
+            className="text-gray-600 dark:text-gray-400"
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.1 }}
@@ -185,30 +171,28 @@ const ModernDashboard: React.FC = () => {
         </div>
 
         {/* Top Actions Bar */}
-        <motion.div 
-          className="glass rounded-2xl p-4 mb-8 flex items-center justify-between"
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
+          <Card className="p-4 mb-8">
+            <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Button 
-              variant="ghost" 
-              className="text-white/80 hover:text-white hover:bg-white/10"
+              variant="ghost"
               onClick={() => setSelectedPeriod('This Month')}
             >
               This Month
             </Button>
             <Button 
-              variant="ghost" 
-              className="text-white/80 hover:text-white hover:bg-white/10"
+              variant="ghost"
               onClick={() => setSelectedPeriod('This Quarter')}
             >
               This Quarter
             </Button>
             <Button 
-              variant="ghost" 
-              className="text-white/80 hover:text-white hover:bg-white/10"
+              variant="ghost"
               onClick={() => setSelectedPeriod('This Year')}
             >
               This Year
@@ -216,29 +200,27 @@ const ModernDashboard: React.FC = () => {
           </div>
           
           <div className="flex items-center gap-3">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+            <Button
+              variant={showAI ? "secondary" : "outline"}
+              size="sm"
               onClick={() => setShowAI(!showAI)}
-              className={cn(
-                "px-4 py-2 rounded-xl flex items-center gap-2 transition-all",
-                "glass-hover border border-white/20",
-                showAI && "bg-white/20"
-              )}
+              className="gap-2"
             >
               <Sparkles className="w-4 h-4" />
-              <span className="text-sm font-medium">AI Insights</span>
-            </motion.button>
+              AI Insights
+            </Button>
             
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 transition-all flex items-center gap-2"
+            <Button
+              variant="secondary"
+              size="sm"
+              className="gap-2"
             >
               <Plus className="w-4 h-4" />
-              <span className="text-sm font-medium">Add Widget</span>
-            </motion.button>
+              Add Widget
+            </Button>
           </div>
+            </div>
+          </Card>
         </motion.div>
 
         {/* AI Assistant Panel */}
@@ -250,27 +232,27 @@ const ModernDashboard: React.FC = () => {
               exit={{ opacity: 0, height: 0, marginBottom: 0 }}
               className="overflow-hidden"
             >
-              <div className="gradient-border rounded-2xl p-6">
+              <Card className="p-6 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 border-purple-200 dark:border-purple-900">
                 <div className="flex items-start gap-4">
-                  <div className="p-3 rounded-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20">
-                    <Brain className="w-6 h-6 text-white" />
+                  <div className="p-3 rounded-lg bg-purple-100 dark:bg-purple-900/50">
+                    <Brain className="w-6 h-6 text-purple-600 dark:text-purple-400" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-lg font-semibold mb-2">AI Orchestrator Active</h3>
-                    <p className="text-white/70 mb-4">
+                    <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">AI Orchestrator Active</h3>
+                    <p className="text-gray-600 dark:text-gray-400 mb-4">
                       Your AI assistant is analyzing business metrics and preparing strategic recommendations.
                     </p>
                     <div className="flex items-center gap-4">
-                      <Button className="bg-white/10 hover:bg-white/20 text-white border-0">
+                      <Button variant="default" size="sm">
                         View Insights
                       </Button>
-                      <Button variant="ghost" className="text-white/70 hover:text-white">
+                      <Button variant="outline" size="sm">
                         Configure AI
                       </Button>
                     </div>
                   </div>
                 </div>
-              </div>
+              </Card>
             </motion.div>
           )}
         </AnimatePresence>
@@ -294,11 +276,12 @@ const ModernDashboard: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.5 }}
-            className="lg:col-span-2 glass-card rounded-2xl p-6 border border-white/10"
+            className="lg:col-span-2"
           >
+            <Card className="p-6">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-white">Strategic Initiatives</h3>
-              <Button variant="ghost" size="sm" className="text-white/60 hover:text-white">
+              <h3 className="text-lg font-semibold">Strategic Initiatives</h3>
+              <Button variant="ghost" size="sm">
                 View All <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
             </div>
@@ -311,26 +294,27 @@ const ModernDashboard: React.FC = () => {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.6 + index * 0.1 }}
                   whileHover={{ x: 4 }}
-                  className="glass rounded-xl p-4 border border-white/5 hover:border-white/20 transition-all cursor-pointer group"
+                  className="rounded-lg p-4 border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 bg-white dark:bg-gray-900 transition-all cursor-pointer group"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className={cn(
-                        "p-2 rounded-lg glass transition-all duration-300",
+                        "p-2 rounded-lg bg-gray-100 dark:bg-gray-800 transition-all duration-300",
                         "group-hover:scale-110"
                       )}>
-                        <initiative.icon className="w-4 h-4 text-white" />
+                        <initiative.icon className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                       </div>
                       <div>
-                        <p className="font-medium text-white">{initiative.title}</p>
-                        <p className="text-sm text-white/60">{initiative.status}</p>
+                        <p className="font-medium">{initiative.title}</p>
+                        <p className="text-sm text-muted-foreground">{initiative.status}</p>
                       </div>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-white/40 group-hover:text-white/80 transition-colors" />
+                    <ChevronRight className="w-5 h-5 text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors" />
                   </div>
                 </motion.div>
               ))}
             </div>
+            </Card>
           </motion.div>
         </div>
 
@@ -340,20 +324,22 @@ const ModernDashboard: React.FC = () => {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.8 }}
-            className="glass-card rounded-2xl p-6 border border-white/10"
           >
-            <h3 className="text-lg font-semibold text-white mb-4">Strengths</h3>
-            <p className="text-white/60">No items yet</p>
+            <Card className="p-6">
+              <h3 className="text-lg font-semibold mb-4">Strengths</h3>
+              <p className="text-muted-foreground">No items yet</p>
+            </Card>
           </motion.div>
           
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.9 }}
-            className="glass-card rounded-2xl p-6 border border-white/10"
           >
-            <h3 className="text-lg font-semibold text-white mb-4">Opportunities</h3>
-            <p className="text-white/60">No items yet</p>
+            <Card className="p-6">
+              <h3 className="text-lg font-semibold mb-4">Opportunities</h3>
+              <p className="text-muted-foreground">No items yet</p>
+            </Card>
           </motion.div>
         </div>
       </motion.div>

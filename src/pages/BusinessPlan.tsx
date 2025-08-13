@@ -132,12 +132,8 @@ export default function BusinessPlan() {
   const hasCustomerData = liveMetrics?.customers.hasData || false;
   const hasPerformanceData = liveMetrics?.performance.hasData || false;
 
-  // Adjust main content based on chat sidebar position and state
-  const mainContentClass = `w-full px-4 lg:px-6 space-y-6 lg:space-y-8 transition-all duration-300 ${
-    isChatOpen ? 
-      (chatPosition === 'left' ? 'lg:ml-80' : 'lg:mr-80') : 
-      'max-w-7xl mx-auto'
-  }`;
+  // Main content class
+  const mainContentClass = `w-full px-4 lg:px-6 space-y-6 lg:space-y-8 transition-all duration-300 max-w-7xl mx-auto`;
 
   const DataStatusIndicator = ({ hasData, label }: { hasData: boolean; label: string }) => (
     <div className={`flex items-center gap-1 text-xs ${hasData ? 'text-green-600' : 'text-gray-400'}`}>
@@ -172,9 +168,9 @@ export default function BusinessPlan() {
         </div>
 
         <div className="mt-8 lg:mt-16">
-          <div className={`grid gap-4 lg:gap-6 ${isChatOpen ? 'grid-cols-1 xl:grid-cols-12' : 'grid-cols-1 lg:grid-cols-12'}`}>
+          <div className="grid gap-4 lg:gap-6 grid-cols-1 lg:grid-cols-12">
             {/* Revenue & Growth */}
-            <div className={`${isChatOpen ? 'xl:col-span-4' : 'lg:col-span-4'} space-y-4 lg:space-y-6`}>
+            <div className="lg:col-span-4 space-y-4 lg:space-y-6">
               <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
                 <div className="flex justify-between items-start mb-2">
                   <h3 className="text-lg font-semibold text-gray-800">Revenue</h3>
@@ -248,7 +244,7 @@ export default function BusinessPlan() {
             </div>
 
             {/* Product Metrics */}
-            <div className={`${isChatOpen ? 'xl:col-span-4' : 'lg:col-span-4'} space-y-4 lg:space-y-6`}>
+            <div className="lg:col-span-4 space-y-4 lg:space-y-6">
               <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
                 <div className="flex justify-between items-start mb-2">
                   <h3 className="text-lg font-medium text-gray-800">Key Metrics</h3>
@@ -325,8 +321,8 @@ export default function BusinessPlan() {
             </div>
 
             {/* Strategy & Operations */}
-            <div className={`${isChatOpen ? 'xl:col-span-4' : 'lg:col-span-4'} space-y-4 lg:space-y-6`}>
-              <div className={`grid gap-2 lg:gap-3 ${isChatOpen ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-2'}`}>
+            <div className="lg:col-span-4 space-y-4 lg:space-y-6">
+              <div className="grid gap-2 lg:gap-3 grid-cols-2">
                 {['strengths', 'weaknesses', 'opportunities', 'threats'].map((type) => {
                   const items = swotByCategory[type as keyof typeof swotByCategory] || [];
                   const colors = {

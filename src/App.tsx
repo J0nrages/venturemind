@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import BusinessPlan from './pages/BusinessPlan';
 import SwotAnalysis from './pages/SwotAnalysis.tsx';
-import { ModernLayout } from './components/ModernSidebar';
+import { SimpleSidebar } from './components/SimpleSidebar';
 import ProformaPage from './pages/ProformaPage.tsx';
 import DocumentMemory from './pages/DocumentMemory.tsx';
 import Dashboard from './pages/Dashboard.tsx';
@@ -35,11 +35,11 @@ function AppContent() {
               <Route
                 path="/"
                 element={
-                  <ModernLayout>
+                  <SimpleSidebar>
                     <div className="p-6">
                       <BusinessPlan />
                     </div>
-                  </ModernLayout>
+                  </SimpleSidebar>
                 }
               />
 
@@ -47,11 +47,11 @@ function AppContent() {
             <Route
               path="/dashboard"
               element={
-                <ModernLayout>
+                <SimpleSidebar>
                   <div className="p-6">
                     <Dashboard />
                   </div>
-                </ModernLayout>
+                </SimpleSidebar>
               }
             />
 
@@ -59,9 +59,9 @@ function AppContent() {
             <Route
               path="/document-memory"
               element={
-                <ModernLayout>
+                <SimpleSidebar>
                   <DocumentMemory />
-                </ModernLayout>
+                </SimpleSidebar>
               }
             />
 
@@ -69,11 +69,11 @@ function AppContent() {
             <Route
               path="/proforma/*"
               element={
-                <ModernLayout>
+                <SimpleSidebar>
                   <div className="p-6">
                     <ProformaPage />
                   </div>
-                </ModernLayout>
+                </SimpleSidebar>
               }
             />
 
@@ -81,11 +81,11 @@ function AppContent() {
             <Route
               path="/integrations"
               element={
-                <ModernLayout>
+                <SimpleSidebar>
                   <div className="p-6">
                     <Integrations />
                   </div>
-                </ModernLayout>
+                </SimpleSidebar>
               }
             />
 
@@ -93,11 +93,11 @@ function AppContent() {
             <Route
               path="/ai-processing"
               element={
-                <ModernLayout>
+                <SimpleSidebar>
                   <div className="p-6">
                     <AIProcessing />
                   </div>
-                </ModernLayout>
+                </SimpleSidebar>
               }
             />
 
@@ -105,11 +105,11 @@ function AppContent() {
             <Route
               path="/documents"
               element={
-                <ModernLayout>
+                <SimpleSidebar>
                   <div className="p-6">
                     <Documents />
                   </div>
-                </ModernLayout>
+                </SimpleSidebar>
               }
             />
 
@@ -117,11 +117,11 @@ function AppContent() {
             <Route
               path="/customers"
               element={
-                <ModernLayout>
+                <SimpleSidebar>
                   <div className="p-6">
                     <Customers />
                   </div>
-                </ModernLayout>
+                </SimpleSidebar>
               }
             />
 
@@ -129,11 +129,11 @@ function AppContent() {
             <Route
               path="/metrics"
               element={
-                <ModernLayout>
+                <SimpleSidebar>
                   <div className="p-6">
                     <Metrics />
                   </div>
-                </ModernLayout>
+                </SimpleSidebar>
               }
             />
 
@@ -141,11 +141,11 @@ function AppContent() {
             <Route
               path="/strategy"
               element={
-                <ModernLayout>
+                <SimpleSidebar>
                   <div className="p-6">
                     <Strategy />
                   </div>
-                </ModernLayout>
+                </SimpleSidebar>
               }
             />
 
@@ -153,11 +153,11 @@ function AppContent() {
             <Route
               path="/settings"
               element={
-                <ModernLayout>
+                <SimpleSidebar>
                   <div className="p-6">
                     <Settings />
                   </div>
-                </ModernLayout>
+                </SimpleSidebar>
               }
             />
 
@@ -165,11 +165,11 @@ function AppContent() {
             <Route
               path="/swot/:type"
               element={
-                <ModernLayout>
+                <SimpleSidebar>
                   <div className="p-6">
                     <SwotAnalysis />
                   </div>
-                </ModernLayout>
+                </SimpleSidebar>
               }
             />
           </Route>
