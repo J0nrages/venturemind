@@ -58,11 +58,24 @@ export class ConversationService {
     documents: any[],
     conversationHistory?: any[]
   ): Promise<AIProcessingResult> {
+    console.log('🚀 ConversationService.processUserMessage called:', {
+      userId,
+      messageLength: message.length,
+      documentsCount: documents.length,
+      hasHistory: !!conversationHistory,
+      timestamp: new Date().toISOString()
+    });
+
     try {
       // Initialize Gemini service
+      console.log('🔑 Initializing Gemini service for user:', userId);
       const hasGeminiKey = await GeminiService.initialize(userId);
       
-      console.log('Gemini initialization result:', hasGeminiKey);
+      console.log('🔑 Gemini initialization result:', {
+        hasGeminiKey,
+        userId,
+        timestamp: new Date().toISOString()
+      });
       
       // Get conversation history for context
       const history = conversationHistory || await this.getConversationHistory(userId, 10);

@@ -33,7 +33,7 @@ const MetricCard: React.FC<MetricCardProps> = ({
       onHoverStart={() => setIsHovered(true)}
       onHoverEnd={() => setIsHovered(false)}
     >
-      <Card className="p-6 hover:shadow-xl transition-all duration-200">
+      <Card className="p-6 bg-card/80 backdrop-blur-xl border border-border/50 hover:shadow-xl transition-all duration-200">
         <div className="flex items-start justify-between mb-4">
           <div className="p-3 rounded-xl bg-primary/10 backdrop-blur-sm">
             <Icon className="w-5 h-5 text-primary" />
@@ -44,10 +44,10 @@ const MetricCard: React.FC<MetricCardProps> = ({
         </div>
         
         <div className="space-y-2">
-          <p className="text-sm text-gray-600 dark:text-gray-300 font-medium">{title}</p>
+          <p className="text-sm text-muted-foreground font-medium">{title}</p>
           <div className="flex items-baseline gap-2">
             <motion.p 
-              className="text-3xl font-bold text-gray-900 dark:text-white"
+              className="text-3xl font-bold text-foreground"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: delay + 0.2 }}
@@ -88,7 +88,7 @@ const ProgressCard: React.FC<ProgressCardProps> = ({ title, metrics, delay = 0 }
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.5, delay }}
     >
-      <Card className="p-6">
+      <Card className="p-6 bg-card/80 backdrop-blur-xl border border-border/50">
         <h3 className="text-lg font-semibold mb-6 text-foreground">{title}</h3>
         <div className="space-y-4">
           {metrics.map((metric, index) => (
@@ -103,7 +103,7 @@ const ProgressCard: React.FC<ProgressCardProps> = ({ title, metrics, delay = 0 }
                 <span className="text-sm text-muted-foreground">{metric.label}</span>
                 <span className="text-sm font-semibold text-foreground">{metric.value}%</span>
               </div>
-              <div className="relative h-2 bg-gray-200 dark:bg-gray-700/50 rounded-full overflow-hidden">
+              <div className="relative h-2 bg-muted rounded-full overflow-hidden">
                 <motion.div
                   className="absolute h-full rounded-full"
                   style={{ background: metric.color }}
@@ -145,7 +145,7 @@ const ModernDashboard: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100/50 to-gray-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 p-8">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-background p-8">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -154,14 +154,14 @@ const ModernDashboard: React.FC = () => {
         {/* Header */}
         <div className="mb-8">
           <motion.h1 
-            className="text-4xl font-bold mb-2 text-gray-900 dark:text-white"
+            className="text-4xl font-bold mb-2 text-foreground"
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
           >
             Boltdev
           </motion.h1>
           <motion.p 
-            className="text-gray-600 dark:text-gray-300"
+            className="text-muted-foreground"
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.1 }}
@@ -176,7 +176,7 @@ const ModernDashboard: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <Card className="p-4 mb-8">
+          <Card className="p-4 mb-8 bg-card/80 backdrop-blur-xl border border-border/50">
             <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Button 

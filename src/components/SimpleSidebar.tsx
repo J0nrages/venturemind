@@ -62,7 +62,7 @@ interface SimpleSidebarProps {
 export function SimpleSidebar({ children }: SimpleSidebarProps) {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
-  const { position: chatPosition } = useChat();
+  const { position: chatPosition, isOpen: isChatOpen } = useChat();
   
   // Position opposite to chat
   const navPosition = chatPosition === 'right' ? 'left' : 'right';
@@ -273,8 +273,18 @@ export function SimpleSidebar({ children }: SimpleSidebarProps) {
         )}
       </AnimatePresence>
 
-      {/* Main Content - Full width since sidebar is fixed */}
-      <div className="flex-1 bg-background">
+      {/* Main Content - Shift to accommodate open side panels on large screens */}
+      <div
+        className={cn(
+          "flex-1 bg-background transition-[margin] duration-300",
+          // Reserve space for chat on large screens
+          isChatOpen && chatPosition === 'right' ? 'lg:mr-96' : '',
+          isChatOpen && chatPosition === 'left' ? 'lg:ml-96' : '',
+          // Reserve space for nav when open on large screens
+          isOpen && navPosition === 'left' ? 'lg:ml-64' : '',
+          isOpen && navPosition === 'right' ? 'lg:mr-64' : ''
+        )}
+      >
         {children}
       </div>
 

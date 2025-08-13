@@ -2,12 +2,24 @@
 Agent execution and management endpoints.
 """
 
-from typing import List, Optional, Dict, Any
-from fastapi import APIRouter, HTTPException, BackgroundTasks
+from typing import List, Optional, Dict, Any, AsyncIterator
+from fastapi import APIRouter, HTTPException, BackgroundTasks, Depends
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from enum import Enum
 from datetime import datetime
+import json
+import logging
 
+from app.services.gemini_service import (
+    gemini_service, 
+    GenerationRequest, 
+    GenerationResponse, 
+    StreamingEvent
+)
+from app.core.auth import get_current_active_user, get_optional_user, User
+
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
@@ -120,3 +132,121 @@ async def approve_agent_action(run_id: str, approved: bool = True):
         "approved": approved,
         "message": "Action approved" if approved else "Action rejected"
     }
+
+
+@router.post("/generate", response_model=GenerationResponse)
+async def generate_content(
+    request: GenerationRequest,
+    current_user: Optional[User] = Depends(get_optional_user)
+):
+    """
+    Generate content using Gemini with agentic capabilities.
+    
+    Features:
+    - Tool calling and function execution
+    - Business context integration
+    - Rate limiting and security
+    - Streaming support available via /generate/stream
+    """
+    try:
+        # Set user context
+        if current_user:
+            request.user_id = current_user.id
+            
+            # Initialize Gemini for user
+            initialized = await gemini_service.initialize_for_user(current_user.id)
+            if not initialized:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Gemini service not available. Please configure your API key in settings."
+                )
+        else:
+            # Use system-wide Gemini if no user authentication
+            if not await gemini_service.initialize_for_user("system"):
+                raise HTTPException(
+                    status_code=503,
+                    detail="AI service temporarily unavailable"
+                )
+        
+        # Generate content
+        response = await gemini_service.generate_content(request)
+        
+        logger.info(
+            f"Generated content for user {request.user_id or 'anonymous'}: "
+            f"{len(response.content)} chars, {len(response.tools_used)} tools used"
+        )
+        
+        return response
+        
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Content generation failed: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail="Content generation failed"
+        )
+
+
+@router.post("/generate/stream")
+async def generate_content_stream(
+    request: GenerationRequest,
+    current_user: Optional[User] = Depends(get_optional_user)
+):
+    """
+    Generate content with streaming responses.
+    
+    Returns Server-Sent Events with real-time updates including:
+    - Thinking process
+    - Tool calls and execution
+    - Progressive content generation
+    - Final results
+    """
+    async def event_generator() -> AsyncIterator[str]:
+        try:
+            # Set user context
+            if current_user:
+                request.user_id = current_user.id
+                
+                # Initialize Gemini for user
+                initialized = await gemini_service.initialize_for_user(current_user.id)
+                if not initialized:
+                    yield f"data: {json.dumps({'type': 'error', 'data': {'error': 'Gemini service not available'}})}\n\n"
+                    return
+            else:
+                # Use system-wide Gemini if no user authentication
+                if not await gemini_service.initialize_for_user("system"):
+                    yield f"data: {json.dumps({'type': 'error', 'data': {'error': 'AI service temporarily unavailable'}})}\n\n"
+                    return
+            
+            # Stream content generation
+            async for event in gemini_service.generate_content_stream(request):
+                event_data = {
+                    "type": event.type,
+                    "data": event.data,
+                    "timestamp": event.timestamp.isoformat()
+                }
+                yield f"data: {json.dumps(event_data)}\n\n"
+            
+            # Send completion signal
+            yield "data: [DONE]\n\n"
+            
+        except Exception as e:
+            logger.error(f"Streaming generation failed: {e}", exc_info=True)
+            error_event = {
+                "type": "error",
+                "data": {"error": "Streaming generation failed"},
+                "timestamp": datetime.utcnow().isoformat()
+            }
+            yield f"data: {json.dumps(error_event)}\n\n"
+    
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Headers": "*",
+        }
+    )
