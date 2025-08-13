@@ -21,37 +21,37 @@ const formatCurrency = (value, isPercentage = false) => {
 
 // --- Reusable Components ---
 const SectionHeader = ({ title }: { title: string }) => (
-  <h2 className="text-2xl font-bold text-gray-900 dark:text-white mt-8 mb-4">{title}</h2>
+  <h2 className="text-2xl font-bold text-foreground mt-8 mb-4">{title}</h2>
 );
 
 const SubHeader = ({ title }: { title: string }) => (
-  <h3 className="text-lg font-semibold text-gray-700 mt-6 mb-3">{title}</h3>
+  <h3 className="text-lg font-semibold text-foreground mt-6 mb-3">{title}</h3>
 );
 
 const DataTable = ({ headers, rows }: { headers: string[], rows: any[] }) => (
   <div className="overflow-x-auto">
     <table className="min-w-full bg-card/80 backdrop-blur-xl border border-border/50 rounded-lg shadow-sm">
-      <thead className="bg-gray-50">
+      <thead className="bg-accent/30">
         <tr>
           {headers.map((header, index) => (
-            <th key={index} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+            <th key={index} className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               {header}
             </th>
           ))}
         </tr>
       </thead>
-      <tbody className="divide-y divide-gray-200">
+      <tbody className="divide-y divide-border/50">
         {rows.map((row, rowIndex) => (
-          <tr key={rowIndex} className={`hover:bg-gray-50 ${row.isSubtotal ? 'bg-gray-100' : ''}`}>
+          <tr key={rowIndex} className={`hover:bg-accent/30 ${row.isSubtotal ? 'bg-muted' : ''}`}>
             {headers.map((header, colIndex) => {
               const value = row[header];
               const cellClasses = [
                 "px-4 py-3 whitespace-nowrap text-sm",
-                colIndex === 0 ? "text-gray-900 dark:text-white font-medium" : "text-gray-600 dark:text-gray-400 text-right font-mono",
+                colIndex === 0 ? "text-foreground font-medium" : "text-muted-foreground text-right font-mono",
                 row.isBold ? "font-bold" : "",
-                row.isHeader ? "font-bold text-gray-900 dark:text-white bg-gray-100" : "",
-                row.isTopBorder ? "border-t border-gray-400" : "",
-                row.isDoubleTopBorder ? "border-t-2 border-gray-600" : "",
+                row.isHeader ? "font-bold text-foreground bg-accent/30" : "",
+                row.isTopBorder ? "border-t border-border/50" : "",
+                row.isDoubleTopBorder ? "border-t-2 border-border" : "",
                 row.isSpacer ? "pt-6" : ""
               ].join(" ");
 
@@ -670,8 +670,8 @@ export default function ProformaPage() {
     <div className="space-y-8">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Financial Proforma Model</h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1">Comprehensive financial modeling and projections</p>
+          <h1 className="text-2xl font-semibold text-foreground">Financial Proforma Model</h1>
+           <p className="text-muted-foreground mt-1">Comprehensive financial modeling and projections</p>
         </div>
         <button
           onClick={saveAssumptions}
@@ -691,7 +691,7 @@ export default function ProformaPage() {
             className={`py-2 px-1 border-b-2 font-medium text-sm ${
               activeTab === 'overview'
                 ? 'border-emerald-500 text-emerald-600'
-                : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 hover:border-gray-300'
+                : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border/50'
             }`}
           >
             <div className="flex items-center gap-2">
@@ -704,7 +704,7 @@ export default function ProformaPage() {
             className={`py-2 px-1 border-b-2 font-medium text-sm ${
               activeTab === 'statements'
                 ? 'border-emerald-500 text-emerald-600'
-                : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 hover:border-gray-300'
+                : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border/50'
             }`}
           >
             <div className="flex items-center gap-2">
@@ -717,7 +717,7 @@ export default function ProformaPage() {
             className={`py-2 px-1 border-b-2 font-medium text-sm ${
               activeTab === 'assumptions'
                 ? 'border-emerald-500 text-emerald-600'
-                : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 hover:border-gray-300'
+                : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border/50'
             }`}
           >
             <div className="flex items-center gap-2">
@@ -734,7 +734,7 @@ export default function ProformaPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
             <div className="bg-card/80 backdrop-blur-xl p-6 rounded-xl shadow-sm">
               <div className="flex items-center justify-between mb-2">
-                <p className="text-sm text-gray-500 dark:text-gray-400">Cash Balance</p>
+                <p className="text-sm text-muted-foreground">Cash Balance</p>
                 <Building2 className="w-5 h-5 text-emerald-600" />
               </div>
               <h3 className="text-2xl font-semibold">${metrics?.bankBalance?.toLocaleString() || '0'}</h3>
@@ -742,7 +742,7 @@ export default function ProformaPage() {
 
             <div className="bg-card/80 backdrop-blur-xl p-6 rounded-xl shadow-sm">
               <div className="flex items-center justify-between mb-2">
-                <p className="text-sm text-gray-500 dark:text-gray-400">Monthly Recurring Revenue</p>
+                <p className="text-sm text-muted-foreground">Monthly Recurring Revenue</p>
                 <DollarSign className="w-5 h-5 text-emerald-600" />
               </div>
               <h3 className="text-2xl font-semibold">${metrics?.currentMRR?.toLocaleString() || '0'}</h3>
@@ -750,7 +750,7 @@ export default function ProformaPage() {
 
             <div className="bg-card/80 backdrop-blur-xl p-6 rounded-xl shadow-sm">
               <div className="flex items-center justify-between mb-2">
-                <p className="text-sm text-gray-500 dark:text-gray-400">Total Customers</p>
+                <p className="text-sm text-muted-foreground">Total Customers</p>
                 <Users className="w-5 h-5 text-emerald-600" />
               </div>
               <h3 className="text-2xl font-semibold">{metrics?.customers?.toLocaleString() || '0'}</h3>
@@ -758,7 +758,7 @@ export default function ProformaPage() {
 
             <div className="bg-card/80 backdrop-blur-xl p-6 rounded-xl shadow-sm">
               <div className="flex items-center justify-between mb-2">
-                <p className="text-sm text-gray-500 dark:text-gray-400">Customer LTV</p>
+                <p className="text-sm text-muted-foreground">Customer LTV</p>
                 <Wallet className="w-5 h-5 text-emerald-600" />
               </div>
               <h3 className="text-2xl font-semibold">${metrics?.ltv?.toLocaleString() || '0'}</h3>
@@ -766,7 +766,7 @@ export default function ProformaPage() {
 
             <div className="bg-card/80 backdrop-blur-xl p-6 rounded-xl shadow-sm">
               <div className="flex items-center justify-between mb-2">
-                <p className="text-sm text-gray-500 dark:text-gray-400">LTV:CAC Ratio</p>
+                <p className="text-sm text-muted-foreground">LTV:CAC Ratio</p>
                 <TrendingUp className="w-5 h-5 text-emerald-600" />
               </div>
               <h3 className="text-2xl font-semibold">{metrics?.ltvCacRatio?.toFixed(1) || '0'}x</h3>
@@ -776,7 +776,7 @@ export default function ProformaPage() {
           {/* Charts */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="bg-card/80 backdrop-blur-xl p-6 rounded-xl shadow-sm">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">Revenue Growth</h2>
+              <h2 className="text-lg font-semibold text-foreground mb-6">Revenue Growth</h2>
               <div className="h-80">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={projections}>
@@ -808,7 +808,7 @@ export default function ProformaPage() {
             </div>
 
             <div className="bg-card/80 backdrop-blur-xl p-6 rounded-xl shadow-sm">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">Cash Flow Projection</h2>
+              <h2 className="text-lg font-semibold text-foreground mb-6">Cash Flow Projection</h2>
               <div className="h-80">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={projections}>
@@ -835,8 +835,8 @@ export default function ProformaPage() {
         <div className="space-y-8">
           <div className="bg-card/80 backdrop-blur-xl p-6 rounded-xl shadow-sm">
             <div className="mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Executive Summary</h2>
-              <div className="mt-4 prose prose-lg text-gray-600 dark:text-gray-400 max-w-none">
+              <h2 className="text-2xl font-bold text-foreground">Executive Summary</h2>
+              <div className="mt-4 prose prose-lg text-muted-foreground max-w-none">
                 <p>This document presents a 3-year financial projection for our AI-powered business platform. The model is based on our comprehensive business intelligence and document management capabilities.</p>
                 <ul className="list-disc pl-5 space-y-1">
                   <li><strong>Funding:</strong> Starting with ${(assumptions.initialBalance / 1000000).toFixed(1)}M in initial funding</li>
@@ -865,21 +865,21 @@ export default function ProformaPage() {
       {activeTab === 'assumptions' && (
         <div className="bg-card/80 backdrop-blur-xl rounded-xl shadow-sm p-6 space-y-8">
           <div>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Model Assumptions</h2>
+            <h2 className="text-xl font-semibold text-foreground mb-6">Model Assumptions</h2>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <div>
                 <h3 className="text-md font-medium mb-4">Initial Setup</h3>
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">Starting Funding</label>
+                    <label className="block text-sm text-muted-foreground mb-1">Starting Funding</label>
                     <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">$</span>
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
                       <input
                         type="number"
                         value={assumptions.initialBalance}
                         onChange={(e) => setAssumptions(prev => ({ ...prev, initialBalance: parseFloat(e.target.value) }))}
-                        className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg"
+                        className="w-full pl-8 pr-4 py-2 border border-border/50 rounded-lg bg-card/50 backdrop-blur-md"
                       />
                     </div>
                   </div>
@@ -892,36 +892,36 @@ export default function ProformaPage() {
                       <h4 className="font-medium">{product.name}</h4>
                       <div className="grid grid-cols-3 gap-4">
                         <div>
-                          <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">Price</label>
+                          <label className="block text-sm text-muted-foreground mb-1">Price</label>
                           <div className="relative">
-                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">$</span>
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
                             <input
                               type="number"
                               value={product.price}
                               onChange={(e) => handleProductChange(index, 'price', parseFloat(e.target.value))}
-                              className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg"
+                              className="w-full pl-8 pr-4 py-2 border border-border/50 rounded-lg bg-card/50 backdrop-blur-md"
                             />
                           </div>
                         </div>
                         <div>
-                          <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">Cost of Sales</label>
+                          <label className="block text-sm text-muted-foreground mb-1">Cost of Sales</label>
                           <div className="relative">
-                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">$</span>
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
                             <input
                               type="number"
                               value={product.costOfSales}
                               onChange={(e) => handleProductChange(index, 'costOfSales', parseFloat(e.target.value))}
-                              className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg"
+                              className="w-full pl-8 pr-4 py-2 border border-border/50 rounded-lg bg-card/50 backdrop-blur-md"
                             />
                           </div>
                         </div>
                         <div>
-                          <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">Current Customers</label>
+                          <label className="block text-sm text-muted-foreground mb-1">Current Customers</label>
                           <input
                             type="number"
                             value={product.customerCount}
                             onChange={(e) => handleProductChange(index, 'customerCount', parseInt(e.target.value))}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                             className="w-full px-4 py-2 border border-border/50 rounded-lg bg-card/50 backdrop-blur-md"
                           />
                         </div>
                       </div>
@@ -934,39 +934,39 @@ export default function ProformaPage() {
                 <h3 className="text-md font-medium mb-4">Growth Metrics</h3>
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">Monthly Growth Rate</label>
+                    <label className="block text-sm text-muted-foreground mb-1">Monthly Growth Rate</label>
                     <div className="relative">
                       <input
                         type="number"
                         value={assumptions.growth.monthlyGrowthRate}
                         onChange={(e) => handleNestedInputChange('growth', 'monthlyGrowthRate', 'rate', parseFloat(e.target.value))}
-                        className="w-full pr-8 pl-4 py-2 border border-gray-300 rounded-lg"
+                       className="w-full pr-8 pl-4 py-2 border border-border/50 rounded-lg bg-card/50 backdrop-blur-md"
                       />
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">%</span>
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">%</span>
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">Monthly Churn Rate</label>
+                    <label className="block text-sm text-muted-foreground mb-1">Monthly Churn Rate</label>
                     <div className="relative">
                       <input
                         type="number"
                         value={assumptions.growth.churnRate}
                         onChange={(e) => handleNestedInputChange('growth', 'churnRate', 'rate', parseFloat(e.target.value))}
-                        className="w-full pr-8 pl-4 py-2 border border-gray-300 rounded-lg"
+                       className="w-full pr-8 pl-4 py-2 border border-border/50 rounded-lg bg-card/50 backdrop-blur-md"
                       />
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">%</span>
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">%</span>
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">Net Revenue Expansion</label>
+                    <label className="block text-sm text-muted-foreground mb-1">Net Revenue Expansion</label>
                     <div className="relative">
                       <input
                         type="number"
                         value={assumptions.growth.expansionRevenue}
                         onChange={(e) => handleNestedInputChange('growth', 'expansionRevenue', 'rate', parseFloat(e.target.value))}
-                        className="w-full pr-8 pl-4 py-2 border border-gray-300 rounded-lg"
+                       className="w-full pr-8 pl-4 py-2 border border-border/50 rounded-lg bg-card/50 backdrop-blur-md"
                       />
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">%</span>
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">%</span>
                     </div>
                   </div>
                 </div>
@@ -974,38 +974,38 @@ export default function ProformaPage() {
                 <h3 className="text-md font-medium mb-4 mt-8">Cost Structure</h3>
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">Customer Acquisition Cost</label>
+                    <label className="block text-sm text-muted-foreground mb-1">Customer Acquisition Cost</label>
                     <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">$</span>
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
                       <input
                         type="number"
                         value={assumptions.costs.cac}
                         onChange={(e) => handleNestedInputChange('costs', 'cac', 'amount', parseFloat(e.target.value))}
-                        className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg"
+                        className="w-full pl-8 pr-4 py-2 border border-border/50 rounded-lg bg-card/50 backdrop-blur-md"
                       />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">Gross Margin Target</label>
+                    <label className="block text-sm text-muted-foreground mb-1">Gross Margin Target</label>
                     <div className="relative">
                       <input
                         type="number"
                         value={assumptions.costs.grossMargin}
                         onChange={(e) => handleNestedInputChange('costs', 'grossMargin', 'rate', parseFloat(e.target.value))}
-                        className="w-full pr-8 pl-4 py-2 border border-gray-300 rounded-lg"
+                       className="w-full pr-8 pl-4 py-2 border border-border/50 rounded-lg bg-card/50 backdrop-blur-md"
                       />
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">%</span>
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">%</span>
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">Monthly OpEx per Customer</label>
+                    <label className="block text-sm text-muted-foreground mb-1">Monthly OpEx per Customer</label>
                     <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">$</span>
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
                       <input
                         type="number"
                         value={assumptions.costs.opexPerCustomer}
                         onChange={(e) => handleNestedInputChange('costs', 'opexPerCustomer', 'amount', parseFloat(e.target.value))}
-                        className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg"
+                        className="w-full pl-8 pr-4 py-2 border border-border/50 rounded-lg bg-card/50 backdrop-blur-md"
                       />
                     </div>
                   </div>

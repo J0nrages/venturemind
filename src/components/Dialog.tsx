@@ -59,7 +59,7 @@ export default function Dialog() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 0.5 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black z-40"
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
             onClick={handleCancel}
           />
 
@@ -69,7 +69,7 @@ export default function Dialog() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
-            className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl p-6 shadow-xl z-50 max-w-md w-full"
+            className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-card/80 backdrop-blur-xl border border-border/50 rounded-xl p-6 shadow-xl z-50 max-w-md w-full"
             tabIndex={-1}
             role="dialog"
             aria-modal="true"
@@ -78,22 +78,22 @@ export default function Dialog() {
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center gap-3">
                 {renderIcon()}
-                <h3 className="text-lg font-semibold text-gray-800">
+                <h3 className="text-lg font-semibold text-foreground">
                   {options.title}
                 </h3>
               </div>
               <button
                 onClick={handleCancel}
-                className="p-1 rounded-full hover:bg-gray-100"
+                className="p-1 rounded-full hover:bg-accent/40"
                 aria-label="Close dialog"
               >
-                <X className="w-5 h-5 text-gray-500" />
+                <X className="w-5 h-5 text-muted-foreground" />
               </button>
             </div>
 
             {/* Content */}
             <div className="mb-6">
-              <p className="text-gray-600">{options.message}</p>
+              <p className="text-muted-foreground">{options.message}</p>
             </div>
 
             {/* Actions */}
@@ -101,7 +101,7 @@ export default function Dialog() {
               {options.type === 'confirm' && options.cancelText && (
                 <button
                   onClick={handleCancel}
-                  className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                  className="px-4 py-2 text-foreground bg-muted rounded-lg hover:bg-muted/80 transition-colors"
                 >
                   {options.cancelText}
                 </button>

@@ -246,7 +246,7 @@ export default function ModernChatSidebar({
               animate={{ opacity: 0.4 }}
               exit={{ opacity: 0 }}
               onClick={onToggle}
-              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 lg:hidden"
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 lg:hidden"
             />
 
             {/* Chat Sidebar */}

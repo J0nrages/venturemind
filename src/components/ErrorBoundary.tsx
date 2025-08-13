@@ -26,9 +26,9 @@ export default class ErrorBoundary extends Component<Props, State> {
   public render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-          <div className="bg-white p-8 rounded-xl shadow-lg max-w-lg w-full">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">Something went wrong</h2>
+        <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-background flex items-center justify-center p-4">
+          <div className="bg-card/80 backdrop-blur-xl border border-border/50 p-8 rounded-xl shadow-lg max-w-lg w-full">
+            <h2 className="text-2xl font-bold text-foreground mb-4">Something went wrong</h2>
             <p className="text-gray-600 mb-6">
               We apologize for the inconvenience. Please try refreshing the page or contact support if the problem persists.
             </p>

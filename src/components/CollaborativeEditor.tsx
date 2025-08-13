@@ -246,7 +246,7 @@ export default function CollaborativeEditor({
   const connectionStatus = getConnectionStatus();
 
   return (
-    <div className={`bg-white rounded-xl shadow-sm border border-gray-200 ${className}`}>
+    <div className={`bg-card/80 backdrop-blur-xl rounded-xl shadow-sm border border-border/50 ${className}`}>
       {/* Collaboration Header */}
       <div className="p-4 border-b border-gray-200 bg-gray-50">
         <div className="flex items-center justify-between">
@@ -448,7 +448,7 @@ export default function CollaborativeEditor({
                 {editHistory.map((change, index) => (
                   <div 
                     key={change.id} 
-                    className="flex items-center gap-2 p-2 bg-white rounded text-xs"
+                    className="flex items-center gap-2 p-2 bg-card/80 backdrop-blur-xl border border-border/50 rounded text-xs"
                   >
                     <div className={`w-2 h-2 rounded-full ${getUserColor(change.user_id)}`} />
                     <span className="font-medium">

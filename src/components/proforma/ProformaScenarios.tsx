@@ -157,7 +157,7 @@ export default function ProformaScenarios({ activeScenario, onScenarioChange }: 
   return (
     <div className="space-y-6">
       <div className="flex justify-between">
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Financial Scenarios</h2>
+        <h2 className="text-xl font-semibold text-foreground">Financial Scenarios</h2>
         <button
           onClick={() => setShowNewScenarioForm(true)}
           className="flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700"
@@ -173,28 +173,28 @@ export default function ProformaScenarios({ activeScenario, onScenarioChange }: 
           animate={{ opacity: 1, y: 0 }}
           className="bg-card/80 backdrop-blur-xl rounded-xl shadow-sm p-6 border border-border/50"
         >
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Create New Scenario</h3>
+        <h3 className="text-lg font-medium text-foreground mb-4">Create New Scenario</h3>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-foreground mb-1">
                 Scenario Name
               </label>
               <input
                 type="text"
                 value={newScenario.name}
                 onChange={(e) => setNewScenario({ ...newScenario, name: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+            className="w-full px-4 py-2 border border-border/50 rounded-lg bg-card/50 backdrop-blur-md focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 placeholder="e.g., Base Case 2025"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-foreground mb-1">
                 Description
               </label>
               <textarea
                 value={newScenario.description}
                 onChange={(e) => setNewScenario({ ...newScenario, description: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+            className="w-full px-4 py-2 border border-border/50 rounded-lg bg-card/50 backdrop-blur-md focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 rows={3}
                 placeholder="Describe your scenario assumptions and goals..."
               />
@@ -202,7 +202,7 @@ export default function ProformaScenarios({ activeScenario, onScenarioChange }: 
             <div className="flex justify-end gap-2">
               <button
                 onClick={() => setShowNewScenarioForm(false)}
-                className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
+          className="px-4 py-2 text-foreground hover:bg-accent/40 rounded-lg"
               >
                 Cancel
               </button>
@@ -221,8 +221,8 @@ export default function ProformaScenarios({ activeScenario, onScenarioChange }: 
       <div className="space-y-4">
         {scenarios.length === 0 ? (
           <div className="bg-card/80 backdrop-blur-xl rounded-xl shadow-sm p-8 text-center">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No Scenarios Yet</h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-4">
+        <h3 className="text-lg font-medium text-foreground mb-2">No Scenarios Yet</h3>
+        <p className="text-muted-foreground mb-4">
               Create your first financial scenario to start modeling your business projections.
             </p>
             <button
@@ -245,7 +245,7 @@ export default function ProformaScenarios({ activeScenario, onScenarioChange }: 
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                <h3 className="text-lg font-medium text-foreground flex items-center gap-2">
                     {scenario.name}
                     {scenario.is_active && (
                       <span className="text-sm px-2 py-1 bg-emerald-100 text-emerald-800 rounded-full">
@@ -253,15 +253,15 @@ export default function ProformaScenarios({ activeScenario, onScenarioChange }: 
                       </span>
                     )}
                   </h3>
-                  <p className="text-gray-600 dark:text-gray-400 mt-1">{scenario.description}</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                <p className="text-muted-foreground mt-1">{scenario.description}</p>
+                <p className="text-sm text-muted-foreground mt-2">
                     Created {new Date(scenario.created_at).toLocaleDateString()}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => deleteScenario(scenario)}
-                    className="p-2 text-gray-600 dark:text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg"
+                  className="p-2 text-muted-foreground hover:text-red-600 hover:bg-red-50 rounded-lg"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>

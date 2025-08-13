@@ -320,7 +320,7 @@ export default function AgenticAIChatOrchestrator({
             animate="open"
             exit="closed"
             className={`fixed top-0 ${position === 'left' ? 'left-0' : 'right-0'} 
-              h-full w-80 bg-white shadow-2xl z-50 flex flex-col overflow-hidden`}
+             h-full w-80 bg-card/80 backdrop-blur-xl border-l border-border/50 shadow-2xl z-50 flex flex-col overflow-hidden`}
           >
             {/* Enhanced Header */}
             <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-emerald-50 via-blue-50 to-purple-50">
@@ -408,7 +408,7 @@ export default function AgenticAIChatOrchestrator({
                         <div className={`max-w-[85%] px-3 py-2.5 rounded-2xl shadow-sm ${
                           message.sender === 'user'
                             ? 'bg-gradient-to-br from-emerald-500 to-blue-500 text-white ml-8'
-                            : 'bg-white border border-gray-200 text-gray-800 mr-8'
+                            : 'bg-card/80 border border-border/50 text-foreground mr-8'
                         }`}>
                           <div className="flex items-start gap-2">
                             {message.sender === 'ai' && (
@@ -479,7 +479,7 @@ export default function AgenticAIChatOrchestrator({
                         animate={{ opacity: 1 }}
                         className="flex justify-start"
                       >
-                        <div className="bg-white border border-gray-200 px-3 py-2.5 rounded-2xl shadow-sm mr-8 max-w-[85%]">
+                        <div className="bg-card/80 border border-border/50 backdrop-blur-xl px-3 py-2.5 rounded-2xl shadow-sm mr-8 max-w-[85%]">
                           <div className="flex items-center gap-3">
                             <Loader2 className="w-4 h-4 animate-spin text-emerald-600" />
                             <div>

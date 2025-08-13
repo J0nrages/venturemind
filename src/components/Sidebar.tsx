@@ -44,7 +44,7 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed top-6 left-4 z-30 p-2 rounded-lg bg-white dark:bg-gray-800 shadow-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+      className="fixed top-6 left-4 z-30 p-2 rounded-lg bg-card/80 backdrop-blur-xl border border-border/50 shadow-md hover:bg-card/90 transition-colors"
       >
         <Menu className="w-6 h-6 text-gray-600 dark:text-gray-300" />
       </button>
@@ -65,7 +65,7 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed top-0 left-0 h-full w-64 bg-white dark:bg-gray-800 shadow-xl z-40 p-4 transition-colors"
+             className="fixed top-0 left-0 h-full w-64 bg-card/80 backdrop-blur-xl border-r border-border/50 shadow-xl z-40 p-4 transition-colors"
             >
               <div className="flex justify-between items-center mb-8">
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white">DocuMind AI</h2>

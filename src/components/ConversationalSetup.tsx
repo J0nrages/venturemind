@@ -352,12 +352,12 @@ Continue the conversation based on the user's latest message. Update collected_d
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-blue-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-2xl bg-white rounded-2xl shadow-xl overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-background flex items-center justify-center p-4">
+      <div className="w-full max-w-2xl bg-card/80 backdrop-blur-xl border border-border/50 rounded-2xl shadow-xl overflow-hidden">
         {/* Header */}
         <div className="bg-gradient-to-r from-emerald-600 to-blue-600 p-6 text-white">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-white/20 rounded-full">
+            <div className="p-2 bg-card/50 backdrop-blur-xl rounded-full">
               <Building2 className="w-6 h-6" />
             </div>
             <div>
@@ -373,9 +373,9 @@ Continue the conversation based on the user's latest message. Update collected_d
                 <span>Progress</span>
                 <span>{8 - missingFields.length}/8 fields collected</span>
               </div>
-              <div className="w-full bg-white/20 rounded-full h-2">
+              <div className="w-full bg-muted rounded-full h-2">
                 <div 
-                  className="bg-white rounded-full h-2 transition-all duration-300"
+                  className="bg-primary rounded-full h-2 transition-all duration-300"
                   style={{ 
                     width: `${((8 - missingFields.length) / 8) * 100}%` 
                   }}

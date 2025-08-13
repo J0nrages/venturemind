@@ -20,15 +20,15 @@ export default function OnboardingCheck({ children, requiredData }: OnboardingCh
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="max-w-2xl mx-auto mt-8 p-6 bg-white rounded-xl shadow-sm"
+        className="max-w-2xl mx-auto mt-8 p-6 bg-card/80 backdrop-blur-xl border border-border/50 rounded-xl shadow-sm"
       >
         <div className="flex items-start gap-4">
           <div className="p-3 bg-amber-50 rounded-full">
             <AlertCircle className="w-6 h-6 text-amber-600" />
           </div>
           <div>
-            <h2 className="text-xl font-semibold text-gray-800">Complete Your Profile</h2>
-            <p className="mt-2 text-gray-600">
+            <h2 className="text-xl font-semibold text-foreground">Complete Your Profile</h2>
+            <p className="mt-2 text-muted-foreground">
               To access all features and start using the platform, please complete your business profile setup first.
             </p>
             <button
@@ -48,15 +48,15 @@ export default function OnboardingCheck({ children, requiredData }: OnboardingCh
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="max-w-2xl mx-auto mt-8 p-6 bg-white rounded-xl shadow-sm"
+        className="max-w-2xl mx-auto mt-8 p-6 bg-card/80 backdrop-blur-xl border border-border/50 rounded-xl shadow-sm"
       >
         <div className="flex items-start gap-4">
           <div className="p-3 bg-amber-50 rounded-full">
             <AlertCircle className="w-6 h-6 text-amber-600" />
           </div>
           <div>
-            <h2 className="text-xl font-semibold text-gray-800">Choose a Plan</h2>
-            <p className="mt-2 text-gray-600">
+            <h2 className="text-xl font-semibold text-foreground">Choose a Plan</h2>
+            <p className="mt-2 text-muted-foreground">
               Please select a subscription plan to continue using all features.
             </p>
             <button

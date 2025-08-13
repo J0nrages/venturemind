@@ -49,7 +49,7 @@ export default function PresenceIndicator({
 
   if (presence.length === 0) {
     return (
-      <div className={`flex items-center gap-2 text-gray-500 text-sm ${className}`}>
+      <div className={`flex items-center gap-2 text-muted-foreground text-sm ${className}`}>
         <User className="w-4 h-4" />
         <span>No active collaborators</span>
       </div>
@@ -110,7 +110,7 @@ export default function PresenceIndicator({
 
       {/* Detailed Status */}
       {showDetails && (
-        <div className="text-sm text-gray-600">
+        <div className="text-sm text-muted-foreground">
           <span>{presence.length} active</span>
           {presence.some(u => u.status === 'editing') && (
             <span className="ml-2 text-green-600">
@@ -122,7 +122,7 @@ export default function PresenceIndicator({
 
       {/* Status Summary */}
       {!showDetails && presence.length > 0 && (
-        <div className="text-xs text-gray-500">
+        <div className="text-xs text-muted-foreground">
           {presence.length} active
         </div>
       )}

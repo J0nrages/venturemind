@@ -495,7 +495,7 @@ export default function DocumentMemory() {
           
           {/* Search bar */}
           <div className="relative mt-3">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500 dark:text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <input
               type="text"
               value={searchTerm}
@@ -533,7 +533,7 @@ export default function DocumentMemory() {
             <div className="flex items-center justify-between mb-3">
               <button
                 onClick={() => setExpandedFolders(prev => ({ ...prev, templates: !prev.templates }))}
-                className="flex items-center gap-2 w-full text-left text-gray-600 dark:text-gray-400 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                className="flex items-center gap-2 w-full text-left text-muted-foreground hover:text-foreground"
               >
                 {expandedFolders.templates ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
                 <FolderOpen className="w-5 h-5 text-emerald-600" />
@@ -543,7 +543,7 @@ export default function DocumentMemory() {
               <div className="relative">
                 <button
                   onClick={() => setShowNewTemplateMenu(!showNewTemplateMenu)}
-                  className="p-1 text-gray-400 dark:text-gray-500 dark:text-gray-400 hover:text-emerald-600 transition-colors"
+                  className="p-1 text-muted-foreground hover:text-emerald-600 transition-colors"
                   title="Create from template"
                 >
                   <Plus className="w-4 h-4" />
@@ -551,7 +551,7 @@ export default function DocumentMemory() {
                 
                 {showNewTemplateMenu && (
                   <Card className="absolute right-0 mt-1 w-56 bg-card/90 backdrop-blur-xl rounded-md shadow-lg border-border/50 z-10">
-                    <div className="py-1 text-sm text-gray-600 dark:text-gray-400 dark:text-gray-400">
+                    <div className="py-1 text-sm text-muted-foreground">
                       <div className="px-3 py-2 font-medium border-b border-border/50">
                         Create from template
                       </div>
@@ -665,7 +665,7 @@ export default function DocumentMemory() {
           <div className="p-4 border-b border-border/50">
             <button
               onClick={() => setExpandedFolders(prev => ({ ...prev, business: !prev.business }))}
-              className="flex items-center gap-2 w-full text-left mb-3 text-gray-600 dark:text-gray-400 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+              className="flex items-center gap-2 w-full text-left mb-3 text-muted-foreground hover:text-foreground"
             >
               {expandedFolders.business ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
               <Building className="w-5 h-5 text-blue-600" />
@@ -681,7 +681,7 @@ export default function DocumentMemory() {
                   className="ml-6 space-y-1"
                 >
                   {filteredBusinessDocs.length === 0 ? (
-                    <div className="py-2 text-center text-gray-500 dark:text-gray-400 dark:text-gray-400 text-xs">
+                    <div className="py-2 text-center text-muted-foreground text-xs">
                       No business documents found
                     </div>
                   ) : (
@@ -722,7 +722,7 @@ export default function DocumentMemory() {
           <div className="p-4">
             <button
               onClick={() => setExpandedFolders(prev => ({ ...prev, personal: !prev.personal }))}
-              className="flex items-center gap-2 w-full text-left mb-3 text-gray-600 dark:text-gray-400 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+              className="flex items-center gap-2 w-full text-left mb-3 text-muted-foreground hover:text-foreground"
             >
               {expandedFolders.personal ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
               <User className="w-5 h-5 text-green-600" />
@@ -740,7 +740,7 @@ export default function DocumentMemory() {
                   {personalCategories.map(category => (
                     <div key={category.id}>
                       <div className="flex items-center justify-between group">
-                        <span className="text-sm font-medium text-gray-600 dark:text-gray-400 dark:text-gray-400">{category.name}</span>
+                        <span className="text-sm font-medium text-muted-foreground">{category.name}</span>
                         <button
                           onClick={() => createPersonalDocument(category.name)}
                           className="opacity-0 group-hover:opacity-100 p-1 hover:bg-green-100 rounded"
@@ -756,8 +756,8 @@ export default function DocumentMemory() {
                             <div key={doc.id} className="group">
                               <button
                                 onClick={() => setSelectedDoc(doc)}
-                                className={`flex items-center gap-2 w-full p-1 rounded text-left hover:bg-gray-100 dark:hover:bg-gray-800 ${
-                                  selectedDoc?.id === doc.id ? 'bg-emerald-50 text-emerald-700' : 'text-gray-500 dark:text-gray-400 dark:text-gray-400'
+                                className={`flex items-center gap-2 w-full p-1 rounded text-left hover:bg-accent/40 ${
+                                  selectedDoc?.id === doc.id ? 'bg-emerald-50 text-emerald-700' : 'text-muted-foreground'
                                 }`}
                               >
                                 <FileText className="w-3 h-3" />
@@ -869,7 +869,7 @@ export default function DocumentMemory() {
                 <Card className="bg-card/80 backdrop-blur-xl border-border/50 px-4 py-2 rounded-lg">
                   <div className="flex items-center gap-2">
                     <Loader2 className="w-4 h-4 animate-spin text-emerald-600" />
-                    <span className="text-sm text-gray-600 dark:text-gray-400 dark:text-gray-400">
+                    <span className="text-sm text-muted-foreground">
                       {aiStatus === 'working' ? 'AI is analyzing...' : 'Processing...'}
                     </span>
                   </div>
@@ -894,7 +894,7 @@ export default function DocumentMemory() {
                     ? "Tell me about your business or share information to save..." 
                     : "Share information to organize in your documents..."
                 }
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                className="flex-1 px-4 py-2 border border-border/50 rounded-lg bg-card/50 backdrop-blur-md focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 disabled={loading}
               />
               <button
@@ -1002,7 +1002,7 @@ export default function DocumentMemory() {
                     />
                   ) : (
                     <div className="prose prose-sm max-w-none">
-                      <pre className="whitespace-pre-wrap text-sm text-gray-700 font-sans">
+                      <pre className="whitespace-pre-wrap text-sm text-foreground font-sans">
                         {selectedDoc.content}
                       </pre>
                     </div>

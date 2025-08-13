@@ -66,7 +66,7 @@ export default function ProformaAssumptions({ scenario, businessProfile, onUpdat
             <button
               onClick={() => setActiveCategory('revenue')}
               className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left ${
-                activeCategory === 'revenue' ? 'bg-emerald-50 text-emerald-700' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50'
+                activeCategory === 'revenue' ? 'bg-emerald-50 text-emerald-700' : 'text-muted-foreground hover:bg-accent/30'
               }`}
             >
               <DollarSign className="w-4 h-4" />
@@ -75,7 +75,7 @@ export default function ProformaAssumptions({ scenario, businessProfile, onUpdat
             <button
               onClick={() => setActiveCategory('customers')}
               className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left ${
-                activeCategory === 'customers' ? 'bg-emerald-50 text-emerald-700' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50'
+                activeCategory === 'customers' ? 'bg-emerald-50 text-emerald-700' : 'text-muted-foreground hover:bg-accent/30'
               }`}
             >
               <Users className="w-4 h-4" />
@@ -84,7 +84,7 @@ export default function ProformaAssumptions({ scenario, businessProfile, onUpdat
             <button
               onClick={() => setActiveCategory('costs')}
               className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left ${
-                activeCategory === 'costs' ? 'bg-emerald-50 text-emerald-700' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50'
+                activeCategory === 'costs' ? 'bg-emerald-50 text-emerald-700' : 'text-muted-foreground hover:bg-accent/30'
               }`}
             >
               <Coins className="w-4 h-4" />
@@ -93,7 +93,7 @@ export default function ProformaAssumptions({ scenario, businessProfile, onUpdat
             <button
               onClick={() => setActiveCategory('headcount')}
               className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left ${
-                activeCategory === 'headcount' ? 'bg-emerald-50 text-emerald-700' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50'
+                activeCategory === 'headcount' ? 'bg-emerald-50 text-emerald-700' : 'text-muted-foreground hover:bg-accent/30'
               }`}
             >
               <Briefcase className="w-4 h-4" />
@@ -102,7 +102,7 @@ export default function ProformaAssumptions({ scenario, businessProfile, onUpdat
             <button
               onClick={() => setActiveCategory('capital')}
               className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left ${
-                activeCategory === 'capital' ? 'bg-emerald-50 text-emerald-700' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50'
+                activeCategory === 'capital' ? 'bg-emerald-50 text-emerald-700' : 'text-muted-foreground hover:bg-accent/30'
               }`}
             >
               <Building className="w-4 h-4" />
@@ -137,14 +137,14 @@ export default function ProformaAssumptions({ scenario, businessProfile, onUpdat
                   <h3 className="text-lg font-medium mb-4">Pricing Tiers</h3>
                   <div className="grid grid-cols-3 gap-6">
                     <div className="space-y-3">
-                      <label className="block text-sm font-medium text-gray-700">Basic Plan</label>
+                      <label className="block text-sm font-medium text-foreground">Basic Plan</label>
                       <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">$</span>
+                         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
                         <input
                           type="number"
                           value={assumptions?.pricing?.basic || 49}
                           onChange={(e) => handleInputChange('pricing', 'basic', 'amount', e.target.value)}
-                          className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                          className="w-full pl-8 pr-4 py-2 border border-border/50 rounded-lg bg-card/50 backdrop-blur-md focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                         />
                       </div>
                     </div>

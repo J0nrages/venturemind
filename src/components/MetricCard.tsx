@@ -20,7 +20,7 @@ export default function MetricCard({ title, value, change, icon: Icon, to, descr
       <motion.div
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
-        className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow"
+      className="bg-card/80 backdrop-blur-xl p-6 rounded-xl shadow-sm border border-border/50 hover:shadow-md transition-shadow"
       >
         <div className="flex justify-between items-start">
           <div>

@@ -102,7 +102,7 @@ export default function ProformaMetrics() {
           className="bg-card/80 backdrop-blur-xl p-6 rounded-xl shadow-sm"
         >
           <div className="flex items-center justify-between">
-            <p className="text-sm text-gray-500 dark:text-gray-400">Monthly Recurring Revenue</p>
+          <p className="text-sm text-muted-foreground">Monthly Recurring Revenue</p>
             <DollarSign className="w-5 h-5 text-emerald-600" />
           </div>
           <h3 className="text-2xl font-semibold mt-1">${currentMonth.mrr.toLocaleString()}</h3>
@@ -115,7 +115,7 @@ export default function ProformaMetrics() {
           className="bg-card/80 backdrop-blur-xl p-6 rounded-xl shadow-sm"
         >
           <div className="flex items-center justify-between">
-            <p className="text-sm text-gray-500 dark:text-gray-400">LTV:CAC Ratio</p>
+          <p className="text-sm text-muted-foreground">LTV:CAC Ratio</p>
             <TrendingUp className="w-5 h-5 text-emerald-600" />
           </div>
           <h3 className="text-2xl font-semibold mt-1">{currentMonth.ltvCacRatio}:1</h3>
@@ -128,7 +128,7 @@ export default function ProformaMetrics() {
           className="bg-card/80 backdrop-blur-xl p-6 rounded-xl shadow-sm"
         >
           <div className="flex items-center justify-between">
-            <p className="text-sm text-gray-500 dark:text-gray-400">Customer Lifetime Value</p>
+          <p className="text-sm text-muted-foreground">Customer Lifetime Value</p>
             <Wallet className="w-5 h-5 text-emerald-600" />
           </div>
           <h3 className="text-2xl font-semibold mt-1">${currentMonth.ltv.toLocaleString()}</h3>
@@ -141,7 +141,7 @@ export default function ProformaMetrics() {
           className="bg-card/80 backdrop-blur-xl p-6 rounded-xl shadow-sm"
         >
           <div className="flex items-center justify-between">
-            <p className="text-sm text-gray-500 dark:text-gray-400">Monthly Churn Rate</p>
+          <p className="text-sm text-muted-foreground">Monthly Churn Rate</p>
             <Users className="w-5 h-5 text-emerald-600" />
           </div>
           <h3 className="text-2xl font-semibold mt-1">{currentMonth.churnRate.toFixed(1)}%</h3>
@@ -152,13 +152,13 @@ export default function ProformaMetrics() {
         <div className="mb-6 flex justify-between items-center">
           <div className="flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-emerald-600" />
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">SaaS Metrics Over Time</h2>
+          <h2 className="text-xl font-semibold text-foreground">SaaS Metrics Over Time</h2>
           </div>
           
           <select
             value={metric}
             onChange={(e) => setMetric(e.target.value)}
-            className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
+          className="border border-border/50 rounded-lg px-3 py-2 text-sm bg-card/50 backdrop-blur-md"
           >
             {metricOptions.map(option => (
               <option key={option.value} value={option.value}>{option.label}</option>
@@ -222,7 +222,7 @@ export default function ProformaMetrics() {
         <div className="bg-card/80 backdrop-blur-xl p-6 rounded-xl shadow-sm">
           <div className="mb-6 flex items-center gap-2">
             <Users className="w-5 h-5 text-emerald-600" />
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Customer Segmentation</h2>
+          <h2 className="text-xl font-semibold text-foreground">Customer Segmentation</h2>
           </div>
           
           <div className="h-64">
@@ -260,19 +260,19 @@ export default function ProformaMetrics() {
         <div className="bg-card/80 backdrop-blur-xl p-6 rounded-xl shadow-sm">
           <div className="mb-6 flex items-center gap-2">
             <Clock className="w-5 h-5 text-emerald-600" />
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Projected CAC Payback</h2>
+          <h2 className="text-xl font-semibold text-foreground">Projected CAC Payback</h2>
           </div>
           
           <div className="space-y-8">
             <div className="space-y-4">
               <div className="flex justify-between items-center text-sm">
                 <span className="font-medium">Basic Plan</span>
-                <span className="text-gray-700">7 months payback period</span>
+                <span className="text-foreground">7 months payback period</span>
               </div>
-              <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+              <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
                 <div className="h-full bg-green-500 rounded-full" style={{ width: '58.3%' }}></div>
               </div>
-              <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
+              <div className="flex justify-between text-xs text-muted-foreground">
                 <span>0</span>
                 <span>3 mo</span>
                 <span>6 mo</span>
@@ -284,12 +284,12 @@ export default function ProformaMetrics() {
             <div className="space-y-4">
               <div className="flex justify-between items-center text-sm">
                 <span className="font-medium">Premium Plan</span>
-                <span className="text-gray-700">5 months payback period</span>
+                <span className="text-foreground">5 months payback period</span>
               </div>
-              <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+              <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
                 <div className="h-full bg-emerald-500 rounded-full" style={{ width: '41.7%' }}></div>
               </div>
-              <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
+              <div className="flex justify-between text-xs text-muted-foreground">
                 <span>0</span>
                 <span>3 mo</span>
                 <span>6 mo</span>
@@ -301,12 +301,12 @@ export default function ProformaMetrics() {
             <div className="space-y-4">
               <div className="flex justify-between items-center text-sm">
                 <span className="font-medium">Enterprise Plan</span>
-                <span className="text-gray-700">4 months payback period</span>
+                <span className="text-foreground">4 months payback period</span>
               </div>
-              <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+              <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
                 <div className="h-full bg-blue-500 rounded-full" style={{ width: '33.3%' }}></div>
               </div>
-              <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
+              <div className="flex justify-between text-xs text-muted-foreground">
                 <span>0</span>
                 <span>3 mo</span>
                 <span>6 mo</span>
