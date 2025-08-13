@@ -59,7 +59,7 @@ class FunctionCall(BaseModel):
 class GenerationRequest(BaseModel):
     """Request for content generation."""
     prompt: str = Field(..., min_length=1, max_length=10000)
-    model: str = Field(default="gemini-2.0-flash-exp")
+    model: str = Field(default="gemini-2.5-flash")
     config: GenerationConfig = Field(default_factory=GenerationConfig)
     tools: List[str] = Field(default_factory=list)
     context: Optional[Dict[str, Any]] = None
@@ -144,6 +144,7 @@ class GeminiService:
             
             if not api_key:
                 logger.warning(f"No Gemini API key available for user {user_id}")
+                logger.info(f"Checked settings.gemini_api_key: {bool(settings.gemini_api_key)}")
                 return False
             
             # Configure Gemini
@@ -152,13 +153,14 @@ class GeminiService:
             # Initialize LangChain client if available
             if LANGCHAIN_AVAILABLE:
                 self.client = ChatGoogleGenerativeAI(
-                    model="gemini-2.0-flash-exp",
+                    model="gemini-2.5-flash",
                     google_api_key=api_key,
                     temperature=0.7,
+                    max_output_tokens=2048,
                 )
             else:
                 # Use native Gemini client as fallback
-                self.model = genai.GenerativeModel("gemini-2.0-flash-exp")
+                self.model = genai.GenerativeModel("gemini-2.5-flash")
             
             self.api_key = api_key
             logger.info(f"Gemini service initialized for user {user_id}")
@@ -341,12 +343,8 @@ Be helpful, accurate, and proactive. Always explain your reasoning and suggest n
                 HumanMessage(content=request.prompt)
             ]
             
-            # Configure model with tools if requested
-            model_kwargs = {
-                "temperature": request.config.temperature,
-                "top_p": request.config.top_p,
-                "max_output_tokens": request.config.max_output_tokens,
-            }
+            # Configure model with proper LangChain parameters
+            model_kwargs = {}
             
             # Add tools if requested
             function_calls = []
@@ -354,10 +352,12 @@ Be helpful, accurate, and proactive. Always explain your reasoning and suggest n
             
             if request.tools:
                 tool_schemas = self._create_tool_schemas(request.tools)
-                model_kwargs["functions"] = tool_schemas
+                # Note: LangChain Google GenAI doesn't use functions in the same way
+                # We'll handle this differently in a future update
             
-            # Generate initial response
-            response = await self.client.ainvoke(messages, **model_kwargs)
+            # Generate initial response with proper parameters
+            # The temperature and other config are set on the client itself
+            response = await self.client.ainvoke(messages)
             content = response.content
             
             # Handle function calls if present

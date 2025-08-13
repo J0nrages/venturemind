@@ -341,8 +341,8 @@ export default function BusinessPlan() {
                     <motion.button
                       key={type}
                       onClick={() => handleCardClick(type)}
-                      className={`bg-${color}-50 p-3 lg:p-4 rounded-xl text-left transition-all cursor-pointer min-h-[80px] flex flex-col justify-center
-                        ${selectedCard === type ? `ring-2 ring-offset-2 ring-${color}-500` : 'hover:shadow-md'}`}
+                      className={`p-3 lg:p-4 rounded-xl text-left transition-all cursor-pointer min-h-[80px] flex flex-col justify-center bg-card/70 backdrop-blur-xl border border-border/50
+                        ${selectedCard === type ? `ring-2 ring-offset-2 ring-${color}-500` : 'hover:bg-card/80'}`}
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                     >
@@ -354,7 +354,7 @@ export default function BusinessPlan() {
                         <motion.p
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
-                          className={`mt-1 lg:mt-2 text-xs text-${color}-500 break-words`}
+                           className={`mt-1 lg:mt-2 text-xs text-${color}-500 break-words`}
                         >
                           Click again to view details
                         </motion.p>

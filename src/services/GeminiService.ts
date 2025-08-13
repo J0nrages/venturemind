@@ -40,7 +40,7 @@ export class GeminiService {
         reasoning: string;
       }>('/api/v1/agents/generate', {
         prompt: fullPrompt,
-        model: 'gemini-2.0-flash',
+        model: 'gemini-2.5-flash',
         config: {
           temperature: 0.7,
           topK: 40,

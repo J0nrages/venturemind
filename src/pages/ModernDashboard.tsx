@@ -294,7 +294,7 @@ const ModernDashboard: React.FC = () => {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.6 + index * 0.1 }}
                   whileHover={{ x: 4 }}
-                  className="rounded-xl p-4 bg-gray-50 dark:bg-gray-800/50 backdrop-blur-sm border border-gray-200 dark:border-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-800/70 transition-all cursor-pointer group">
+                  className="rounded-xl p-4 bg-card/70 backdrop-blur-xl border border-border/50 hover:bg-card/80 transition-all cursor-pointer group">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className={cn(

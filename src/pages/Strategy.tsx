@@ -219,7 +219,7 @@ export default function Strategy() {
             className={`px-6 py-3 font-medium text-sm ${
               activeTab === 'initiatives'
                 ? 'text-emerald-600 border-b-2 border-emerald-600'
-                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 hover:bg-gray-50'
+                : 'text-muted-foreground hover:text-foreground hover:bg-accent/30'
             }`}
           >
             Strategic Initiatives
@@ -229,7 +229,7 @@ export default function Strategy() {
             className={`px-6 py-3 font-medium text-sm ${
               activeTab === 'swot'
                 ? 'text-emerald-600 border-b-2 border-emerald-600'
-                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 hover:bg-gray-50'
+                : 'text-muted-foreground hover:text-foreground hover:bg-accent/30'
             }`}
           >
             SWOT Analysis
@@ -260,7 +260,7 @@ export default function Strategy() {
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
-                  className="bg-gray-50 p-4 rounded-lg space-y-4"
+                  className="bg-card/70 backdrop-blur-xl border border-border/50 p-4 rounded-lg space-y-4"
                 >
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -332,7 +332,7 @@ export default function Strategy() {
                   <div className="flex justify-end gap-2">
                     <button
                       onClick={() => setShowNewItem(false)}
-                      className="px-4 py-2 text-sm bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+                      className="px-4 py-2 text-sm bg-muted text-foreground rounded-lg hover:bg-muted/80"
                     >
                       Cancel
                     </button>

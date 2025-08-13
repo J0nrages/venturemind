@@ -559,7 +559,7 @@ export default function DocumentMemory() {
                         <button
                           key={template.id}
                           onClick={() => createFromTemplate(template.id, template.name)}
-                          className="w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-800"
+                          className="w-full text-left px-3 py-2 hover:bg-accent/40"
                         >
                           {template.name}
                         </button>
@@ -595,7 +595,7 @@ export default function DocumentMemory() {
                     <button
                       onClick={() => setSelectedCategory('all')}
                       className={`px-2 py-1 text-xs rounded whitespace-nowrap ${
-                        selectedCategory === 'all' ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800'
+                        selectedCategory === 'all' ? 'bg-emerald-100 text-emerald-700' : 'bg-muted text-muted-foreground hover:bg-muted/80'
                       }`}
                     >
                       All
@@ -605,7 +605,7 @@ export default function DocumentMemory() {
                         key={category}
                         onClick={() => setSelectedCategory(category)}
                         className={`px-2 py-1 text-xs rounded capitalize whitespace-nowrap ${
-                          selectedCategory === category ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800'
+                          selectedCategory === category ? 'bg-emerald-100 text-emerald-700' : 'bg-muted text-muted-foreground hover:bg-muted/80'
                         }`}
                       >
                         {category}
@@ -622,7 +622,7 @@ export default function DocumentMemory() {
                         <div key={template.id} className="group">
                           <button
                             onClick={() => createFromTemplate(template.id, template.name)}
-                            className="flex items-center gap-2 w-full p-2 rounded-lg text-left hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400 dark:text-gray-400"
+                            className="flex items-center gap-2 w-full p-2 rounded-lg text-left hover:bg-accent/40 text-muted-foreground"
                             title={template.description || ''}
                           >
                             <IconComponent className="w-4 h-4 text-emerald-600" />
@@ -630,7 +630,7 @@ export default function DocumentMemory() {
                               <span className="text-sm">{template.name}</span>
                               <div className="flex gap-1 mt-0.5">
                                 {template.keywords.slice(0, 2).map((keyword, i) => (
-                                  <span key={i} className="text-[10px] text-gray-500 dark:text-gray-400 dark:text-gray-400 px-1 bg-gray-50 dark:bg-gray-800 rounded">
+                                  <span key={i} className="text-[10px] text-muted-foreground px-1 bg-muted/40 rounded">
                                     {keyword}
                                   </span>
                                 ))}
@@ -651,7 +651,7 @@ export default function DocumentMemory() {
                     })}
                     
                     {filteredTemplates.length === 0 && (
-                      <div className="py-2 text-center text-gray-500 dark:text-gray-400 dark:text-gray-400 text-xs">
+                       <div className="py-2 text-center text-muted-foreground text-xs">
                         No matching templates found
                       </div>
                     )}
@@ -693,8 +693,8 @@ export default function DocumentMemory() {
                         <div key={doc.id} className="group">
                           <button
                             onClick={() => setSelectedDoc(doc)}
-                            className={`flex items-center gap-2 w-full p-2 rounded-lg text-left hover:bg-gray-100 dark:hover:bg-gray-800 ${
-                              selectedDoc?.id === doc.id ? 'bg-emerald-50 text-emerald-700' : 'text-gray-600 dark:text-gray-400 dark:text-gray-400'
+                          className={`flex items-center gap-2 w-full p-2 rounded-lg text-left hover:bg-accent/40 ${
+                              selectedDoc?.id === doc.id ? 'bg-emerald-50 text-emerald-700' : 'text-muted-foreground'
                             }`}
                           >
                             <IconComponent className="w-4 h-4" />
