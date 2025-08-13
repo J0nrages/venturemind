@@ -16,6 +16,7 @@ import {
   MessageCircle,
   Zap
 } from 'lucide-react';
+import { ThemeToggle } from './ThemeToggle';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -43,9 +44,9 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed top-6 left-4 z-30 p-2 rounded-lg bg-white shadow-md hover:bg-gray-50"
+        className="fixed top-6 left-4 z-30 p-2 rounded-lg bg-white dark:bg-gray-800 shadow-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
       >
-        <Menu className="w-6 h-6 text-gray-600" />
+        <Menu className="w-6 h-6 text-gray-600 dark:text-gray-300" />
       </button>
 
       <AnimatePresence>
@@ -64,12 +65,14 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed top-0 left-0 h-full w-64 bg-white shadow-xl z-40 p-4"
+              className="fixed top-0 left-0 h-full w-64 bg-white dark:bg-gray-800 shadow-xl z-40 p-4 transition-colors"
             >
               <div className="flex justify-between items-center mb-8">
-                <h2 className="text-xl font-semibold">DocuMind AI</h2>
-                <button onClick={() => setIsOpen(false)} className="p-1 hover:bg-gray-100 rounded">
-                  <X className="w-5 h-5 text-gray-600" />
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">DocuMind AI</h2>
+                <div className="flex items-center gap-2">
+                  <ThemeToggle />
+                  <button onClick={() => setIsOpen(false)} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors">
+                    <X className="w-5 h-5 text-gray-600 dark:text-gray-300" />
                 </button>
               </div>
 
@@ -86,8 +89,8 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
                       onClick={() => setIsOpen(false)}
                       className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
                         isActive
-                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                          : 'text-gray-600 hover:bg-gray-50'
+                          ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800'
+                          : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                       }`}
                     >
                       <item.icon className="w-5 h-5" />

@@ -54,9 +54,16 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    @apply bg-background text-foreground transition-colors duration-300;
     min-height: 100vh;
+  }
+  
+  body.dark {
+    background: linear-gradient(135deg, #1a1a2e 0%, #0f0f1e 100%);
+  }
+  
+  body:not(.dark) {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   }
 }
 
