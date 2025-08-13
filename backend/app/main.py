@@ -16,6 +16,7 @@ from app.core.middleware import (
     RequestLoggingMiddleware,
     ErrorHandlingMiddleware,
 )
+from app.core.redis_manager import redis_manager
 from app.api.v1 import conversations, agents, tasks, auth, marketplace
 from app.api.v1.websocket import websocket_router
 
@@ -38,7 +39,14 @@ async def lifespan(app: FastAPI):
     logger.info(f"Environment: {settings.environment}")
     
     # Initialize connections
-    # TODO: Initialize Redis connection
+    try:
+        # Initialize Redis
+        await redis_manager.connect()
+        logger.info("Redis connection established")
+    except Exception as e:
+        logger.error(f"Failed to connect to Redis: {e}")
+        # Continue without Redis if it's not critical
+    
     # TODO: Initialize Supabase client
     # TODO: Initialize observability
     
@@ -46,7 +54,12 @@ async def lifespan(app: FastAPI):
     
     # Cleanup
     logger.info("Shutting down...")
-    # TODO: Close connections
+    
+    try:
+        await redis_manager.disconnect()
+        logger.info("Redis connection closed")
+    except Exception as e:
+        logger.error(f"Error closing Redis connection: {e}")
 
 
 # Create FastAPI app

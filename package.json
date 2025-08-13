@@ -4,10 +4,22 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "predev": "bun install && bun run backend:setup",
+    "dev:cleanup": "lsof -ti:5173 | xargs -r kill -9 2>/dev/null || true && lsof -ti:8000 | xargs -r kill -9 2>/dev/null || true && cd backend && docker compose down 2>/dev/null || true",
+    "dev:vite": "vite",
+    "dev:fastapi": "cd backend && uv run uvicorn app.main:app --reload --port 8000",
+    "dev:valkey": "cd backend && docker compose up valkey",
+    "dev:services": "cd backend && docker compose up valkey || echo 'Valkey not running - Redis operations will fail'",
+    "dev": "bun run dev:cleanup && concurrently --kill-others-on-fail --names \"Supabase,Valkey,Vite,FastAPI\" --prefix-colors \"green,cyan,magenta,blue\" \"supabase status\" \"bun run dev:services\" \"sleep 5 && bun run dev:vite\" \"sleep 5 && bun run dev:fastapi\"",
+    "dev:local-lens": "concurrently --kill-others-on-fail --names \"Supabase,Valkey,Vite,FastAPI,LocalLens\" --prefix-colors \"green,cyan,magenta,blue,white\" \"supabase status\" \"bun run dev:services\" \"sleep 5 && bun run dev:vite\" \"sleep 5 && bun run dev:fastapi\" \"local-lens\"",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "backend:setup": "cd backend && uv sync",
+    "backend:start": "cd backend && uv run uvicorn app.main:app --port 8000",
+    "docker:up": "cd backend && docker compose up -d",
+    "docker:down": "cd backend && docker compose down",
+    "docker:logs": "cd backend && docker compose logs -f"
   },
   "dependencies": {
     "@langchain/core": "^0.3.68",
@@ -41,6 +53,7 @@
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.1",
     "autoprefixer": "^10.4.18",
+    "concurrently": "^9.2.0",
     "eslint": "^9.9.1",
     "eslint-plugin-react-hooks": "^5.1.0-rc.0",
     "eslint-plugin-react-refresh": "^0.4.11",

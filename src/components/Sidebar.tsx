@@ -73,7 +73,8 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
                   <ThemeToggle />
                   <button onClick={() => setIsOpen(false)} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors">
                     <X className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-                </button>
+                  </button>
+                </div>
               </div>
 
               <nav className="space-y-2">

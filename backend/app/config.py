@@ -36,12 +36,24 @@ class Settings(BaseSettings):
     
     # Database
     database_url: str = Field(
-        default="postgresql://user:pass@localhost/syna",
+        default="postgresql://syna:syna_secure_password@localhost:5432/syna",
         description="PostgreSQL connection URL"
     )
     redis_url: str = Field(
-        default="redis://localhost:6379",
-        description="Redis connection URL"
+        default="redis://localhost:6379/0",
+        description="Redis/Valkey connection URL"
+    )
+    
+    # Redis/Valkey specific settings
+    redis_max_connections: int = Field(default=50, description="Max Redis connections")
+    redis_socket_keepalive: bool = Field(default=True, description="Enable TCP keepalive")
+    redis_socket_keepalive_options: dict = Field(
+        default_factory=lambda: {
+            1: 60,  # TCP_KEEPIDLE
+            2: 10,  # TCP_KEEPINTVL
+            3: 6,   # TCP_KEEPCNT
+        },
+        description="TCP keepalive options"
     )
     
     # Security
