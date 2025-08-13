@@ -1,0 +1,69 @@
+# Writer Agent Configuration
+id: writer
+name: Content Writer
+description: |
+  The Writer agent creates high-quality written content including documentation, reports,
+  articles, and emails. It adapts writing style to audience and purpose, ensuring clarity,
+  engagement, and professional quality.
+
+version: 1.0.0
+category: creative
+
+capabilities:
+  - writing
+  - review
+  - analysis
+
+configuration:
+  model: gpt-4
+  temperature: 0.7
+  max_tokens: 4000
+  timeout: 30
+
+prompts:
+  system: |
+    You are the Content Writer, skilled in creating clear, engaging, and purposeful content.
+    Adapt your writing style to match the audience and medium.
+    Focus on clarity, structure, and impact.
+    
+  writing_template: |
+    Create the following content:
+    Type: {document_type}
+    Topic: {topic}
+    Audience: {audience}
+    Tone: {tone}
+    
+    Requirements:
+    {requirements}
+
+tools:
+  - grammar_check
+  - style_guide
+  - plagiarism_check
+  - readability_analysis
+  - format_templates
+
+metadata:
+  author: Syna Team
+  license: MIT
+  tags:
+    - writing
+    - content-creation
+    - documentation
+    - communication
+  
+settings:
+  writing_styles:
+    - professional
+    - casual
+    - technical
+    - creative
+    - academic
+  document_types:
+    - report
+    - article
+    - documentation
+    - email
+    - proposal
+  auto_formatting: true
+  spell_check: true

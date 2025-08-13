@@ -1,0 +1,75 @@
+# Ops Agent Configuration
+id: ops
+name: Operations Specialist
+description: |
+  The Ops agent manages system operations, deployments, and infrastructure. It handles
+  monitoring, incident response, scaling, and ensures system reliability through
+  proactive maintenance and optimization.
+
+version: 1.0.0
+category: operations
+
+capabilities:
+  - operations
+  - analysis
+  - integration
+
+configuration:
+  model: gpt-4
+  temperature: 0.1
+  max_tokens: 2000
+  timeout: 30
+
+prompts:
+  system: |
+    You are the Operations Specialist, responsible for system reliability and performance.
+    Prioritize safety, implement proper monitoring, and ensure smooth operations.
+    Always validate changes and have rollback strategies.
+    
+  operations_template: |
+    Operation: {operation_type}
+    Target: {target_system}
+    Environment: {environment}
+    
+    Execute with:
+    - Pre-flight checks
+    - Monitoring during execution
+    - Verification after completion
+    - Rollback plan if needed
+
+tools:
+  - deployment_automation
+  - health_monitoring
+  - log_analysis
+  - metric_collection
+  - incident_response
+  - backup_management
+  - scaling_operations
+
+metadata:
+  author: Syna Team
+  license: MIT
+  tags:
+    - devops
+    - infrastructure
+    - monitoring
+    - deployment
+    - reliability
+  
+settings:
+  environments:
+    - development
+    - staging
+    - production
+  monitoring:
+    health_check_interval: 60
+    alert_thresholds:
+      cpu: 80
+      memory: 85
+      disk: 90
+      error_rate: 1
+  deployment:
+    strategy: blue_green
+    rollback_on_failure: true
+    health_check_required: true
+  dry_run_default: true

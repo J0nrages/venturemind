@@ -1,0 +1,78 @@
+# Analyst Agent Configuration
+id: analyst
+name: Data Analyst
+description: |
+  The Analyst agent performs data analysis, identifies trends, and generates insights.
+  It processes metrics, creates visualizations, performs statistical analysis, and
+  provides data-driven recommendations for decision making.
+
+version: 1.0.0
+category: analytics
+
+capabilities:
+  - analysis
+  - planning
+  - research
+
+configuration:
+  model: gpt-4
+  temperature: 0.3
+  max_tokens: 2500
+  timeout: 40
+
+prompts:
+  system: |
+    You are the Data Analyst, expert in extracting insights from data.
+    Use appropriate statistical methods, present findings clearly, and
+    provide actionable recommendations based on evidence.
+    
+  analysis_template: |
+    Analyze the following:
+    Data: {data_description}
+    Objective: {analysis_objective}
+    Timeframe: {timeframe}
+    
+    Provide:
+    - Key metrics and statistics
+    - Identified trends
+    - Anomalies or outliers
+    - Visualizations recommendations
+    - Actionable insights
+
+tools:
+  - statistical_analysis
+  - trend_detection
+  - anomaly_detection
+  - data_visualization
+  - predictive_modeling
+  - metric_calculation
+  - report_generation
+
+metadata:
+  author: Syna Team
+  license: MIT
+  tags:
+    - analytics
+    - data-analysis
+    - business-intelligence
+    - reporting
+    - insights
+  
+settings:
+  analysis_types:
+    - descriptive
+    - diagnostic
+    - predictive
+    - prescriptive
+  visualization_types:
+    - charts
+    - graphs
+    - dashboards
+    - heatmaps
+  statistical_methods:
+    - regression
+    - correlation
+    - time_series
+    - clustering
+  confidence_threshold: 0.95
+  sample_size_minimum: 30

@@ -1,0 +1,80 @@
+# Scheduler Agent Configuration
+id: scheduler
+name: Time Manager
+description: |
+  The Scheduler agent manages calendars, schedules meetings, and optimizes time allocation.
+  It finds optimal meeting times, manages deadlines, sets reminders, and helps maintain
+  work-life balance through intelligent time management.
+
+version: 1.0.0
+category: productivity
+
+capabilities:
+  - scheduling
+  - planning
+  - memory_access
+
+configuration:
+  model: gpt-3.5-turbo
+  temperature: 0.2
+  max_tokens: 1500
+  timeout: 20
+
+prompts:
+  system: |
+    You are the Time Manager, expert at calendar optimization and scheduling.
+    Consider time zones, working hours, and participant availability.
+    Optimize for productivity while respecting work-life balance.
+    
+  scheduling_template: |
+    Scheduling request:
+    Event: {event_type}
+    Participants: {participants}
+    Duration: {duration}
+    Constraints: {constraints}
+    
+    Find optimal time considering:
+    - Participant availability
+    - Time zone differences
+    - Meeting density
+    - Focus time protection
+
+tools:
+  - calendar_integration
+  - availability_checker
+  - time_zone_converter
+  - reminder_system
+  - conflict_resolution
+  - meeting_optimizer
+  - deadline_tracker
+
+metadata:
+  author: Syna Team
+  license: MIT
+  tags:
+    - scheduling
+    - calendar-management
+    - time-management
+    - productivity
+  
+settings:
+  calendar:
+    working_hours:
+      start: "09:00"
+      end: "17:00"
+    time_zone: UTC
+    buffer_between_meetings: 15
+  meeting_preferences:
+    max_daily_meetings: 4
+    focus_time_blocks: 2
+    preferred_meeting_length: 30
+  reminders:
+    default_before_minutes: 15
+    types:
+      - email
+      - notification
+      - sms
+  optimization:
+    batch_similar_meetings: true
+    protect_lunch_hour: true
+    minimize_context_switching: true

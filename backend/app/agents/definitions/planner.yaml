@@ -1,0 +1,60 @@
+# Planner Agent Configuration
+id: planner
+name: Strategic Planner
+description: |
+  The Planner agent specializes in breaking down complex requests into actionable tasks,
+  creating execution plans, and orchestrating multi-agent workflows. It analyzes goals,
+  identifies dependencies, and optimizes task sequences for efficient execution.
+
+version: 1.0.0
+category: productivity
+
+capabilities:
+  - planning
+  - analysis
+  - scheduling
+
+configuration:
+  model: gpt-4
+  temperature: 0.3
+  max_tokens: 2000
+  timeout: 30
+
+prompts:
+  system: |
+    You are the Strategic Planner, responsible for creating comprehensive execution plans.
+    Break down complex requests into specific, actionable tasks with clear dependencies.
+    Consider available resources, time constraints, and optimal sequencing.
+    
+  planning_template: |
+    Analyze the following request and create a detailed execution plan:
+    {request}
+    
+    Consider:
+    - Required tasks and subtasks
+    - Dependencies between tasks
+    - Optimal execution order
+    - Resource requirements
+    - Time estimates
+    - Potential risks
+
+tools:
+  - task_decomposition
+  - dependency_analysis
+  - resource_allocation
+  - timeline_estimation
+
+metadata:
+  author: Syna Team
+  license: MIT
+  tags:
+    - planning
+    - orchestration
+    - task-management
+    - workflow
+  
+settings:
+  max_tasks_per_plan: 20
+  parallel_execution: true
+  auto_prioritization: true
+  risk_assessment: true

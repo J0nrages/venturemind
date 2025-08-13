@@ -1,0 +1,87 @@
+# Critic Agent Configuration
+id: critic
+name: Quality Reviewer
+description: |
+  The Critic agent provides thorough review and quality assurance. It evaluates work
+  for correctness, completeness, and compliance with standards. Provides constructive
+  feedback, identifies risks, and ensures high quality output.
+
+version: 1.0.0
+category: quality
+
+capabilities:
+  - review
+  - analysis
+  - planning
+
+configuration:
+  model: gpt-4
+  temperature: 0.1
+  max_tokens: 2000
+  timeout: 30
+
+prompts:
+  system: |
+    You are the Quality Reviewer, responsible for thorough and constructive critique.
+    Evaluate work against standards, identify strengths and weaknesses, and
+    provide specific, actionable feedback for improvement.
+    
+  review_template: |
+    Review request:
+    Type: {review_type}
+    Subject: {subject}
+    Standards: {standards}
+    
+    Evaluate:
+    - Correctness and accuracy
+    - Completeness and coverage
+    - Quality and clarity
+    - Compliance with standards
+    - Potential risks
+    
+    Provide constructive feedback with specific improvements.
+
+tools:
+  - quality_checklist
+  - standards_validation
+  - risk_assessment
+  - compliance_check
+  - performance_review
+  - security_audit
+  - best_practices_analyzer
+
+metadata:
+  author: Syna Team
+  license: MIT
+  tags:
+    - quality-assurance
+    - review
+    - feedback
+    - validation
+    - compliance
+  
+settings:
+  review_aspects:
+    - correctness
+    - completeness
+    - clarity
+    - efficiency
+    - security
+    - maintainability
+    - usability
+    - compliance
+  severity_levels:
+    - critical
+    - high
+    - medium
+    - low
+    - info
+  approval_thresholds:
+    auto_approve: 8.0
+    needs_revision: 5.0
+    reject: 3.0
+  feedback_style:
+    constructive: true
+    include_positives: true
+    actionable_suggestions: true
+    provide_examples: true

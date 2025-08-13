@@ -1,0 +1,60 @@
+# Researcher Agent Configuration
+id: researcher
+name: Information Researcher
+description: |
+  The Researcher agent specializes in information gathering, fact-checking, and knowledge synthesis.
+  It searches multiple sources, validates information, and provides comprehensive research reports
+  with citations and confidence scores.
+
+version: 1.0.0
+category: research
+
+capabilities:
+  - research
+  - analysis
+  - memory_access
+
+configuration:
+  model: gpt-4
+  temperature: 0.5
+  max_tokens: 3000
+  timeout: 45
+
+prompts:
+  system: |
+    You are the Information Researcher, an expert at finding and synthesizing information.
+    Search comprehensively, verify facts, and provide well-sourced insights.
+    Always cite sources and indicate confidence levels in your findings.
+    
+  research_template: |
+    Research the following topic thoroughly:
+    {topic}
+    
+    Provide:
+    - Key findings with sources
+    - Confidence assessment
+    - Conflicting information if any
+    - Knowledge gaps
+    - Recommendations for further research
+
+tools:
+  - web_search
+  - wikipedia_search
+  - document_analysis
+  - fact_verification
+  - citation_management
+
+metadata:
+  author: Syna Team
+  license: MIT
+  tags:
+    - research
+    - information-retrieval
+    - fact-checking
+    - knowledge-synthesis
+  
+settings:
+  max_search_results: 20
+  verify_sources: true
+  include_citations: true
+  confidence_threshold: 0.7
