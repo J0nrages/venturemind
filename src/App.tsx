@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import BusinessPlan from './pages/BusinessPlan';
 import SwotAnalysis from './pages/SwotAnalysis.tsx';
-import Sidebar from './components/Sidebar';
+import { ModernLayout } from './components/ModernSidebar';
 import ProformaPage from './pages/ProformaPage.tsx';
 import DocumentMemory from './pages/DocumentMemory.tsx';
 import Dashboard from './pages/Dashboard.tsx';
@@ -17,16 +17,17 @@ import Auth from './pages/Auth';
 import AuthGuard from './components/AuthGuard';
 import { DialogProvider } from './contexts/DialogContext';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { ChatProvider } from './contexts/ChatContext';
+import ModernChatSidebar from './components/ModernChatSidebar';
+import { useChat } from './contexts/ChatContext';
 import Dialog from './components/Dialog';
 
-function App() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
+function AppContent() {
+  const { isOpen, position, toggleChat, setPosition } = useChat();
+  
   return (
-    <ThemeProvider>
-      <DialogProvider>
-        <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-          <Routes>
+    <>
+      <Routes>
             <Route path="/auth" element={<Auth />} />
             
             <Route element={<AuthGuard />}>
@@ -34,14 +35,11 @@ function App() {
               <Route
                 path="/"
                 element={
-                  <>
-                    <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
-                    <div className="min-h-screen bg-background transition-colors">
-                      <main className="p-8 pl-16">
-                        <BusinessPlan />
-                      </main>
+                  <ModernLayout>
+                    <div className="p-6">
+                      <BusinessPlan />
                     </div>
-                  </>
+                  </ModernLayout>
                 }
               />
 
@@ -49,14 +47,11 @@ function App() {
             <Route
               path="/dashboard"
               element={
-                <>
-                  <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
-                  <div className="min-h-screen bg-background transition-colors">
-                    <main className="p-8 pl-16">
-                      <Dashboard />
-                    </main>
+                <ModernLayout>
+                  <div className="p-6">
+                    <Dashboard />
                   </div>
-                </>
+                </ModernLayout>
               }
             />
 
@@ -64,12 +59,9 @@ function App() {
             <Route
               path="/document-memory"
               element={
-                <>
-                  <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
-                  <div className="min-h-screen bg-background transition-colors">
-                    <DocumentMemory />
-                  </div>
-                </>
+                <ModernLayout>
+                  <DocumentMemory />
+                </ModernLayout>
               }
             />
 
@@ -77,14 +69,11 @@ function App() {
             <Route
               path="/proforma/*"
               element={
-                <>
-                  <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
-                  <div className="min-h-screen bg-background transition-colors">
-                    <main className="p-8 pl-16">
-                      <ProformaPage />
-                    </main>
+                <ModernLayout>
+                  <div className="p-6">
+                    <ProformaPage />
                   </div>
-                </>
+                </ModernLayout>
               }
             />
 
@@ -92,14 +81,11 @@ function App() {
             <Route
               path="/integrations"
               element={
-                <>
-                  <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
-                  <div className="min-h-screen bg-background transition-colors">
-                    <main className="p-8 pl-16">
-                      <Integrations />
-                    </main>
+                <ModernLayout>
+                  <div className="p-6">
+                    <Integrations />
                   </div>
-                </>
+                </ModernLayout>
               }
             />
 
@@ -107,14 +93,11 @@ function App() {
             <Route
               path="/ai-processing"
               element={
-                <>
-                  <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
-                  <div className="min-h-screen bg-background transition-colors">
-                    <main className="p-8 pl-16">
-                      <AIProcessing />
-                    </main>
+                <ModernLayout>
+                  <div className="p-6">
+                    <AIProcessing />
                   </div>
-                </>
+                </ModernLayout>
               }
             />
 
@@ -122,14 +105,11 @@ function App() {
             <Route
               path="/documents"
               element={
-                <>
-                  <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
-                  <div className="min-h-screen bg-background transition-colors">
-                    <main className="p-8 pl-16">
-                      <Documents />
-                    </main>
+                <ModernLayout>
+                  <div className="p-6">
+                    <Documents />
                   </div>
-                </>
+                </ModernLayout>
               }
             />
 
@@ -137,14 +117,11 @@ function App() {
             <Route
               path="/customers"
               element={
-                <>
-                  <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
-                  <div className="min-h-screen bg-background transition-colors">
-                    <main className="p-8 pl-16">
-                      <Customers />
-                    </main>
+                <ModernLayout>
+                  <div className="p-6">
+                    <Customers />
                   </div>
-                </>
+                </ModernLayout>
               }
             />
 
@@ -152,14 +129,11 @@ function App() {
             <Route
               path="/metrics"
               element={
-                <>
-                  <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
-                  <div className="min-h-screen bg-background transition-colors">
-                    <main className="p-8 pl-16">
-                      <Metrics />
-                    </main>
+                <ModernLayout>
+                  <div className="p-6">
+                    <Metrics />
                   </div>
-                </>
+                </ModernLayout>
               }
             />
 
@@ -167,14 +141,11 @@ function App() {
             <Route
               path="/strategy"
               element={
-                <>
-                  <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
-                  <div className="min-h-screen bg-background transition-colors">
-                    <main className="p-8 pl-16">
-                      <Strategy />
-                    </main>
+                <ModernLayout>
+                  <div className="p-6">
+                    <Strategy />
                   </div>
-                </>
+                </ModernLayout>
               }
             />
 
@@ -182,14 +153,11 @@ function App() {
             <Route
               path="/settings"
               element={
-                <>
-                  <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
-                  <div className="min-h-screen bg-background transition-colors">
-                    <main className="p-8 pl-16">
-                      <Settings />
-                    </main>
+                <ModernLayout>
+                  <div className="p-6">
+                    <Settings />
                   </div>
-                </>
+                </ModernLayout>
               }
             />
 
@@ -197,24 +165,42 @@ function App() {
             <Route
               path="/swot/:type"
               element={
-                <>
-                  <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
-                  <div className="min-h-screen bg-background transition-colors">
-                    <main className="p-8 pl-16">
-                      <SwotAnalysis />
-                    </main>
+                <ModernLayout>
+                  <div className="p-6">
+                    <SwotAnalysis />
                   </div>
-                </>
+                </ModernLayout>
               }
             />
           </Route>
 
           <Route path="*" element={<Navigate to="/auth" replace />} />
         </Routes>
+        
+        {/* Global Chat Component */}
+        <ModernChatSidebar 
+          isOpen={isOpen}
+          onToggle={toggleChat}
+          position={position}
+          onPositionChange={setPosition}
+        />
+        
         <Dialog />
-      </Router>
-    </DialogProvider>
-  </ThemeProvider>
+    </>
+  );
+}
+
+function App() {
+  return (
+    <ThemeProvider>
+      <DialogProvider>
+        <ChatProvider>
+          <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+            <AppContent />
+          </Router>
+        </ChatProvider>
+      </DialogProvider>
+    </ThemeProvider>
   );
 }
 

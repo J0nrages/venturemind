@@ -21,10 +21,8 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import ConversationalSetup from '../components/ConversationalSetup';
-import AgenticAIChatOrchestrator from '../components/AgenticAIChatOrchestrator';
 import { useBusinessData } from '../hooks/useBusinessData';
 import { useStrategicData } from '../hooks/useStrategicData';
-import { useChatSidebar } from '../hooks/useChatSidebar';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useDialog } from '../contexts/DialogContext';
 
@@ -56,12 +54,6 @@ export default function BusinessPlan() {
     refreshData: refreshStrategicData
   } = useStrategicData();
 
-  const {
-    isOpen: isChatOpen,
-    position: chatPosition,
-    toggleSidebar: toggleChat,
-    changePosition: changeChatPosition
-  } = useChatSidebar();
 
   const loading = businessLoading || strategicLoading;
 
@@ -519,13 +511,6 @@ export default function BusinessPlan() {
         </div>
       </div>
 
-      {/* Chat Sidebar */}
-      <AgenticAIChatOrchestrator
-        isOpen={isChatOpen}
-        onToggle={toggleChat}
-        position={chatPosition}
-        onPositionChange={changeChatPosition}
-      />
     </>
   );
 }
