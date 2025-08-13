@@ -1,3 +1,4 @@
+import { Card } from '@/components/ui/card';
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -6,7 +7,7 @@ import { ChevronLeft } from 'lucide-react';
 const swotData = {
   strengths: {
     title: 'Strengths',
-    color: 'blue',
+    color: 'bg-blue-500 dark:bg-blue-600',
     items: [
       'State-of-the-art AI models',
       'High accuracy rates',
@@ -21,7 +22,7 @@ const swotData = {
   },
   weaknesses: {
     title: 'Weaknesses',
-    color: 'orange',
+    color: 'bg-orange-500 dark:bg-orange-600',
     items: [
       'Long sales cycles',
       'Complex implementation',
@@ -36,7 +37,7 @@ const swotData = {
   },
   opportunities: {
     title: 'Opportunities',
-    color: 'green',
+    color: 'bg-green-500 dark:bg-green-600',
     items: [
       'New market segments',
       'Geographic expansion',
@@ -51,7 +52,7 @@ const swotData = {
   },
   threats: {
     title: 'Threats',
-    color: 'red',
+    color: 'bg-red-500 dark:bg-red-600',
     items: [
       'Emerging competitors',
       'Rapid tech changes',
@@ -84,7 +85,7 @@ export default function SwotAnalysis() {
     >
       <button
         onClick={() => navigate('/')}
-        className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-8"
+        className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 mb-8"
       >
         <ChevronLeft className="w-5 h-5" />
         Back to Dashboard
@@ -94,7 +95,7 @@ export default function SwotAnalysis() {
         <h1 className={`text-3xl font-bold text-${data.color}-700 mb-2`}>
           {data.title}
         </h1>
-        <p className="text-gray-600 mb-8">{data.description}</p>
+        <p className="text-gray-600 dark:text-gray-400 mb-8">{data.description}</p>
 
         <div className="grid gap-4">
           {data.items.map((item, index) => (
@@ -103,9 +104,9 @@ export default function SwotAnalysis() {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: index * 0.1 }}
-              className={`bg-white p-4 rounded-lg shadow-sm border border-${data.color}-100`}
+              className={`bg-card/80 backdrop-blur-xl p-4 rounded-lg shadow-sm border border-${data.color}-100`}
             >
-              <p className="text-gray-800">{item}</p>
+              <p className="text-gray-900 dark:text-white">{item}</p>
             </motion.div>
           ))}
         </div>

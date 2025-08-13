@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { 
   MessageCircle, 
   Send, 
@@ -471,7 +473,7 @@ export default function DocumentMemory() {
         );
       default:
         return (
-          <div className="flex items-center gap-2 text-gray-600">
+          <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
             <Zap className="w-4 h-4" />
             <span className="text-sm">Smart Routing</span>
           </div>
@@ -482,24 +484,24 @@ export default function DocumentMemory() {
   const documentCategories = ['all', 'product', 'engineering', 'finance', 'strategy', 'operations', 'marketing', 'technical', 'legal'];
 
   return (
-    <div className="h-screen flex bg-gray-50">
+    <div className="h-screen flex bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/20 dark:from-gray-900 dark:via-blue-900/10 dark:to-purple-900/5">
       {/* Sidebar */}
-      <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
-        <div className="p-4 border-b border-gray-200">
-          <h1 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
+      <Card className="w-80 bg-card/80 backdrop-blur-xl border-border/50 rounded-none border-l-0 border-t-0 border-b-0 flex flex-col">
+        <div className="p-4 border-b border-border/50">
+          <h1 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
             <Brain className="w-6 h-6 text-emerald-600" />
             AI Document Memory
           </h1>
           
           {/* Search bar */}
           <div className="relative mt-3">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500 dark:text-gray-400" />
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search documents..."
-              className="w-full pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+              className="w-full pl-10 pr-4 py-2 text-sm border border-border/50 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-card/60 backdrop-blur-sm"
             />
           </div>
           
@@ -507,10 +509,12 @@ export default function DocumentMemory() {
           <div className="mt-3 flex items-center justify-between">
             {getAIStatusIndicator()}
             {aiStatus !== 'working' && (
-              <button
+              <Button
                 onClick={testAIIntegration}
                 disabled={testingAI}
-                className="flex items-center gap-1 px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded transition-colors"
+                variant="secondary"
+                size="sm"
+                className="flex items-center gap-1 px-2 py-1 text-xs"
               >
                 {testingAI ? (
                   <Loader2 className="w-3 h-3 animate-spin" />
@@ -518,18 +522,18 @@ export default function DocumentMemory() {
                   <Zap className="w-3 h-3" />
                 )}
                 Test AI
-              </button>
+              </Button>
             )}
           </div>
         </div>
 
         <div className="flex-1 overflow-auto">
           {/* Template Library */}
-          <div className="p-4 border-b border-gray-200">
+          <div className="p-4 border-b border-border/50">
             <div className="flex items-center justify-between mb-3">
               <button
                 onClick={() => setExpandedFolders(prev => ({ ...prev, templates: !prev.templates }))}
-                className="flex items-center gap-2 w-full text-left text-gray-700 hover:text-gray-900"
+                className="flex items-center gap-2 w-full text-left text-gray-600 dark:text-gray-400 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
               >
                 {expandedFolders.templates ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
                 <FolderOpen className="w-5 h-5 text-emerald-600" />
@@ -539,28 +543,28 @@ export default function DocumentMemory() {
               <div className="relative">
                 <button
                   onClick={() => setShowNewTemplateMenu(!showNewTemplateMenu)}
-                  className="p-1 text-gray-400 hover:text-emerald-600 transition-colors"
+                  className="p-1 text-gray-400 dark:text-gray-500 dark:text-gray-400 hover:text-emerald-600 transition-colors"
                   title="Create from template"
                 >
                   <Plus className="w-4 h-4" />
                 </button>
                 
                 {showNewTemplateMenu && (
-                  <div className="absolute right-0 mt-1 w-56 bg-white rounded-md shadow-lg border border-gray-200 z-10">
-                    <div className="py-1 text-sm text-gray-700">
-                      <div className="px-3 py-2 font-medium border-b border-gray-100">
+                  <Card className="absolute right-0 mt-1 w-56 bg-card/90 backdrop-blur-xl rounded-md shadow-lg border-border/50 z-10">
+                    <div className="py-1 text-sm text-gray-600 dark:text-gray-400 dark:text-gray-400">
+                      <div className="px-3 py-2 font-medium border-b border-border/50">
                         Create from template
                       </div>
                       {templates.slice(0, 5).map(template => (
                         <button
                           key={template.id}
                           onClick={() => createFromTemplate(template.id, template.name)}
-                          className="w-full text-left px-3 py-2 hover:bg-gray-100"
+                          className="w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-800"
                         >
                           {template.name}
                         </button>
                       ))}
-                      <div className="border-t border-gray-100 px-3 py-1">
+                      <div className="border-t border-border/50 px-3 py-1">
                         <a 
                           href="#" 
                           onClick={(e) => {
@@ -574,7 +578,7 @@ export default function DocumentMemory() {
                         </a>
                       </div>
                     </div>
-                  </div>
+                  </Card>
                 )}
               </div>
             </div>
@@ -591,7 +595,7 @@ export default function DocumentMemory() {
                     <button
                       onClick={() => setSelectedCategory('all')}
                       className={`px-2 py-1 text-xs rounded whitespace-nowrap ${
-                        selectedCategory === 'all' ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        selectedCategory === 'all' ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800'
                       }`}
                     >
                       All
@@ -601,7 +605,7 @@ export default function DocumentMemory() {
                         key={category}
                         onClick={() => setSelectedCategory(category)}
                         className={`px-2 py-1 text-xs rounded capitalize whitespace-nowrap ${
-                          selectedCategory === category ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                          selectedCategory === category ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800'
                         }`}
                       >
                         {category}
@@ -618,7 +622,7 @@ export default function DocumentMemory() {
                         <div key={template.id} className="group">
                           <button
                             onClick={() => createFromTemplate(template.id, template.name)}
-                            className="flex items-center gap-2 w-full p-2 rounded-lg text-left hover:bg-gray-100 text-gray-600"
+                            className="flex items-center gap-2 w-full p-2 rounded-lg text-left hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400 dark:text-gray-400"
                             title={template.description || ''}
                           >
                             <IconComponent className="w-4 h-4 text-emerald-600" />
@@ -626,7 +630,7 @@ export default function DocumentMemory() {
                               <span className="text-sm">{template.name}</span>
                               <div className="flex gap-1 mt-0.5">
                                 {template.keywords.slice(0, 2).map((keyword, i) => (
-                                  <span key={i} className="text-[10px] text-gray-500 px-1 bg-gray-50 rounded">
+                                  <span key={i} className="text-[10px] text-gray-500 dark:text-gray-400 dark:text-gray-400 px-1 bg-gray-50 dark:bg-gray-800 rounded">
                                     {keyword}
                                   </span>
                                 ))}
@@ -647,7 +651,7 @@ export default function DocumentMemory() {
                     })}
                     
                     {filteredTemplates.length === 0 && (
-                      <div className="py-2 text-center text-gray-500 text-xs">
+                      <div className="py-2 text-center text-gray-500 dark:text-gray-400 dark:text-gray-400 text-xs">
                         No matching templates found
                       </div>
                     )}
@@ -658,10 +662,10 @@ export default function DocumentMemory() {
           </div>
 
           {/* Business Documents */}
-          <div className="p-4 border-b border-gray-200">
+          <div className="p-4 border-b border-border/50">
             <button
               onClick={() => setExpandedFolders(prev => ({ ...prev, business: !prev.business }))}
-              className="flex items-center gap-2 w-full text-left mb-3 text-gray-700 hover:text-gray-900"
+              className="flex items-center gap-2 w-full text-left mb-3 text-gray-600 dark:text-gray-400 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
             >
               {expandedFolders.business ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
               <Building className="w-5 h-5 text-blue-600" />
@@ -677,7 +681,7 @@ export default function DocumentMemory() {
                   className="ml-6 space-y-1"
                 >
                   {filteredBusinessDocs.length === 0 ? (
-                    <div className="py-2 text-center text-gray-500 text-xs">
+                    <div className="py-2 text-center text-gray-500 dark:text-gray-400 dark:text-gray-400 text-xs">
                       No business documents found
                     </div>
                   ) : (
@@ -689,8 +693,8 @@ export default function DocumentMemory() {
                         <div key={doc.id} className="group">
                           <button
                             onClick={() => setSelectedDoc(doc)}
-                            className={`flex items-center gap-2 w-full p-2 rounded-lg text-left hover:bg-gray-100 ${
-                              selectedDoc?.id === doc.id ? 'bg-emerald-50 text-emerald-700' : 'text-gray-600'
+                            className={`flex items-center gap-2 w-full p-2 rounded-lg text-left hover:bg-gray-100 dark:hover:bg-gray-800 ${
+                              selectedDoc?.id === doc.id ? 'bg-emerald-50 text-emerald-700' : 'text-gray-600 dark:text-gray-400 dark:text-gray-400'
                             }`}
                           >
                             <IconComponent className="w-4 h-4" />
@@ -718,7 +722,7 @@ export default function DocumentMemory() {
           <div className="p-4">
             <button
               onClick={() => setExpandedFolders(prev => ({ ...prev, personal: !prev.personal }))}
-              className="flex items-center gap-2 w-full text-left mb-3 text-gray-700 hover:text-gray-900"
+              className="flex items-center gap-2 w-full text-left mb-3 text-gray-600 dark:text-gray-400 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
             >
               {expandedFolders.personal ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
               <User className="w-5 h-5 text-green-600" />
@@ -736,7 +740,7 @@ export default function DocumentMemory() {
                   {personalCategories.map(category => (
                     <div key={category.id}>
                       <div className="flex items-center justify-between group">
-                        <span className="text-sm font-medium text-gray-600">{category.name}</span>
+                        <span className="text-sm font-medium text-gray-600 dark:text-gray-400 dark:text-gray-400">{category.name}</span>
                         <button
                           onClick={() => createPersonalDocument(category.name)}
                           className="opacity-0 group-hover:opacity-100 p-1 hover:bg-green-100 rounded"
@@ -752,8 +756,8 @@ export default function DocumentMemory() {
                             <div key={doc.id} className="group">
                               <button
                                 onClick={() => setSelectedDoc(doc)}
-                                className={`flex items-center gap-2 w-full p-1 rounded text-left hover:bg-gray-100 ${
-                                  selectedDoc?.id === doc.id ? 'bg-emerald-50 text-emerald-700' : 'text-gray-500'
+                                className={`flex items-center gap-2 w-full p-1 rounded text-left hover:bg-gray-100 dark:hover:bg-gray-800 ${
+                                  selectedDoc?.id === doc.id ? 'bg-emerald-50 text-emerald-700' : 'text-gray-500 dark:text-gray-400 dark:text-gray-400'
                                 }`}
                               >
                                 <FileText className="w-3 h-3" />
@@ -781,7 +785,7 @@ export default function DocumentMemory() {
                       value={newCategoryName}
                       onChange={(e) => setNewCategoryName(e.target.value)}
                       placeholder="New category name"
-                      className="w-full px-2 py-1 text-xs border border-gray-300 rounded"
+                      className="w-full px-2 py-1 text-xs border border-border/50 rounded bg-card/60 backdrop-blur-sm"
                       onKeyPress={(e) => e.key === 'Enter' && addPersonalCategory()}
                     />
                     <button
@@ -797,17 +801,17 @@ export default function DocumentMemory() {
             </AnimatePresence>
           </div>
         </div>
-      </div>
+      </Card>
 
       {/* Main Content */}
       <div className="flex-1 flex">
         {/* Chat Interface */}
         <div className="flex-1 flex flex-col">
           {/* Chat Header */}
-          <div className="p-4 bg-white border-b border-gray-200">
+          <Card className="p-4 bg-card/80 backdrop-blur-xl border-border/50 rounded-none border-l-0 border-r-0 border-t-0">
             <div className="flex items-center gap-2">
               <MessageCircle className="w-5 h-5 text-emerald-600" />
-              <h2 className="text-lg font-semibold text-gray-800">AI Assistant</h2>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">AI Assistant</h2>
               <div className="ml-auto flex items-center gap-4">
                 {getAIStatusIndicator()}
                 {aiStatus === 'no-key' && (
@@ -820,7 +824,7 @@ export default function DocumentMemory() {
                 )}
               </div>
             </div>
-          </div>
+          </Card>
 
           {/* Messages */}
           <div className="flex-1 overflow-auto p-4 space-y-4">
@@ -834,7 +838,7 @@ export default function DocumentMemory() {
                 <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
                   message.sender === 'user'
                     ? 'bg-emerald-600 text-white'
-                    : 'bg-white border border-gray-200 text-gray-800'
+                    : 'bg-card/80 backdrop-blur-xl border border-border/50 text-gray-900 dark:text-white'
                 }`}>
                   <div className="flex items-start gap-2">
                     {message.sender === 'ai' && <Bot className="w-4 h-4 mt-1 text-emerald-600" />}
@@ -862,14 +866,14 @@ export default function DocumentMemory() {
                 animate={{ opacity: 1 }}
                 className="flex justify-start"
               >
-                <div className="bg-white border border-gray-200 px-4 py-2 rounded-lg">
+                <Card className="bg-card/80 backdrop-blur-xl border-border/50 px-4 py-2 rounded-lg">
                   <div className="flex items-center gap-2">
                     <Loader2 className="w-4 h-4 animate-spin text-emerald-600" />
-                    <span className="text-sm text-gray-600">
+                    <span className="text-sm text-gray-600 dark:text-gray-400 dark:text-gray-400">
                       {aiStatus === 'working' ? 'AI is analyzing...' : 'Processing...'}
                     </span>
                   </div>
-                </div>
+                </Card>
               </motion.div>
             )}
             
@@ -877,7 +881,7 @@ export default function DocumentMemory() {
           </div>
 
           {/* Chat Input */}
-          <div className="p-4 bg-white border-t border-gray-200">
+          <Card className="p-4 bg-card/80 backdrop-blur-xl border-border/50 rounded-none border-l-0 border-r-0 border-b-0">
             <div className="flex gap-2">
               <input
                 ref={chatInputRef}
@@ -901,23 +905,23 @@ export default function DocumentMemory() {
                 <Send className="w-4 h-4" />
               </button>
             </div>
-          </div>
+          </Card>
         </div>
 
         {/* Document Viewer */}
         {selectedDoc && (
-          <div className="w-1/2 bg-white border-l border-gray-200 flex flex-col">
+          <div className="w-1/2 bg-card/80 backdrop-blur-xl border-l border-border/50 flex flex-col">
             {/* Document Header */}
-            <div className="p-4 border-b border-gray-200">
+            <div className="p-4 border-b border-border/50">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <h3 className="text-lg font-semibold text-gray-800">{selectedDoc.name}</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{selectedDoc.name}</h3>
                   <button
                     onClick={() => setCollaborativeMode(!collaborativeMode)}
                     className={`px-2 py-1 text-xs rounded ${
                       collaborativeMode 
                         ? 'bg-emerald-100 text-emerald-700' 
-                        : 'bg-gray-100 text-gray-600'
+                        : 'bg-gray-100 text-gray-600 dark:text-gray-400'
                     }`}
                     title="Toggle collaborative editing"
                   >
@@ -925,7 +929,7 @@ export default function DocumentMemory() {
                   </button>
                 </div>
                 <div className="flex items-center mt-1">
-                  <p className="text-xs text-gray-500 mr-2">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mr-2">
                     Last updated: {new Date(selectedDoc.last_updated).toLocaleString()}
                   </p>
                   {selectedDoc.is_template_based && (
@@ -933,7 +937,7 @@ export default function DocumentMemory() {
                       Template
                     </span>
                   )}
-                  <span className="px-2 py-0.5 bg-gray-100 text-gray-800 text-xs rounded-full ml-2 capitalize">
+                  <span className="px-2 py-0.5 bg-gray-100 text-gray-900 dark:text-white text-xs rounded-full ml-2 capitalize">
                     {selectedDoc.category}
                   </span>
                 </div>

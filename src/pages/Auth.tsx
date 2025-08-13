@@ -1,3 +1,4 @@
+import { Card } from '@/components/ui/card';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -151,7 +152,7 @@ export default function Auth() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="max-w-md w-full bg-white rounded-xl shadow-lg p-8"
+        className="max-w-md w-full bg-card/80 backdrop-blur-xl rounded-xl shadow-lg p-8"
       >
         <div className="flex items-center justify-center mb-8">
           <FileText className="w-8 h-8 text-emerald-600 mr-2" />
@@ -206,7 +207,7 @@ export default function Auth() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 hover:text-gray-700 focus:outline-none"
                 >
                   {showPassword ? (
                     <EyeOff className="w-5 h-5" />
@@ -239,7 +240,7 @@ export default function Auth() {
           </button>
         </form>
 
-        <div className="mt-4 text-center text-sm text-gray-600">
+        <div className="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">
           {isForgotPassword ? (
             <button
               onClick={resetView}

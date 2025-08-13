@@ -1,3 +1,4 @@
+import { Card } from '@/components/ui/card';
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
@@ -179,7 +180,7 @@ export default function Integrations() {
       <div className="flex items-center justify-center h-64">
         <div className="flex items-center gap-2">
           <Loader2 className="w-6 h-6 animate-spin text-emerald-600" />
-          <span className="text-gray-600">Loading integrations...</span>
+          <span className="text-gray-600 dark:text-gray-400">Loading integrations...</span>
         </div>
       </div>
     );
@@ -189,12 +190,12 @@ export default function Integrations() {
     <div className="space-y-8">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-800">API Integrations</h1>
-          <p className="text-gray-500 mt-1">Connect your business tools to sync real-time data</p>
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">API Integrations</h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-1">Connect your business tools to sync real-time data</p>
         </div>
         <div className="flex items-center gap-3">
           <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm ${
-            integrations.length > 0 ? 'bg-green-50 text-green-700' : 'bg-gray-50 text-gray-500'
+            integrations.length > 0 ? 'bg-green-50 text-green-700' : 'bg-gray-50 text-gray-500 dark:text-gray-400'
           }`}>
             <Zap className="w-4 h-4" />
             <span>{integrations.length} Connected</span>
@@ -212,7 +213,7 @@ export default function Integrations() {
       {/* Connected Integrations */}
       {integrations.length > 0 && (
         <div className="space-y-4">
-          <h2 className="text-lg font-semibold text-gray-800">Connected Integrations</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Connected Integrations</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {integrations.map((integration) => {
               const template = availableIntegrations.find(t => t.platform === integration.platform);
@@ -223,7 +224,7 @@ export default function Integrations() {
                   key={integration.id}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="bg-white p-4 rounded-xl shadow-sm border border-gray-100"
+                  className="bg-card/80 backdrop-blur-xl p-4 rounded-xl shadow-sm border border-border/50"
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-3">
@@ -231,10 +232,10 @@ export default function Integrations() {
                         <IconComponent className="w-5 h-5 text-emerald-600" />
                       </div>
                       <div>
-                        <h3 className="font-medium text-gray-800">{integration.display_name}</h3>
+                        <h3 className="font-medium text-gray-900 dark:text-white">{integration.display_name}</h3>
                         <div className="flex items-center gap-2 mt-1">
                           {getStatusIcon(integration.sync_status)}
-                          <span className="text-sm text-gray-500 capitalize">{integration.sync_status}</span>
+                          <span className="text-sm text-gray-500 dark:text-gray-400 capitalize">{integration.sync_status}</span>
                         </div>
                       </div>
                     </div>
@@ -259,12 +260,12 @@ export default function Integrations() {
                   
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-gray-500">Data Points Synced:</span>
+                      <span className="text-gray-500 dark:text-gray-400">Data Points Synced:</span>
                       <span className="font-medium">{integration.data_points_synced.toLocaleString()}</span>
                     </div>
                     {integration.last_sync_at && (
                       <div className="flex justify-between">
-                        <span className="text-gray-500">Last Sync:</span>
+                        <span className="text-gray-500 dark:text-gray-400">Last Sync:</span>
                         <span className="font-medium">
                           {new Date(integration.last_sync_at).toLocaleDateString()}
                         </span>
@@ -286,7 +287,7 @@ export default function Integrations() {
       {/* Available Integrations */}
       <div className="space-y-4">
         <div className="flex justify-between items-center">
-          <h2 className="text-lg font-semibold text-gray-800">Available Integrations</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Available Integrations</h2>
           <div className="flex gap-2">
             {categories.map((category) => (
               <button
@@ -314,38 +315,38 @@ export default function Integrations() {
                 key={template.platform}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow"
+                className="bg-card/80 backdrop-blur-xl p-6 rounded-xl shadow-sm border border-border/50 hover:shadow-md transition-shadow"
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">
                     <div className="p-3 bg-gray-50 rounded-lg">
-                      <IconComponent className="w-6 h-6 text-gray-600" />
+                      <IconComponent className="w-6 h-6 text-gray-600 dark:text-gray-400" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-gray-800">{template.display_name}</h3>
-                      <span className="text-xs text-gray-500 capitalize">{template.category}</span>
+                      <h3 className="font-semibold text-gray-900 dark:text-white">{template.display_name}</h3>
+                      <span className="text-xs text-gray-500 dark:text-gray-400 capitalize">{template.category}</span>
                     </div>
                   </div>
                   <a
                     href={template.documentation_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-gray-400 hover:text-gray-600"
+                    className="text-gray-400 hover:text-gray-600 dark:text-gray-400"
                     title="Documentation"
                   >
                     <ExternalLink className="w-4 h-4" />
                   </a>
                 </div>
                 
-                <p className="text-sm text-gray-600 mb-4">{template.description}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">{template.description}</p>
                 
                 <div className="mb-4">
-                  <div className="text-xs font-medium text-gray-500 mb-2">Data Types:</div>
+                  <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Data Types:</div>
                   <div className="flex flex-wrap gap-1">
                     {template.data_types.map((type) => (
                       <span
                         key={type}
-                        className="px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded capitalize"
+                        className="px-2 py-1 text-xs bg-gray-100 text-gray-600 dark:text-gray-400 rounded capitalize"
                       >
                         {type}
                       </span>
@@ -386,7 +387,7 @@ export default function Integrations() {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-auto"
+            className="bg-card/80 backdrop-blur-xl rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-auto"
           >
             <div className="p-6">
               <div className="flex items-center gap-3 mb-4">
@@ -397,7 +398,7 @@ export default function Integrations() {
                 <h2 className="text-xl font-semibold">Connect {selectedTemplate.display_name}</h2>
               </div>
               
-              <p className="text-gray-600 mb-6">{selectedTemplate.description}</p>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">{selectedTemplate.description}</p>
               
               <div className="space-y-4">
                 {selectedTemplate.setup_fields.map((field) => (
@@ -424,7 +425,7 @@ export default function Integrations() {
               <div className="flex justify-between mt-6">
                 <button
                   onClick={() => setShowSetupModal(false)}
-                  className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                  className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-white"
                 >
                   Cancel
                 </button>

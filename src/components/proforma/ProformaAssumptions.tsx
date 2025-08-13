@@ -1,3 +1,4 @@
+import { Card } from '@/components/ui/card';
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Save, BarChart3, Users, DollarSign, Building, Coins, Briefcase } from 'lucide-react';
@@ -59,13 +60,13 @@ export default function ProformaAssumptions({ scenario, businessProfile, onUpdat
   return (
     <div className="grid grid-cols-12 gap-8">
       <div className="col-span-3">
-        <div className="bg-white rounded-xl shadow-sm p-4">
+        <div className="bg-card/80 backdrop-blur-xl rounded-xl shadow-sm p-4">
           <h3 className="text-lg font-semibold mb-4">Assumption Categories</h3>
           <nav className="space-y-1">
             <button
               onClick={() => setActiveCategory('revenue')}
               className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left ${
-                activeCategory === 'revenue' ? 'bg-emerald-50 text-emerald-700' : 'text-gray-600 hover:bg-gray-50'
+                activeCategory === 'revenue' ? 'bg-emerald-50 text-emerald-700' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50'
               }`}
             >
               <DollarSign className="w-4 h-4" />
@@ -74,7 +75,7 @@ export default function ProformaAssumptions({ scenario, businessProfile, onUpdat
             <button
               onClick={() => setActiveCategory('customers')}
               className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left ${
-                activeCategory === 'customers' ? 'bg-emerald-50 text-emerald-700' : 'text-gray-600 hover:bg-gray-50'
+                activeCategory === 'customers' ? 'bg-emerald-50 text-emerald-700' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50'
               }`}
             >
               <Users className="w-4 h-4" />
@@ -83,7 +84,7 @@ export default function ProformaAssumptions({ scenario, businessProfile, onUpdat
             <button
               onClick={() => setActiveCategory('costs')}
               className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left ${
-                activeCategory === 'costs' ? 'bg-emerald-50 text-emerald-700' : 'text-gray-600 hover:bg-gray-50'
+                activeCategory === 'costs' ? 'bg-emerald-50 text-emerald-700' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50'
               }`}
             >
               <Coins className="w-4 h-4" />
@@ -92,7 +93,7 @@ export default function ProformaAssumptions({ scenario, businessProfile, onUpdat
             <button
               onClick={() => setActiveCategory('headcount')}
               className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left ${
-                activeCategory === 'headcount' ? 'bg-emerald-50 text-emerald-700' : 'text-gray-600 hover:bg-gray-50'
+                activeCategory === 'headcount' ? 'bg-emerald-50 text-emerald-700' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50'
               }`}
             >
               <Briefcase className="w-4 h-4" />
@@ -101,7 +102,7 @@ export default function ProformaAssumptions({ scenario, businessProfile, onUpdat
             <button
               onClick={() => setActiveCategory('capital')}
               className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left ${
-                activeCategory === 'capital' ? 'bg-emerald-50 text-emerald-700' : 'text-gray-600 hover:bg-gray-50'
+                activeCategory === 'capital' ? 'bg-emerald-50 text-emerald-700' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50'
               }`}
             >
               <Building className="w-4 h-4" />
@@ -112,7 +113,7 @@ export default function ProformaAssumptions({ scenario, businessProfile, onUpdat
       </div>
 
       <div className="col-span-9">
-        <div className="bg-white rounded-xl shadow-sm p-6">
+        <div className="bg-card/80 backdrop-blur-xl rounded-xl shadow-sm p-6">
           {activeCategory === 'revenue' && (
             <motion.div
               initial={{ opacity: 0 }}
@@ -138,7 +139,7 @@ export default function ProformaAssumptions({ scenario, businessProfile, onUpdat
                     <div className="space-y-3">
                       <label className="block text-sm font-medium text-gray-700">Basic Plan</label>
                       <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">$</span>
                         <input
                           type="number"
                           value={assumptions?.pricing?.basic || 49}
@@ -150,7 +151,7 @@ export default function ProformaAssumptions({ scenario, businessProfile, onUpdat
                     <div className="space-y-3">
                       <label className="block text-sm font-medium text-gray-700">Premium Plan</label>
                       <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">$</span>
                         <input
                           type="number"
                           value={assumptions?.pricing?.premium || 99}
@@ -162,7 +163,7 @@ export default function ProformaAssumptions({ scenario, businessProfile, onUpdat
                     <div className="space-y-3">
                       <label className="block text-sm font-medium text-gray-700">Enterprise Plan</label>
                       <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">$</span>
                         <input
                           type="number"
                           value={assumptions?.pricing?.enterprise || 299}
@@ -180,7 +181,7 @@ export default function ProformaAssumptions({ scenario, businessProfile, onUpdat
                     <div className="space-y-3">
                       <label className="block text-sm font-medium text-gray-700">Startups</label>
                       <div className="relative">
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">%</span>
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">%</span>
                         <input
                           type="number"
                           value={assumptions?.growth?.startups || 12}
@@ -192,7 +193,7 @@ export default function ProformaAssumptions({ scenario, businessProfile, onUpdat
                     <div className="space-y-3">
                       <label className="block text-sm font-medium text-gray-700">Mid-Market</label>
                       <div className="relative">
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">%</span>
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">%</span>
                         <input
                           type="number"
                           value={assumptions?.growth?.midMarket || 8}
@@ -204,7 +205,7 @@ export default function ProformaAssumptions({ scenario, businessProfile, onUpdat
                     <div className="space-y-3">
                       <label className="block text-sm font-medium text-gray-700">Enterprise</label>
                       <div className="relative">
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">%</span>
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">%</span>
                         <input
                           type="number"
                           value={assumptions?.growth?.enterprise || 5}
@@ -222,7 +223,7 @@ export default function ProformaAssumptions({ scenario, businessProfile, onUpdat
                     <div className="space-y-3">
                       <label className="block text-sm font-medium text-gray-700">Monthly Churn Rate</label>
                       <div className="relative">
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">%</span>
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">%</span>
                         <input
                           type="number"
                           value={assumptions?.retention?.monthlyChurn || 2.3}
@@ -235,7 +236,7 @@ export default function ProformaAssumptions({ scenario, businessProfile, onUpdat
                     <div className="space-y-3">
                       <label className="block text-sm font-medium text-gray-700">Annual Retention</label>
                       <div className="relative">
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">%</span>
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">%</span>
                         <input
                           type="number"
                           value={assumptions?.retention?.annual || 72}
@@ -247,7 +248,7 @@ export default function ProformaAssumptions({ scenario, businessProfile, onUpdat
                     <div className="space-y-3">
                       <label className="block text-sm font-medium text-gray-700">Expansion Revenue</label>
                       <div className="relative">
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">%</span>
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">%</span>
                         <input
                           type="number"
                           value={assumptions?.retention?.expansion || 8}
@@ -296,7 +297,7 @@ export default function ProformaAssumptions({ scenario, businessProfile, onUpdat
                     <div className="space-y-3">
                       <label className="block text-sm font-medium text-gray-700">Basic Tier %</label>
                       <div className="relative">
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">%</span>
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">%</span>
                         <input
                           type="number"
                           value={assumptions?.customers?.basicPercent || 60}
@@ -308,7 +309,7 @@ export default function ProformaAssumptions({ scenario, businessProfile, onUpdat
                     <div className="space-y-3">
                       <label className="block text-sm font-medium text-gray-700">Premium Tier %</label>
                       <div className="relative">
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">%</span>
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">%</span>
                         <input
                           type="number"
                           value={assumptions?.customers?.premiumPercent || 30}
@@ -326,7 +327,7 @@ export default function ProformaAssumptions({ scenario, businessProfile, onUpdat
                     <div className="space-y-3">
                       <label className="block text-sm font-medium text-gray-700">CAC - Search Marketing</label>
                       <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">$</span>
                         <input
                           type="number"
                           value={assumptions?.cac?.search || 125}
@@ -338,7 +339,7 @@ export default function ProformaAssumptions({ scenario, businessProfile, onUpdat
                     <div className="space-y-3">
                       <label className="block text-sm font-medium text-gray-700">CAC - Social Media</label>
                       <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">$</span>
                         <input
                           type="number"
                           value={assumptions?.cac?.social || 95}
@@ -350,7 +351,7 @@ export default function ProformaAssumptions({ scenario, businessProfile, onUpdat
                     <div className="space-y-3">
                       <label className="block text-sm font-medium text-gray-700">CAC - Direct Sales</label>
                       <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">$</span>
                         <input
                           type="number"
                           value={assumptions?.cac?.direct || 350}
@@ -368,7 +369,7 @@ export default function ProformaAssumptions({ scenario, businessProfile, onUpdat
                     <div className="space-y-3">
                       <label className="block text-sm font-medium text-gray-700">Search Marketing %</label>
                       <div className="relative">
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">%</span>
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">%</span>
                         <input
                           type="number"
                           value={assumptions?.marketing?.searchPercent || 40}
@@ -380,7 +381,7 @@ export default function ProformaAssumptions({ scenario, businessProfile, onUpdat
                     <div className="space-y-3">
                       <label className="block text-sm font-medium text-gray-700">Social Media %</label>
                       <div className="relative">
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">%</span>
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">%</span>
                         <input
                           type="number"
                           value={assumptions?.marketing?.socialPercent || 35}
@@ -392,7 +393,7 @@ export default function ProformaAssumptions({ scenario, businessProfile, onUpdat
                     <div className="space-y-3">
                       <label className="block text-sm font-medium text-gray-700">Direct Sales %</label>
                       <div className="relative">
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">%</span>
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">%</span>
                         <input
                           type="number"
                           value={assumptions?.marketing?.directPercent || 25}
@@ -432,7 +433,7 @@ export default function ProformaAssumptions({ scenario, businessProfile, onUpdat
                     <div className="space-y-3">
                       <label className="block text-sm font-medium text-gray-700">Supabase Costs</label>
                       <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">$</span>
                         <input
                           type="number"
                           value={assumptions?.infrastructure?.supabase || 600}
@@ -444,7 +445,7 @@ export default function ProformaAssumptions({ scenario, businessProfile, onUpdat
                     <div className="space-y-3">
                       <label className="block text-sm font-medium text-gray-700">AI API Costs</label>
                       <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">$</span>
                         <input
                           type="number"
                           value={assumptions?.infrastructure?.ai || 2500}
@@ -456,7 +457,7 @@ export default function ProformaAssumptions({ scenario, businessProfile, onUpdat
                     <div className="space-y-3">
                       <label className="block text-sm font-medium text-gray-700">Hosting/CDN</label>
                       <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">$</span>
                         <input
                           type="number"
                           value={assumptions?.infrastructure?.hosting || 1200}
@@ -474,7 +475,7 @@ export default function ProformaAssumptions({ scenario, businessProfile, onUpdat
                     <div className="space-y-3">
                       <label className="block text-sm font-medium text-gray-700">Cost per 1000 Users</label>
                       <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">$</span>
                         <input
                           type="number"
                           value={assumptions?.scaling?.userCost || 150}
@@ -486,7 +487,7 @@ export default function ProformaAssumptions({ scenario, businessProfile, onUpdat
                     <div className="space-y-3">
                       <label className="block text-sm font-medium text-gray-700">Cost per 1000 API Calls</label>
                       <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">$</span>
                         <input
                           type="number"
                           value={assumptions?.scaling?.apiCost || 45}
@@ -498,7 +499,7 @@ export default function ProformaAssumptions({ scenario, businessProfile, onUpdat
                     <div className="space-y-3">
                       <label className="block text-sm font-medium text-gray-700">AI Processing per Doc</label>
                       <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">$</span>
                         <input
                           type="number"
                           value={assumptions?.scaling?.aiCost || 0.08}
@@ -517,7 +518,7 @@ export default function ProformaAssumptions({ scenario, businessProfile, onUpdat
                     <div className="space-y-3">
                       <label className="block text-sm font-medium text-gray-700">Office Space</label>
                       <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">$</span>
                         <input
                           type="number"
                           value={assumptions?.opex?.office || 8500}
@@ -529,7 +530,7 @@ export default function ProformaAssumptions({ scenario, businessProfile, onUpdat
                     <div className="space-y-3">
                       <label className="block text-sm font-medium text-gray-700">Tools & Software</label>
                       <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">$</span>
                         <input
                           type="number"
                           value={assumptions?.opex?.tools || 3500}
@@ -541,7 +542,7 @@ export default function ProformaAssumptions({ scenario, businessProfile, onUpdat
                     <div className="space-y-3">
                       <label className="block text-sm font-medium text-gray-700">Admin & Legal</label>
                       <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">$</span>
                         <input
                           type="number"
                           value={assumptions?.opex?.admin || 4200}
@@ -578,7 +579,7 @@ export default function ProformaAssumptions({ scenario, businessProfile, onUpdat
                 <div>
                   <h3 className="text-lg font-medium mb-4">Engineering Team</h3>
                   <div className="overflow-x-auto">
-                    <table className="min-w-full border border-gray-200">
+                    <table className="min-w-full border border-border/50">
                       <thead>
                         <tr className="bg-gray-50">
                           <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Role</th>
@@ -678,7 +679,7 @@ export default function ProformaAssumptions({ scenario, businessProfile, onUpdat
                     <div className="space-y-3">
                       <label className="block text-sm font-medium text-gray-700">Cash on Hand</label>
                       <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">$</span>
                         <input
                           type="number"
                           value={assumptions?.capital?.cash || 2500000}
@@ -690,7 +691,7 @@ export default function ProformaAssumptions({ scenario, businessProfile, onUpdat
                     <div className="space-y-3">
                       <label className="block text-sm font-medium text-gray-700">Monthly Burn Rate</label>
                       <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">$</span>
                         <input
                           type="number"
                           value={assumptions?.capital?.burn || 180000}

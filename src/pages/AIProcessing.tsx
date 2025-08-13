@@ -1,3 +1,4 @@
+import { Card } from '@/components/ui/card';
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
@@ -155,7 +156,7 @@ export default function AIProcessing() {
     return (
       <div className="flex items-center justify-center h-64">
         <Loader2 className="w-6 h-6 animate-spin text-emerald-600 mr-2" />
-        <span className="text-gray-600">Loading AI processing metrics...</span>
+        <span className="text-gray-600 dark:text-gray-400">Loading AI processing metrics...</span>
       </div>
     );
   }
@@ -165,8 +166,8 @@ export default function AIProcessing() {
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-800 mb-2">Error Loading Metrics</h3>
-          <p className="text-gray-600 mb-4">{error}</p>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Error Loading Metrics</h3>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">{error}</p>
           <button
             onClick={fetchMetrics}
             className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
@@ -182,8 +183,8 @@ export default function AIProcessing() {
     <div className="space-y-8">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-800">AI Processing</h1>
-          <p className="text-gray-500 mt-1">Monitor AI processing metrics and performance</p>
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">AI Processing</h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-1">Monitor AI processing metrics and performance</p>
         </div>
         <button
           onClick={fetchMetrics}
@@ -195,10 +196,10 @@ export default function AIProcessing() {
       </div>
 
       {!metrics?.hasData ? (
-        <div className="bg-white rounded-xl shadow-sm p-8 text-center">
+        <div className="bg-card/80 backdrop-blur-xl rounded-xl shadow-sm p-8 text-center">
           <Brain className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">No AI Processing Data Available</h2>
-          <p className="text-gray-600 max-w-md mx-auto">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">No AI Processing Data Available</h2>
+          <p className="text-gray-600 dark:text-gray-400 max-w-md mx-auto">
             Start using the AI features in the document memory or chat with your documents to generate processing metrics.
           </p>
           <div className="mt-6 inline-flex items-center text-sm text-emerald-600">
@@ -212,51 +213,51 @@ export default function AIProcessing() {
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-white p-6 rounded-xl shadow-sm"
+              className="bg-card/80 backdrop-blur-xl p-6 rounded-xl shadow-sm"
             >
               <div className="flex items-center justify-between mb-2">
-                <p className="text-sm text-gray-500">Processing Speed</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Processing Speed</p>
                 <Zap className="w-5 h-5 text-emerald-600" />
               </div>
               <h3 className="text-2xl font-semibold">{metrics.processingSpeed}ms</h3>
-              <p className="text-xs text-gray-500 mt-1">Average document processing time</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Average document processing time</p>
             </motion.div>
             
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="bg-white p-6 rounded-xl shadow-sm"
+              className="bg-card/80 backdrop-blur-xl p-6 rounded-xl shadow-sm"
             >
               <div className="flex items-center justify-between mb-2">
-                <p className="text-sm text-gray-500">API Requests</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">API Requests</p>
                 <Server className="w-5 h-5 text-emerald-600" />
               </div>
               <h3 className="text-2xl font-semibold">{metrics.totalRequests.toLocaleString()}</h3>
-              <p className="text-xs text-gray-500 mt-1">Total API requests processed</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Total API requests processed</p>
             </motion.div>
             
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="bg-white p-6 rounded-xl shadow-sm"
+              className="bg-card/80 backdrop-blur-xl p-6 rounded-xl shadow-sm"
             >
               <div className="flex items-center justify-between mb-2">
-                <p className="text-sm text-gray-500">Success Rate</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Success Rate</p>
                 <Brain className="w-5 h-5 text-emerald-600" />
               </div>
               <h3 className="text-2xl font-semibold">{metrics.accuracy}%</h3>
-              <p className="text-xs text-gray-500 mt-1">Processing success rate</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Processing success rate</p>
             </motion.div>
           </div>
 
           {/* Processing Time Trend */}
-          <div className="bg-white p-6 rounded-xl shadow-sm">
+          <div className="bg-card/80 backdrop-blur-xl p-6 rounded-xl shadow-sm">
             <div className="flex justify-between items-center mb-6">
               <div className="flex items-center gap-2">
                 <BarChart3 className="w-5 h-5 text-emerald-600" />
-                <h2 className="text-lg font-semibold text-gray-800">Processing Performance</h2>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Processing Performance</h2>
               </div>
               
               <div className="flex gap-2">
@@ -312,7 +313,7 @@ export default function AIProcessing() {
                     <Line 
                       type="monotone" 
                       dataKey="value" 
-                      stroke="#10B981" 
+                      stroke="hsl(var(--chart-1))" 
                       strokeWidth={2}
                       name="Processing Time"
                     />
@@ -323,26 +324,26 @@ export default function AIProcessing() {
               <div className="h-80 flex items-center justify-center">
                 <div className="text-center">
                   <AlertCircle className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-600">Not enough data to display chart</p>
-                  <p className="text-sm text-gray-500 mt-2">Use AI features to generate performance data</p>
+                  <p className="text-gray-600 dark:text-gray-400">Not enough data to display chart</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Use AI features to generate performance data</p>
                 </div>
               </div>
             )}
           </div>
 
           {/* API Documentation Integration */}
-          <div className="bg-white p-6 rounded-xl shadow-sm">
+          <div className="bg-card/80 backdrop-blur-xl p-6 rounded-xl shadow-sm">
             <div className="flex items-center gap-3 mb-4">
-              <Code className="w-6 h-6 text-gray-600" />
-              <h2 className="text-lg font-semibold text-gray-800">API Documentation</h2>
+              <Code className="w-6 h-6 text-gray-600 dark:text-gray-400" />
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">API Documentation</h2>
             </div>
             
-            <p className="text-gray-600 mb-4">
+            <p className="text-gray-600 dark:text-gray-400 mb-4">
               Use our AI processing capabilities through the API. All API calls are automatically tracked and provide insights into performance and usage.
             </p>
             
-            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 font-mono text-sm overflow-auto">
-              <pre className="text-gray-800">
+            <div className="bg-gray-50 p-4 rounded-lg border border-border/50 font-mono text-sm overflow-auto">
+              <pre className="text-gray-900 dark:text-white">
 {`// Example API call for document processing
 const response = await fetch('/api/ai/process', {
   method: 'POST',

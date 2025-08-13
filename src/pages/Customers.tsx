@@ -1,3 +1,4 @@
+import { Card } from '@/components/ui/card';
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Users, UserPlus, UserMinus, UserCheck, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
@@ -19,7 +20,7 @@ export default function Customers() {
       <div className="flex items-center justify-center h-64">
         <div className="flex items-center gap-2">
           <Loader2 className="w-6 h-6 animate-spin text-emerald-600" />
-          <span className="text-gray-600">Loading customer data...</span>
+          <span className="text-gray-600 dark:text-gray-400">Loading customer data...</span>
         </div>
       </div>
     );
@@ -30,8 +31,8 @@ export default function Customers() {
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-800 mb-2">Error Loading Customer Data</h3>
-          <p className="text-gray-600 mb-4">{error}</p>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Error Loading Customer Data</h3>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">{error}</p>
           <button
             onClick={refreshData}
             className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
@@ -112,8 +113,8 @@ export default function Customers() {
     <div className="space-y-8">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-800">Customer Overview</h1>
-          <p className="text-gray-500 mt-1">Track and analyze your customer base</p>
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Customer Overview</h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-1">Track and analyze your customer base</p>
         </div>
         <button
           onClick={refreshData}
@@ -131,8 +132,8 @@ export default function Customers() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">Customer Growth Trend</h2>
+        <div className="bg-card/80 backdrop-blur-xl p-6 rounded-xl shadow-sm border border-border/50">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Customer Growth Trend</h2>
           <div className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={growthData}>
@@ -149,21 +150,21 @@ export default function Customers() {
                 <Line
                   type="monotone"
                   dataKey="customers"
-                  stroke="#10B981"
+                  stroke="hsl(var(--chart-1))"
                   strokeWidth={2}
                   name="customers"
                 />
                 <Line
                   type="monotone"
                   dataKey="newCustomers"
-                  stroke="#3B82F6"
+                  stroke="hsl(var(--chart-2))"
                   strokeWidth={2}
                   name="newCustomers"
                 />
                 <Line
                   type="monotone"
                   dataKey="churn"
-                  stroke="#EF4444"
+                  stroke="hsl(var(--chart-5))"
                   strokeWidth={2}
                   name="churn"
                 />
@@ -172,8 +173,8 @@ export default function Customers() {
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">Customer Segments</h2>
+        <div className="bg-card/80 backdrop-blur-xl p-6 rounded-xl shadow-sm border border-border/50">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Customer Segments</h2>
           <div className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={segmentData}>
@@ -186,7 +187,7 @@ export default function Customers() {
                     name === 'customers' ? 'Customers' : 'Percentage'
                   ]}
                 />
-                <Bar dataKey="customers" fill="#10B981" name="customers" />
+                <Bar dataKey="customers" fill="hsl(var(--chart-1))" name="customers" />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -194,14 +195,14 @@ export default function Customers() {
       </div>
 
       {/* Customer Segments Details */}
-      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-        <h2 className="text-lg font-semibold text-gray-800 mb-4">Customer Segment Breakdown</h2>
+      <div className="bg-card/80 backdrop-blur-xl p-6 rounded-xl shadow-sm border border-border/50">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Customer Segment Breakdown</h2>
         <div className="space-y-4">
           {segmentData.map((segment, index) => (
             <div key={segment.name} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
               <div>
-                <h3 className="font-medium text-gray-800">{segment.name}</h3>
-                <p className="text-sm text-gray-600">{segment.customers.toLocaleString()} customers</p>
+                <h3 className="font-medium text-gray-900 dark:text-white">{segment.name}</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">{segment.customers.toLocaleString()} customers</p>
               </div>
               <div className="text-right">
                 <div className="text-lg font-semibold text-emerald-600">{segment.percentage}%</div>
@@ -219,11 +220,11 @@ export default function Customers() {
 
       {/* Customer Health and Engagement */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">Customer Health Score</h2>
+        <div className="bg-card/80 backdrop-blur-xl p-6 rounded-xl shadow-sm border border-border/50">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Customer Health Score</h2>
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <span className="text-gray-600">Healthy (Score 80-100)</span>
+              <span className="text-gray-600 dark:text-gray-400">Healthy (Score 80-100)</span>
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium">75%</span>
                 <div className="w-32 h-2 bg-gray-100 rounded-full overflow-hidden">
@@ -232,7 +233,7 @@ export default function Customers() {
               </div>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-gray-600">At Risk (Score 50-79)</span>
+              <span className="text-gray-600 dark:text-gray-400">At Risk (Score 50-79)</span>
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium">15%</span>
                 <div className="w-32 h-2 bg-gray-100 rounded-full overflow-hidden">
@@ -241,7 +242,7 @@ export default function Customers() {
               </div>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-gray-600">Critical (Score 0-49)</span>
+              <span className="text-gray-600 dark:text-gray-400">Critical (Score 0-49)</span>
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium">10%</span>
                 <div className="w-32 h-2 bg-gray-100 rounded-full overflow-hidden">
@@ -252,35 +253,35 @@ export default function Customers() {
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">Customer Lifecycle</h2>
+        <div className="bg-card/80 backdrop-blur-xl p-6 rounded-xl shadow-sm border border-border/50">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Customer Lifecycle</h2>
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <span className="text-gray-600">Trial Users</span>
+              <span className="text-gray-600 dark:text-gray-400">Trial Users</span>
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium">245</span>
-                <span className="text-xs text-gray-500">(8.6%)</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">(8.6%)</span>
               </div>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-gray-600">Active Subscribers</span>
+              <span className="text-gray-600 dark:text-gray-400">Active Subscribers</span>
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium">2,378</span>
-                <span className="text-xs text-gray-500">(83.6%)</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">(83.6%)</span>
               </div>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-gray-600">Cancelled (Last 30 days)</span>
+              <span className="text-gray-600 dark:text-gray-400">Cancelled (Last 30 days)</span>
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium">67</span>
-                <span className="text-xs text-gray-500">(2.4%)</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">(2.4%)</span>
               </div>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-gray-600">Churned (Inactive)</span>
+              <span className="text-gray-600 dark:text-gray-400">Churned (Inactive)</span>
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium">155</span>
-                <span className="text-xs text-gray-500">(5.4%)</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">(5.4%)</span>
               </div>
             </div>
           </div>

@@ -1,3 +1,4 @@
+import { Card } from '@/components/ui/card';
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar } from 'recharts';
@@ -98,10 +99,10 @@ export default function ProformaMetrics() {
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white p-6 rounded-xl shadow-sm"
+          className="bg-card/80 backdrop-blur-xl p-6 rounded-xl shadow-sm"
         >
           <div className="flex items-center justify-between">
-            <p className="text-sm text-gray-500">Monthly Recurring Revenue</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Monthly Recurring Revenue</p>
             <DollarSign className="w-5 h-5 text-emerald-600" />
           </div>
           <h3 className="text-2xl font-semibold mt-1">${currentMonth.mrr.toLocaleString()}</h3>
@@ -111,10 +112,10 @@ export default function ProformaMetrics() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="bg-white p-6 rounded-xl shadow-sm"
+          className="bg-card/80 backdrop-blur-xl p-6 rounded-xl shadow-sm"
         >
           <div className="flex items-center justify-between">
-            <p className="text-sm text-gray-500">LTV:CAC Ratio</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">LTV:CAC Ratio</p>
             <TrendingUp className="w-5 h-5 text-emerald-600" />
           </div>
           <h3 className="text-2xl font-semibold mt-1">{currentMonth.ltvCacRatio}:1</h3>
@@ -124,10 +125,10 @@ export default function ProformaMetrics() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="bg-white p-6 rounded-xl shadow-sm"
+          className="bg-card/80 backdrop-blur-xl p-6 rounded-xl shadow-sm"
         >
           <div className="flex items-center justify-between">
-            <p className="text-sm text-gray-500">Customer Lifetime Value</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Customer Lifetime Value</p>
             <Wallet className="w-5 h-5 text-emerald-600" />
           </div>
           <h3 className="text-2xl font-semibold mt-1">${currentMonth.ltv.toLocaleString()}</h3>
@@ -137,21 +138,21 @@ export default function ProformaMetrics() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="bg-white p-6 rounded-xl shadow-sm"
+          className="bg-card/80 backdrop-blur-xl p-6 rounded-xl shadow-sm"
         >
           <div className="flex items-center justify-between">
-            <p className="text-sm text-gray-500">Monthly Churn Rate</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Monthly Churn Rate</p>
             <Users className="w-5 h-5 text-emerald-600" />
           </div>
           <h3 className="text-2xl font-semibold mt-1">{currentMonth.churnRate.toFixed(1)}%</h3>
         </motion.div>
       </div>
       
-      <div className="bg-white p-6 rounded-xl shadow-sm">
+      <div className="bg-card/80 backdrop-blur-xl p-6 rounded-xl shadow-sm">
         <div className="mb-6 flex justify-between items-center">
           <div className="flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-emerald-600" />
-            <h2 className="text-xl font-semibold text-gray-800">SaaS Metrics Over Time</h2>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">SaaS Metrics Over Time</h2>
           </div>
           
           <select
@@ -206,7 +207,7 @@ export default function ProformaMetrics() {
               <Line 
                 type="monotone" 
                 dataKey={metric} 
-                stroke="#10B981" 
+                stroke="hsl(var(--chart-1))" 
                 strokeWidth={2}
                 dot={false}
                 activeDot={{ r: 6 }}
@@ -218,10 +219,10 @@ export default function ProformaMetrics() {
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white p-6 rounded-xl shadow-sm">
+        <div className="bg-card/80 backdrop-blur-xl p-6 rounded-xl shadow-sm">
           <div className="mb-6 flex items-center gap-2">
             <Users className="w-5 h-5 text-emerald-600" />
-            <h2 className="text-xl font-semibold text-gray-800">Customer Segmentation</h2>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Customer Segmentation</h2>
           </div>
           
           <div className="h-64">
@@ -248,7 +249,7 @@ export default function ProformaMetrics() {
                   }}
                 />
                 <Bar yAxisId="left" dataKey="initialArpu" fill="#34D399" name="initialArpu" />
-                <Bar yAxisId="left" dataKey="ltv" fill="#10B981" name="ltv" />
+                <Bar yAxisId="left" dataKey="ltv" fill="hsl(var(--chart-1))" name="ltv" />
                 <Bar yAxisId="left" dataKey="cac" fill="#6366F1" name="cac" />
                 <Bar yAxisId="right" dataKey="payback" fill="#F59E0B" name="payback" />
               </BarChart>
@@ -256,10 +257,10 @@ export default function ProformaMetrics() {
           </div>
         </div>
         
-        <div className="bg-white p-6 rounded-xl shadow-sm">
+        <div className="bg-card/80 backdrop-blur-xl p-6 rounded-xl shadow-sm">
           <div className="mb-6 flex items-center gap-2">
             <Clock className="w-5 h-5 text-emerald-600" />
-            <h2 className="text-xl font-semibold text-gray-800">Projected CAC Payback</h2>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Projected CAC Payback</h2>
           </div>
           
           <div className="space-y-8">
@@ -271,7 +272,7 @@ export default function ProformaMetrics() {
               <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
                 <div className="h-full bg-green-500 rounded-full" style={{ width: '58.3%' }}></div>
               </div>
-              <div className="flex justify-between text-xs text-gray-500">
+              <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
                 <span>0</span>
                 <span>3 mo</span>
                 <span>6 mo</span>
@@ -288,7 +289,7 @@ export default function ProformaMetrics() {
               <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
                 <div className="h-full bg-emerald-500 rounded-full" style={{ width: '41.7%' }}></div>
               </div>
-              <div className="flex justify-between text-xs text-gray-500">
+              <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
                 <span>0</span>
                 <span>3 mo</span>
                 <span>6 mo</span>
@@ -305,7 +306,7 @@ export default function ProformaMetrics() {
               <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
                 <div className="h-full bg-blue-500 rounded-full" style={{ width: '33.3%' }}></div>
               </div>
-              <div className="flex justify-between text-xs text-gray-500">
+              <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
                 <span>0</span>
                 <span>3 mo</span>
                 <span>6 mo</span>

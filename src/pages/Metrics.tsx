@@ -1,3 +1,4 @@
+import { Card } from '@/components/ui/card';
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
@@ -148,7 +149,7 @@ export default function Metrics() {
       <div className="flex items-center justify-center h-64">
         <div className="flex items-center gap-2">
           <Loader2 className="w-6 h-6 animate-spin text-emerald-600" />
-          <span className="text-gray-600">Loading metrics...</span>
+          <span className="text-gray-600 dark:text-gray-400">Loading metrics...</span>
         </div>
       </div>
     );
@@ -159,8 +160,8 @@ export default function Metrics() {
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-800 mb-2">Error Loading Metrics</h3>
-          <p className="text-gray-600 mb-4">{error}</p>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Error Loading Metrics</h3>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">{error}</p>
           <button
             onClick={loadMetrics}
             className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
@@ -176,8 +177,8 @@ export default function Metrics() {
     <div className="space-y-8">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-800">Business Metrics</h1>
-          <p className="text-gray-500 mt-1">Monitor key performance indicators</p>
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Business Metrics</h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-1">Monitor key performance indicators</p>
         </div>
         <div className="flex items-center gap-3">
           <button
@@ -199,7 +200,7 @@ export default function Metrics() {
 
       {/* Metric Categories Filter */}
       <div className="flex items-center gap-2 overflow-x-auto pb-2">
-        <div className="text-sm text-gray-500 flex items-center">
+        <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
           <Filter className="w-4 h-4 mr-1" />
           Filter:
         </div>
@@ -269,9 +270,9 @@ export default function Metrics() {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-xl shadow-sm p-6 border border-gray-200"
+          className="bg-card/80 backdrop-blur-xl rounded-xl shadow-sm p-6 border border-border/50"
         >
-          <h2 className="text-lg font-medium text-gray-800 mb-4">Create New Metric</h2>
+          <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Create New Metric</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
               <div>
@@ -412,10 +413,10 @@ export default function Metrics() {
       </div>
 
       {filteredMetrics.length === 0 && (
-        <div className="bg-white rounded-xl shadow-sm p-8 text-center">
+        <div className="bg-card/80 backdrop-blur-xl rounded-xl shadow-sm p-8 text-center">
           <BarChart3 className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">No Metrics Found</h2>
-          <p className="text-gray-600 max-w-md mx-auto mb-6">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">No Metrics Found</h2>
+          <p className="text-gray-600 dark:text-gray-400 max-w-md mx-auto mb-6">
             {activeCategory === 'all'
               ? "You haven't created any metrics yet. Add your first metric to start tracking."
               : `You don't have any metrics in the '${activeCategory}' category.`}
@@ -434,8 +435,8 @@ export default function Metrics() {
       {metrics.length > 0 && liveMetrics && (
         <div className="space-y-8">
           {/* MRR Chart */}
-          <div className="bg-white p-6 rounded-xl shadow-sm">
-            <h2 className="text-lg font-semibold text-gray-800 mb-6 flex items-center gap-2">
+          <div className="bg-card/80 backdrop-blur-xl p-6 rounded-xl shadow-sm">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
               <DollarSign className="w-5 h-5 text-emerald-600" />
               Monthly Recurring Revenue
             </h2>
@@ -456,7 +457,7 @@ export default function Metrics() {
                     <Line 
                       type="monotone" 
                       dataKey="value" 
-                      stroke="#10B981" 
+                      stroke="hsl(var(--chart-1))" 
                       strokeWidth={2}
                       name="MRR"
                     />
@@ -467,8 +468,8 @@ export default function Metrics() {
               <div className="h-80 flex items-center justify-center">
                 <div className="text-center">
                   <AlertCircle className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-600">No revenue data available</p>
-                  <p className="text-sm text-gray-500 mt-2">
+                  <p className="text-gray-600 dark:text-gray-400">No revenue data available</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
                     Connect payment integrations to see revenue metrics
                   </p>
                 </div>
@@ -477,8 +478,8 @@ export default function Metrics() {
           </div>
 
           {/* Customer Metrics */}
-          <div className="bg-white p-6 rounded-xl shadow-sm">
-            <h2 className="text-lg font-semibold text-gray-800 mb-6 flex items-center gap-2">
+          <div className="bg-card/80 backdrop-blur-xl p-6 rounded-xl shadow-sm">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
               <Users className="w-5 h-5 text-blue-600" />
               Customer Metrics
             </h2>
@@ -497,7 +498,7 @@ export default function Metrics() {
                     <Tooltip 
                       formatter={(value: any) => [value.toLocaleString(), 'Customers']}
                     />
-                    <Bar dataKey="value" fill="#3B82F6" name="Customers" />
+                    <Bar dataKey="value" fill="hsl(var(--chart-2))" name="Customers" />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -505,8 +506,8 @@ export default function Metrics() {
               <div className="h-80 flex items-center justify-center">
                 <div className="text-center">
                   <AlertCircle className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-600">No customer segmentation data available</p>
-                  <p className="text-sm text-gray-500 mt-2">
+                  <p className="text-gray-600 dark:text-gray-400">No customer segmentation data available</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
                     Add customer data to see segment metrics
                   </p>
                 </div>
@@ -515,8 +516,8 @@ export default function Metrics() {
           </div>
 
           {/* Performance Metrics */}
-          <div className="bg-white p-6 rounded-xl shadow-sm">
-            <h2 className="text-lg font-semibold text-gray-800 mb-6 flex items-center gap-2">
+          <div className="bg-card/80 backdrop-blur-xl p-6 rounded-xl shadow-sm">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-purple-600" />
               Performance Metrics
             </h2>
@@ -524,7 +525,7 @@ export default function Metrics() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="p-4 bg-gray-50 rounded-lg">
                   <div className="flex justify-between items-center mb-2">
-                    <h3 className="font-medium text-gray-800">Processing Speed</h3>
+                    <h3 className="font-medium text-gray-900 dark:text-white">Processing Speed</h3>
                     <span className="text-emerald-600 text-sm flex items-center">
                       <ArrowDownRight className="w-4 h-4 mr-0.5" />
                       5.2%
@@ -532,7 +533,7 @@ export default function Metrics() {
                   </div>
                   <div className="flex items-baseline gap-1">
                     <span className="text-2xl font-bold">{liveMetrics.performance.processingSpeed}</span>
-                    <span className="text-gray-500">ms</span>
+                    <span className="text-gray-500 dark:text-gray-400">ms</span>
                   </div>
                   <div className="mt-2 bg-gray-200 h-2 rounded-full overflow-hidden">
                     <div className="bg-emerald-500 h-full" style={{ width: '75%' }}></div>
@@ -541,7 +542,7 @@ export default function Metrics() {
                 
                 <div className="p-4 bg-gray-50 rounded-lg">
                   <div className="flex justify-between items-center mb-2">
-                    <h3 className="font-medium text-gray-800">Accuracy Rate</h3>
+                    <h3 className="font-medium text-gray-900 dark:text-white">Accuracy Rate</h3>
                     <span className="text-emerald-600 text-sm flex items-center">
                       <ArrowUpRight className="w-4 h-4 mr-0.5" />
                       1.3%
@@ -549,7 +550,7 @@ export default function Metrics() {
                   </div>
                   <div className="flex items-baseline gap-1">
                     <span className="text-2xl font-bold">{liveMetrics.performance.accuracyRate}</span>
-                    <span className="text-gray-500">%</span>
+                    <span className="text-gray-500 dark:text-gray-400">%</span>
                   </div>
                   <div className="mt-2 bg-gray-200 h-2 rounded-full overflow-hidden">
                     <div className="bg-blue-500 h-full" style={{ width: `${liveMetrics.performance.accuracyRate}%` }}></div>
@@ -558,7 +559,7 @@ export default function Metrics() {
                 
                 <div className="p-4 bg-gray-50 rounded-lg">
                   <div className="flex justify-between items-center mb-2">
-                    <h3 className="font-medium text-gray-800">API Uptime</h3>
+                    <h3 className="font-medium text-gray-900 dark:text-white">API Uptime</h3>
                     <span className="text-emerald-600 text-sm flex items-center">
                       <ArrowUpRight className="w-4 h-4 mr-0.5" />
                       0.1%
@@ -566,7 +567,7 @@ export default function Metrics() {
                   </div>
                   <div className="flex items-baseline gap-1">
                     <span className="text-2xl font-bold">{liveMetrics.performance.apiUptime}</span>
-                    <span className="text-gray-500">%</span>
+                    <span className="text-gray-500 dark:text-gray-400">%</span>
                   </div>
                   <div className="mt-2 bg-gray-200 h-2 rounded-full overflow-hidden">
                     <div className="bg-purple-500 h-full" style={{ width: `${liveMetrics.performance.apiUptime}%` }}></div>
@@ -576,8 +577,8 @@ export default function Metrics() {
             ) : (
               <div className="py-8 text-center">
                 <AlertCircle className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-600">No performance data available</p>
-                <p className="text-sm text-gray-500 mt-2">
+                <p className="text-gray-600 dark:text-gray-400">No performance data available</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
                   Use API features to generate performance metrics
                 </p>
               </div>

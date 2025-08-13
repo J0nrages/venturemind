@@ -20,6 +20,9 @@ import {
   Database,
   AlertTriangle
 } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { toast } from 'react-hot-toast';
 import ConversationalSetup from '../components/ConversationalSetup';
 import { useBusinessData } from '../hooks/useBusinessData';
 import { useStrategicData } from '../hooks/useStrategicData';
@@ -105,11 +108,11 @@ export default function BusinessPlan() {
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-800 mb-2">Error Loading Business Plan</h3>
-          <p className="text-gray-600 mb-4">{businessError}</p>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Error Loading Business Plan</h3>
+          <p className="text-gray-600 dark:text-gray-400 dark:text-gray-400 mb-4">{businessError}</p>
           <button
             onClick={refreshData}
-            className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
+            className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
           >
             Try Again
           </button>
@@ -136,7 +139,7 @@ export default function BusinessPlan() {
   const mainContentClass = `w-full px-4 lg:px-6 space-y-6 lg:space-y-8 transition-all duration-300 max-w-7xl mx-auto`;
 
   const DataStatusIndicator = ({ hasData, label }: { hasData: boolean; label: string }) => (
-    <div className={`flex items-center gap-1 text-xs ${hasData ? 'text-green-600' : 'text-gray-400'}`}>
+    <div className={`flex items-center gap-1 text-xs ${hasData ? 'text-green-600' : 'text-gray-400 dark:text-gray-500 dark:text-gray-400'}`}>
       {hasData ? <Database className="w-3 h-3" /> : <AlertTriangle className="w-3 h-3" />}
       <span>{hasData ? 'Live Data' : 'No Data'}</span>
     </div>
@@ -144,16 +147,17 @@ export default function BusinessPlan() {
 
   return (
     <>
-      <div className={mainContentClass}>
+      <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-background">
+        <div className={mainContentClass}>
         <div className="text-center space-y-3 lg:space-y-4">
-          <h1 className="text-2xl lg:text-4xl font-semibold text-gray-800 break-words">
+          <h1 className="text-2xl lg:text-4xl font-semibold text-gray-900 dark:text-white break-words">
             {companyName}
           </h1>
-          <h2 className="text-lg lg:text-xl text-gray-600 break-words">
+          <h2 className="text-lg lg:text-xl text-gray-600 dark:text-gray-400 dark:text-gray-400 break-words">
             {industry === 'SaaS' ? 'Series A Metrics Dashboard' : `${industry} Business Dashboard`}
           </h2>
           
-          <div className="flex items-center justify-center gap-4 lg:gap-8 text-xs lg:text-sm text-gray-600 flex-wrap">
+          <div className="flex items-center justify-center gap-4 lg:gap-8 text-xs lg:text-sm text-gray-600 dark:text-gray-400 dark:text-gray-400 flex-wrap">
             <div className="flex items-center gap-1">
               <Users className="w-4 h-4 text-gray-400" />
               <span className="break-words">
@@ -171,15 +175,15 @@ export default function BusinessPlan() {
           <div className="grid gap-4 lg:gap-6 grid-cols-1 lg:grid-cols-12">
             {/* Revenue & Growth */}
             <div className="lg:col-span-4 space-y-4 lg:space-y-6">
-              <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+              <Card className="p-6 bg-card/80 backdrop-blur-xl">
                 <div className="flex justify-between items-start mb-2">
-                  <h3 className="text-lg font-semibold text-gray-800">Revenue</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Revenue</h3>
                   <DataStatusIndicator hasData={hasRevenueData} label="revenue" />
                 </div>
                 
                 {hasRevenueData ? (
                   <>
-                    <div className="text-xl lg:text-2xl xl:text-3xl font-semibold text-emerald-600 break-words">
+                    <div className="text-xl lg:text-2xl xl:text-3xl font-semibold text-primary break-words">
                       ${currentRevenue.toLocaleString()}
                     </div>
                     
@@ -191,8 +195,8 @@ export default function BusinessPlan() {
                             <Area 
                               type="monotone" 
                               dataKey="value" 
-                              stroke="#10B981" 
-                              fill="#10B981" 
+                              stroke="hsl(var(--chart-1))" 
+                              fill="hsl(var(--chart-1))" 
                               fillOpacity={0.2}
                             />
                             <XAxis dataKey="date" hide />
@@ -203,27 +207,27 @@ export default function BusinessPlan() {
                       </div>
                     )}
                     
-                    <div className="flex items-center gap-2 mt-3 text-sm text-emerald-600">
+                    <div className="flex items-center gap-2 mt-3 text-sm text-primary">
                       <TrendingUp className="w-4 h-4" />
                       <span className="break-words">{liveMetrics?.revenue.change > 0 ? '+' : ''}{liveMetrics?.revenue.change || 0}%</span>
                     </div>
                   </>
                 ) : (
                   <div className="text-center py-6 lg:py-8">
-                    <AlertTriangle className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                    <p className="text-gray-500 text-sm">No revenue data available</p>
-                    <p className="text-gray-400 text-xs mt-1">Add subscriptions to see metrics</p>
+                    <AlertTriangle className="w-12 h-12 text-gray-300 dark:text-gray-600 dark:text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-500 dark:text-gray-400 text-sm">No revenue data available</p>
+                    <p className="text-gray-400 dark:text-gray-500 dark:text-gray-400 text-xs mt-1">Add subscriptions to see metrics</p>
                   </div>
                 )}
-              </div>
+              </Card>
 
               <div className="space-y-4">
-                <div className="flex items-center gap-3 p-4 bg-white rounded-xl shadow-sm border border-gray-100">
-                  <Brain className="w-6 h-6 text-purple-600" />
+                <Card className="flex items-center gap-3 p-4 bg-card/80 backdrop-blur-xl">
+                  <Brain className="w-6 h-6 text-primary" />
                   <div className="flex-1">
-                    <h4 className="font-medium text-gray-800 text-sm lg:text-base">AI Processing</h4>
+                    <h4 className="font-medium text-gray-900 dark:text-white text-sm lg:text-base">AI Processing</h4>
                     {hasPerformanceData ? (
-                      <p className="text-sm text-gray-500 break-words">
+                      <p className="text-sm text-gray-500 dark:text-gray-400 break-words">
                         {liveMetrics?.performance.processingSpeed || 0}ms avg · {liveMetrics?.performance.accuracyRate || 0}% accuracy
                       </p>
                     ) : (
@@ -231,51 +235,51 @@ export default function BusinessPlan() {
                     )}
                   </div>
                   <DataStatusIndicator hasData={hasPerformanceData} label="performance" />
-                </div>
+                </Card>
                 
-                <div className="flex items-center gap-3 p-4 bg-white rounded-xl shadow-sm border border-gray-100">
-                  <FileText className="w-6 h-6 text-blue-600" />
+                <Card className="flex items-center gap-3 p-4 bg-card/80 backdrop-blur-xl">
+                  <FileText className="w-6 h-6 text-primary" />
                   <div className="flex-1">
-                    <h4 className="font-medium text-gray-800 text-sm lg:text-base">Documents</h4>
-                    <p className="text-sm text-gray-500">Available in Document Memory</p>
+                    <h4 className="font-medium text-gray-900 dark:text-white text-sm lg:text-base">Documents</h4>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Available in Document Memory</p>
                   </div>
-                </div>
+                </Card>
               </div>
             </div>
 
             {/* Product Metrics */}
             <div className="lg:col-span-4 space-y-4 lg:space-y-6">
-              <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+              <Card className="p-6 bg-card/80 backdrop-blur-xl">
                 <div className="flex justify-between items-start mb-2">
-                  <h3 className="text-lg font-medium text-gray-800">Key Metrics</h3>
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">Key Metrics</h3>
                   <DataStatusIndicator hasData={hasPerformanceData} label="metrics" />
                 </div>
                 
                 {hasPerformanceData ? (
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
-                      <span className="text-gray-600">Processing Speed</span>
+                      <span className="text-gray-600 dark:text-gray-400 dark:text-gray-400">Processing Speed</span>
                       <div className="flex items-center gap-2">
                         <span className="text-xs lg:text-sm font-medium">{liveMetrics?.performance.processingSpeed || 0}ms</span>
-                        <div className="w-16 lg:w-24 h-2 bg-gray-100 rounded-full overflow-hidden">
-                          <div className="w-[92%] h-full bg-emerald-500 rounded-full"></div>
+                        <div className="w-16 lg:w-24 h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                          <div className="w-[92%] h-full bg-primary rounded-full"></div>
                         </div>
                       </div>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-gray-600">Accuracy Rate</span>
+                      <span className="text-gray-600 dark:text-gray-400 dark:text-gray-400">Accuracy Rate</span>
                       <div className="flex items-center gap-2">
                         <span className="text-xs lg:text-sm font-medium">{liveMetrics?.performance.accuracyRate || 0}%</span>
-                        <div className="w-16 lg:w-24 h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div className="w-16 lg:w-24 h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
                           <div className="w-[99%] h-full bg-blue-500 rounded-full"></div>
                         </div>
                       </div>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-gray-600">API Uptime</span>
+                      <span className="text-gray-600 dark:text-gray-400 dark:text-gray-400">API Uptime</span>
                       <div className="flex items-center gap-2">
                         <span className="text-xs lg:text-sm font-medium">{liveMetrics?.performance.apiUptime || 0}%</span>
-                        <div className="w-16 lg:w-24 h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div className="w-16 lg:w-24 h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
                           <div className="w-[99%] h-full bg-purple-500 rounded-full"></div>
                         </div>
                       </div>
@@ -283,16 +287,16 @@ export default function BusinessPlan() {
                   </div>
                 ) : (
                   <div className="text-center py-6 lg:py-8">
-                    <AlertTriangle className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                    <p className="text-gray-500 text-sm">No performance data available</p>
-                    <p className="text-gray-400 text-xs mt-1">API usage will generate metrics</p>
+                    <AlertTriangle className="w-12 h-12 text-gray-300 dark:text-gray-600 dark:text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-500 dark:text-gray-400 dark:text-gray-400 text-sm">No performance data available</p>
+                    <p className="text-gray-400 dark:text-gray-500 dark:text-gray-400 text-xs mt-1">API usage will generate metrics</p>
                   </div>
                 )}
-              </div>
+              </Card>
 
-              <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+              <Card className="p-6 bg-card/80 backdrop-blur-xl">
                 <div className="flex justify-between items-start mb-4">
-                  <h3 className="text-lg font-medium text-gray-800">Customer Success</h3>
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">Customer Success</h3>
                   <DataStatusIndicator hasData={hasCustomerData} label="customers" />
                 </div>
                 
@@ -300,24 +304,24 @@ export default function BusinessPlan() {
                   <div className="space-y-4">
                     {Object.entries(liveMetrics.customers.segments).map(([segment, count], index) => {
                       const percentage = Math.round((count / liveMetrics.customers.total) * 100);
-                      const colors = ['bg-indigo-500', 'bg-blue-500', 'bg-emerald-500'];
+                      const colors = ['bg-indigo-500', 'bg-blue-500', 'bg-primary'];
                       const width = Math.min(60, Math.max(20, percentage * 1.5)); // Scale for visual appeal, constrain max width
                       return (
                         <div key={segment} className="flex items-center gap-2">
                           <div className={`h-2 ${colors[index % colors.length]} rounded-full flex-shrink-0`} style={{ width: `${Math.max(width, 20)}px` }}></div>
-                          <span className="text-sm text-gray-600 break-words">{segment} ({count}, {percentage}%)</span>
+                          <span className="text-sm text-gray-600 dark:text-gray-400 dark:text-gray-400 break-words">{segment} ({count}, {percentage}%)</span>
                         </div>
                       );
                     })}
                   </div>
                 ) : (
                   <div className="text-center py-6 lg:py-8">
-                    <AlertTriangle className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                    <p className="text-gray-500 text-sm">No customer segment data</p>
-                    <p className="text-gray-400 text-xs mt-1">Add subscriptions to see breakdown</p>
+                    <AlertTriangle className="w-12 h-12 text-gray-300 dark:text-gray-600 dark:text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-500 dark:text-gray-400 text-sm">No customer segment data</p>
+                    <p className="text-gray-400 dark:text-gray-500 dark:text-gray-400 text-xs mt-1">Add subscriptions to see breakdown</p>
                   </div>
                 )}
-              </div>
+              </Card>
             </div>
 
             {/* Strategy & Operations */}
@@ -343,7 +347,7 @@ export default function BusinessPlan() {
                       whileTap={{ scale: 0.98 }}
                     >
                       <h4 className={`text-${color}-600 font-medium mb-1 lg:mb-2 capitalize text-sm lg:text-base`}>{type}</h4>
-                      <p className="text-xs lg:text-sm text-gray-600">
+                      <p className="text-xs lg:text-sm text-gray-600 dark:text-gray-400 dark:text-gray-400">
                         {items.length > 0 ? `${items.length} items` : 'No items yet'}
                       </p>
                       {selectedCard === type && (
@@ -360,12 +364,12 @@ export default function BusinessPlan() {
                 })}
               </div>
 
-              <div className="bg-white p-4 lg:p-6 rounded-xl shadow-sm border border-gray-100">
+              <Card className="p-4 lg:p-6 bg-card/80 backdrop-blur-xl">
                 <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-medium text-gray-800">Strategic Initiatives</h3>
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">Strategic Initiatives</h3>
                   <button
                     onClick={() => setShowNewInitiativeForm(true)}
-                    className="p-1.5 text-gray-400 hover:text-emerald-600 transition-colors"
+                    className="p-1.5 text-gray-400 dark:text-gray-500 dark:text-gray-400 hover:text-primary transition-colors"
                   >
                     <Plus className="w-4 h-4" />
                   </button>
@@ -378,13 +382,13 @@ export default function BusinessPlan() {
                       value={newInitiativeTitle}
                       onChange={(e) => setNewInitiativeTitle(e.target.value)}
                       placeholder="New initiative..."
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      className="w-full px-3 py-2 text-sm border border-border/50 rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
                       onKeyPress={(e) => e.key === 'Enter' && handleAddInitiative()}
                     />
                     <div className="flex gap-2 mt-2.5">
                       <button
                         onClick={handleAddInitiative}
-                        className="px-3 py-1.5 text-xs bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
+                        className="px-3 py-1.5 text-xs bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
                       >
                         Add
                       </button>
@@ -408,8 +412,8 @@ export default function BusinessPlan() {
                         onClick={() => toggleInitiative(initiative.id)}
                         className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-colors flex-shrink-0 mt-0.5 ${
                           initiative.status === 'completed'
-                            ? 'bg-emerald-500 border-emerald-500'
-                            : 'border-gray-300 hover:border-emerald-500'
+                            ? 'bg-primary border-primary'
+                            : 'border-border/50 hover:border-primary'
                         }`}
                       >
                         {initiative.status === 'completed' && (
@@ -418,8 +422,8 @@ export default function BusinessPlan() {
                       </button>
                       <span className={`text-xs lg:text-sm flex-1 break-words leading-relaxed ${
                         initiative.status === 'completed' 
-                          ? 'text-gray-500 line-through' 
-                          : 'text-gray-600'
+                          ? 'text-gray-500 dark:text-gray-400 line-through' 
+                          : 'text-gray-600 dark:text-gray-400 dark:text-gray-400'
                       }`}>
                         {initiative.title}
                       </span>
@@ -444,16 +448,16 @@ export default function BusinessPlan() {
                   ))}
                   
                   {initiatives.length === 0 && (
-                    <p className="text-xs lg:text-sm text-gray-500 text-center py-4">
+                    <p className="text-xs lg:text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400 text-center py-4">
                       No initiatives yet. Add one above!
                     </p>
                   )}
                 </div>
-              </div>
+              </Card>
 
-              <div className="bg-white p-5 lg:p-6 rounded-xl shadow-sm border border-gray-100">
+              <Card className="p-5 lg:p-6 bg-card/80 backdrop-blur-xl">
                 <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-medium text-gray-800">Growth Metrics</h3>
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">Growth Metrics</h3>
                   <div className="flex items-center gap-2">
                     <DataStatusIndicator hasData={liveMetrics?.financial.hasData || false} label="financials" />
                     <button
@@ -461,7 +465,7 @@ export default function BusinessPlan() {
                         refreshData();
                         refreshStrategicData();
                       }}
-                      className="p-1 text-gray-400 hover:text-emerald-600 transition-colors"
+                      className="p-1 text-gray-400 dark:text-gray-500 dark:text-gray-400 hover:text-primary transition-colors"
                     >
                       <RefreshCw className="w-4 h-4" />
                     </button>
@@ -471,17 +475,17 @@ export default function BusinessPlan() {
                 {liveMetrics?.financial.hasData ? (
                   <div className="space-y-2.5">
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Customer LTV</span>
+                      <span className="text-gray-600 dark:text-gray-400 dark:text-gray-400">Customer LTV</span>
                       <span className="font-medium break-all">${(liveMetrics.financial.ltv || 0).toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">CAC</span>
+                      <span className="text-gray-600 dark:text-gray-400 dark:text-gray-400">CAC</span>
                       <span className="font-medium break-all">
                         {liveMetrics.financial.cac > 0 ? `$${liveMetrics.financial.cac.toLocaleString()}` : 'No data'}
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Payback</span>
+                      <span className="text-gray-600 dark:text-gray-400 dark:text-gray-400">Payback</span>
                       <span className="font-medium break-all">
                         {liveMetrics.financial.ltv > 0 && liveMetrics.financial.cac > 0 
                           ? `${(liveMetrics.financial.cac / (liveMetrics.financial.mrr / liveMetrics.customers.total)).toFixed(1)} months`
@@ -490,23 +494,23 @@ export default function BusinessPlan() {
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Churn Rate</span>
+                      <span className="text-gray-600 dark:text-gray-400 dark:text-gray-400">Churn Rate</span>
                       <span className="font-medium break-all">{liveMetrics.financial.churnRate || 0}%</span>
                     </div>
                   </div>
                 ) : (
                   <div className="text-center py-6">
-                    <AlertTriangle className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-                    <p className="text-gray-500 text-sm">No financial data available</p>
-                    <p className="text-gray-400 text-xs mt-1 break-words">Add subscriptions to calculate</p>
+                    <AlertTriangle className="w-8 h-8 text-gray-300 dark:text-gray-600 dark:text-gray-400 mx-auto mb-2" />
+                    <p className="text-gray-500 dark:text-gray-400 dark:text-gray-400 text-sm">No financial data available</p>
+                    <p className="text-gray-400 dark:text-gray-500 dark:text-gray-400 text-xs mt-1 break-words">Add subscriptions to calculate</p>
                   </div>
                 )}
-              </div>
+              </Card>
             </div>
           </div>
         </div>
+        </div>
       </div>
-
     </>
   );
 }

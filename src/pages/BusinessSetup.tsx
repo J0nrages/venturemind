@@ -1,3 +1,4 @@
+import { Card } from '@/components/ui/card';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -244,7 +245,7 @@ export default function BusinessSetup() {
                 Monthly Marketing Budget (optional)
               </label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">
                   $
                 </span>
                 <input
@@ -305,7 +306,7 @@ export default function BusinessSetup() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="max-w-md w-full bg-white rounded-xl shadow-lg p-8"
+        className="max-w-md w-full bg-card/80 backdrop-blur-xl rounded-xl shadow-lg p-8"
       >
         <div className="flex items-center justify-center mb-8">
           <Building2 className="w-8 h-8 text-emerald-600 mr-2" />
@@ -323,7 +324,7 @@ export default function BusinessSetup() {
               />
             ))}
           </div>
-          <div className="mt-4 text-center text-sm text-gray-600">
+          <div className="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">
             Step {step} of 3
           </div>
         </div>
@@ -334,7 +335,7 @@ export default function BusinessSetup() {
           {step > 1 && (
             <button
               onClick={() => setStep(step - 1)}
-              className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-800"
+              className="flex items-center gap-2 px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-white"
             >
               <ChevronLeft className="w-4 h-4" />
               Back

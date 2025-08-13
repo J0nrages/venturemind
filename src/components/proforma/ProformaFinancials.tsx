@@ -1,3 +1,4 @@
+import { Card } from '@/components/ui/card';
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area } from 'recharts';
@@ -398,10 +399,10 @@ export default function ProformaFinancials({ scenario, businessProfile }: Props)
 
   if (loadingState.status === 'loading') {
     return (
-      <div className="bg-white rounded-xl shadow-sm p-8">
+      <div className="bg-card/80 backdrop-blur-xl rounded-xl shadow-sm p-8">
         <div className="flex flex-col items-center justify-center h-64 space-y-4">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
-          <p className="text-sm text-gray-600">Generating financial projections...</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400">Generating financial projections...</p>
         </div>
       </div>
     );
@@ -409,14 +410,14 @@ export default function ProformaFinancials({ scenario, businessProfile }: Props)
 
   if (loadingState.status === 'error') {
     return (
-      <div className="bg-white rounded-xl shadow-sm p-8">
+      <div className="bg-card/80 backdrop-blur-xl rounded-xl shadow-sm p-8">
         <div className="flex flex-col items-center justify-center h-64">
           <div className="text-center max-w-md">
             <div className="inline-flex h-14 w-14 rounded-full bg-red-50 p-4 mb-6">
               <AlertCircle className="h-6 w-6 text-red-600" />
             </div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">Error Loading Financial Data</h3>
-            <p className="text-gray-600 mb-6">{loadingState.error}</p>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">{loadingState.error}</p>
             <button
               onClick={validateAndGenerateFinancials}
               className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
@@ -432,14 +433,14 @@ export default function ProformaFinancials({ scenario, businessProfile }: Props)
 
   if (!scenario || !financials) {
     return (
-      <div className="bg-white rounded-xl shadow-sm p-8">
+      <div className="bg-card/80 backdrop-blur-xl rounded-xl shadow-sm p-8">
         <div className="flex flex-col items-center justify-center h-64">
           <div className="text-center max-w-md">
             <div className="inline-flex h-14 w-14 rounded-full bg-amber-50 p-4 mb-6">
               <AlertCircle className="h-6 w-6 text-amber-600" />
             </div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">No Active Scenario</h3>
-            <p className="text-gray-600 mb-6">
+            <p className="text-gray-600 dark:text-gray-400 mb-6">
               To view financial projections, you need to create or activate a scenario first. 
               Switch to the "Scenarios" tab to manage your scenarios.
             </p>
@@ -466,16 +467,16 @@ export default function ProformaFinancials({ scenario, businessProfile }: Props)
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white p-6 rounded-xl shadow-sm"
+          className="bg-card/80 backdrop-blur-xl p-6 rounded-xl shadow-sm"
         >
-          <p className="text-sm text-gray-500">Projected Monthly Revenue</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Projected Monthly Revenue</p>
           <h3 className="text-2xl font-semibold mt-1">${metrics?.revenue.toLocaleString()}</h3>
           <div className="flex items-center mt-2">
             <span className={`flex items-center text-sm ${metrics?.revenueChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
               {metrics?.revenueChange >= 0 ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownRight className="w-4 h-4" />}
               {Math.abs(metrics?.revenueChange).toFixed(1)}%
             </span>
-            <span className="text-gray-500 text-sm ml-2">vs last month</span>
+            <span className="text-gray-500 dark:text-gray-400 text-sm ml-2">vs last month</span>
           </div>
         </motion.div>
         
@@ -483,16 +484,16 @@ export default function ProformaFinancials({ scenario, businessProfile }: Props)
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="bg-white p-6 rounded-xl shadow-sm"
+          className="bg-card/80 backdrop-blur-xl p-6 rounded-xl shadow-sm"
         >
-          <p className="text-sm text-gray-500">Projected Net Profit</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Projected Net Profit</p>
           <h3 className="text-2xl font-semibold mt-1">${metrics?.profit.toLocaleString()}</h3>
           <div className="flex items-center mt-2">
             <span className={`flex items-center text-sm ${metrics?.profitChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
               {metrics?.profitChange >= 0 ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownRight className="w-4 h-4" />}
               {Math.abs(metrics?.profitChange).toFixed(1)}%
             </span>
-            <span className="text-gray-500 text-sm ml-2">vs last month</span>
+            <span className="text-gray-500 dark:text-gray-400 text-sm ml-2">vs last month</span>
           </div>
         </motion.div>
         
@@ -500,25 +501,25 @@ export default function ProformaFinancials({ scenario, businessProfile }: Props)
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="bg-white p-6 rounded-xl shadow-sm"
+          className="bg-card/80 backdrop-blur-xl p-6 rounded-xl shadow-sm"
         >
-          <p className="text-sm text-gray-500">Projected Expenses</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Projected Expenses</p>
           <h3 className="text-2xl font-semibold mt-1">${metrics?.expenses.toLocaleString()}</h3>
           <div className="flex items-center mt-2">
             <span className={`flex items-center text-sm ${metrics?.expensesChange <= 0 ? 'text-green-600' : 'text-red-600'}`}>
               {metrics?.expensesChange <= 0 ? <ArrowDownRight className="w-4 h-4" /> : <ArrowUpRight className="w-4 h-4" />}
               {Math.abs(metrics?.expensesChange).toFixed(1)}%
             </span>
-            <span className="text-gray-500 text-sm ml-2">vs last month</span>
+            <span className="text-gray-500 dark:text-gray-400 text-sm ml-2">vs last month</span>
           </div>
         </motion.div>
       </div>
 
-      <div className="bg-white p-6 rounded-xl shadow-sm">
+      <div className="bg-card/80 backdrop-blur-xl p-6 rounded-xl shadow-sm">
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-emerald-600" />
-            <h2 className="text-xl font-semibold text-gray-800">Financial Projections</h2>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Financial Projections</h2>
           </div>
           
           <div className="flex gap-2">
@@ -566,8 +567,8 @@ export default function ProformaFinancials({ scenario, businessProfile }: Props)
                 type="monotone" 
                 dataKey="revenue" 
                 stackId="1" 
-                stroke="#10B981" 
-                fill="#10B981" 
+                stroke="hsl(var(--chart-1))" 
+                fill="hsl(var(--chart-1))" 
                 fillOpacity={0.2} 
                 name="Revenue"
               />
@@ -575,8 +576,8 @@ export default function ProformaFinancials({ scenario, businessProfile }: Props)
                 type="monotone" 
                 dataKey="expenses" 
                 stackId="2" 
-                stroke="#EF4444" 
-                fill="#EF4444" 
+                stroke="hsl(var(--chart-5))" 
+                fill="hsl(var(--chart-5))" 
                 fillOpacity={0.2}
                 name="Expenses"
               />
@@ -594,10 +595,10 @@ export default function ProformaFinancials({ scenario, businessProfile }: Props)
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-        <div className="p-6 border-b border-gray-200">
+      <div className="bg-card/80 backdrop-blur-xl rounded-xl shadow-sm overflow-hidden">
+        <div className="p-6 border-b border-border/50">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-medium text-gray-800">Financial Statements</h3>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white">Financial Statements</h3>
             <div className="flex gap-2">
               <button
                 onClick={() => setStatement('income')}
@@ -637,9 +638,9 @@ export default function ProformaFinancials({ scenario, businessProfile }: Props)
           <table className="min-w-full">
             <thead>
               <tr className="bg-gray-50">
-                <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">Line Item</th>
+                <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 dark:text-gray-400">Line Item</th>
                 {financials.statements[statement].periods.map((period: string) => (
-                  <th key={period} className="px-6 py-3 text-right text-sm font-medium text-gray-500">
+                  <th key={period} className="px-6 py-3 text-right text-sm font-medium text-gray-500 dark:text-gray-400">
                     {period}
                   </th>
                 ))}
@@ -650,7 +651,7 @@ export default function ProformaFinancials({ scenario, businessProfile }: Props)
                 <tr key={item}>
                   <td className="px-6 py-4 text-sm text-gray-900">{item}</td>
                   {values.map((value: number, index: number) => (
-                    <td key={index} className="px-6 py-4 text-right text-sm text-gray-500">
+                    <td key={index} className="px-6 py-4 text-right text-sm text-gray-500 dark:text-gray-400">
                       ${value.toLocaleString()}
                     </td>
                   ))}

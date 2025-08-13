@@ -1,3 +1,4 @@
+import { Card } from '@/components/ui/card';
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -102,7 +103,7 @@ export default function Plans() {
 
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">Choose Your Plan</h1>
-          <p className="text-xl text-gray-600">
+          <p className="text-xl text-gray-600 dark:text-gray-400">
             Select the perfect plan for your business needs
           </p>
         </div>
@@ -113,7 +114,7 @@ export default function Plans() {
               key={plan.name}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className={`relative bg-white rounded-2xl shadow-lg overflow-hidden ${
+              className={`relative bg-card/80 backdrop-blur-xl rounded-2xl shadow-lg overflow-hidden ${
                 plan.recommended ? 'ring-2 ring-emerald-500' : ''
               }`}
             >
@@ -129,7 +130,7 @@ export default function Plans() {
                   <span className="text-4xl font-bold tracking-tight text-gray-900">
                     ${plan.price}
                   </span>
-                  <span className="ml-1 text-xl font-semibold text-gray-500">
+                  <span className="ml-1 text-xl font-semibold text-gray-500 dark:text-gray-400">
                     /month
                   </span>
                 </div>

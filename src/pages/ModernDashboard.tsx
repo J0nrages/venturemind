@@ -33,10 +33,10 @@ const MetricCard: React.FC<MetricCardProps> = ({
       onHoverStart={() => setIsHovered(true)}
       onHoverEnd={() => setIsHovered(false)}
     >
-      <Card className="p-6 hover:shadow-lg transition-all duration-200">
+      <Card className="p-6 hover:shadow-xl transition-all duration-200">
         <div className="flex items-start justify-between mb-4">
-          <div className="p-3 rounded-xl bg-gray-100 dark:bg-gray-800">
-            <Icon className="w-5 h-5" style={{ color }} />
+          <div className="p-3 rounded-xl bg-primary/10 backdrop-blur-sm">
+            <Icon className="w-5 h-5 text-primary" />
           </div>
           <Button variant="ghost" size="icon" className="h-8 w-8 -mt-1 -mr-2">
             <MoreVertical className="h-4 w-4" />
@@ -44,7 +44,7 @@ const MetricCard: React.FC<MetricCardProps> = ({
         </div>
         
         <div className="space-y-2">
-          <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">{title}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-300 font-medium">{title}</p>
           <div className="flex items-baseline gap-2">
             <motion.p 
               className="text-3xl font-bold text-gray-900 dark:text-white"
@@ -89,7 +89,7 @@ const ProgressCard: React.FC<ProgressCardProps> = ({ title, metrics, delay = 0 }
       transition={{ duration: 0.5, delay }}
     >
       <Card className="p-6">
-        <h3 className="text-lg font-semibold mb-6">{title}</h3>
+        <h3 className="text-lg font-semibold mb-6 text-foreground">{title}</h3>
         <div className="space-y-4">
           {metrics.map((metric, index) => (
             <motion.div 
@@ -101,9 +101,9 @@ const ProgressCard: React.FC<ProgressCardProps> = ({ title, metrics, delay = 0 }
             >
               <div className="flex justify-between items-center">
                 <span className="text-sm text-muted-foreground">{metric.label}</span>
-                <span className="text-sm font-semibold">{metric.value}%</span>
+                <span className="text-sm font-semibold text-foreground">{metric.value}%</span>
               </div>
-              <div className="relative h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+              <div className="relative h-2 bg-gray-200 dark:bg-gray-700/50 rounded-full overflow-hidden">
                 <motion.div
                   className="absolute h-full rounded-full"
                   style={{ background: metric.color }}
@@ -125,27 +125,27 @@ const ModernDashboard: React.FC = () => {
   const [showAI, setShowAI] = useState(false);
 
   const metrics = [
-    { title: 'Total Revenue', value: '$0', change: 0, icon: DollarSign, color: '#10b981' },
-    { title: 'Active Users', value: '0', change: 0, icon: Users, color: '#3b82f6' },
-    { title: 'Conversion Rate', value: '0%', change: 0, icon: Target, color: '#8b5cf6' },
-    { title: 'Growth Rate', value: '0%', change: 0, icon: TrendingUp, color: '#f59e0b' },
+    { title: 'Total Revenue', value: '$0', change: 0, icon: DollarSign, color: 'hsl(var(--chart-1))' },
+    { title: 'Active Users', value: '0', change: 0, icon: Users, color: 'hsl(var(--chart-2))' },
+    { title: 'Conversion Rate', value: '0%', change: 0, icon: Target, color: 'hsl(var(--chart-3))' },
+    { title: 'Growth Rate', value: '0%', change: 0, icon: TrendingUp, color: 'hsl(var(--chart-4))' },
   ];
 
   const keyMetrics = [
-    { label: 'Processing Speed', value: 159, color: '#10b981' },
-    { label: 'Accuracy Rate', value: 59.1, color: '#3b82f6' },
-    { label: 'API Uptime', value: 99.9, color: '#8b5cf6' },
+    { label: 'Processing Speed', value: 159, color: 'hsl(var(--chart-1))' },
+    { label: 'Accuracy Rate', value: 59.1, color: 'hsl(var(--chart-2))' },
+    { label: 'API Uptime', value: 99.9, color: 'hsl(var(--chart-3))' },
   ];
 
   const initiatives = [
-    { title: 'AI Processing', status: '159ms avg · 59.1% accuracy', icon: Brain, color: '#8b5cf6' },
-    { title: 'Document Memory', status: 'Available', icon: FileText, color: '#3b82f6' },
-    { title: 'Global Expansion', status: 'Q2 2025', icon: Globe, color: '#10b981' },
-    { title: 'Security Upgrade', status: 'In Progress', icon: Shield, color: '#f59e0b' },
+    { title: 'AI Processing', status: '159ms avg · 59.1% accuracy', icon: Brain, color: 'hsl(var(--chart-3))' },
+    { title: 'Document Memory', status: 'Available', icon: FileText, color: 'hsl(var(--chart-2))' },
+    { title: 'Global Expansion', status: 'Q2 2025', icon: Globe, color: 'hsl(var(--chart-1))' },
+    { title: 'Security Upgrade', status: 'In Progress', icon: Shield, color: 'hsl(var(--chart-4))' },
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100/50 to-gray-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 p-8">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -161,7 +161,7 @@ const ModernDashboard: React.FC = () => {
             Boltdev
           </motion.h1>
           <motion.p 
-            className="text-gray-600 dark:text-gray-400"
+            className="text-gray-600 dark:text-gray-300"
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.1 }}
@@ -232,14 +232,14 @@ const ModernDashboard: React.FC = () => {
               exit={{ opacity: 0, height: 0, marginBottom: 0 }}
               className="overflow-hidden"
             >
-              <Card className="p-6 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 border-purple-200 dark:border-purple-900">
+              <Card className="p-6 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-purple-200 dark:border-purple-800">
                 <div className="flex items-start gap-4">
                   <div className="p-3 rounded-lg bg-purple-100 dark:bg-purple-900/50">
                     <Brain className="w-6 h-6 text-purple-600 dark:text-purple-400" />
                   </div>
                   <div className="flex-1">
                     <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">AI Orchestrator Active</h3>
-                    <p className="text-gray-600 dark:text-gray-400 mb-4">
+                    <p className="text-gray-600 dark:text-gray-300 mb-4">
                       Your AI assistant is analyzing business metrics and preparing strategic recommendations.
                     </p>
                     <div className="flex items-center gap-4">
@@ -280,7 +280,7 @@ const ModernDashboard: React.FC = () => {
           >
             <Card className="p-6">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold">Strategic Initiatives</h3>
+              <h3 className="text-lg font-semibold text-foreground">Strategic Initiatives</h3>
               <Button variant="ghost" size="sm">
                 View All <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
@@ -294,22 +294,21 @@ const ModernDashboard: React.FC = () => {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.6 + index * 0.1 }}
                   whileHover={{ x: 4 }}
-                  className="rounded-lg p-4 border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 bg-white dark:bg-gray-900 transition-all cursor-pointer group"
-                >
+                  className="rounded-xl p-4 bg-gray-50 dark:bg-gray-800/50 backdrop-blur-sm border border-gray-200 dark:border-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-800/70 transition-all cursor-pointer group">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className={cn(
-                        "p-2 rounded-lg bg-gray-100 dark:bg-gray-800 transition-all duration-300",
+                        "p-2 rounded-lg bg-primary/10 backdrop-blur-sm transition-all duration-300",
                         "group-hover:scale-110"
                       )}>
-                        <initiative.icon className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                        <initiative.icon className="w-4 h-4 text-primary" />
                       </div>
                       <div>
-                        <p className="font-medium">{initiative.title}</p>
+                        <p className="font-medium text-foreground">{initiative.title}</p>
                         <p className="text-sm text-muted-foreground">{initiative.status}</p>
                       </div>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors" />
+                    <ChevronRight className="w-5 h-5 text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors" />
                   </div>
                 </motion.div>
               ))}
@@ -319,26 +318,72 @@ const ModernDashboard: React.FC = () => {
         </div>
 
         {/* SWOT Analysis Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
+          {/* Strengths */}
           <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.8 }}
           >
-            <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-4">Strengths</h3>
-              <p className="text-muted-foreground">No items yet</p>
+            <Card className="p-6 bg-gradient-to-br from-blue-50 via-blue-50/50 to-white dark:from-blue-950/30 dark:via-blue-900/20 dark:to-gray-900/90 backdrop-blur-xl border border-blue-200 dark:border-blue-800/50 hover:shadow-xl transition-all">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-100">Strengths</h3>
+                <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/50">
+                  <Shield className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                </div>
+              </div>
+              <p className="text-gray-600 dark:text-gray-300 text-sm">No items yet</p>
             </Card>
           </motion.div>
           
+          {/* Weaknesses */}
           <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.85 }}
+          >
+            <Card className="p-6 bg-gradient-to-br from-orange-50 via-orange-50/50 to-white dark:from-orange-950/30 dark:via-orange-900/20 dark:to-gray-900/90 backdrop-blur-xl border border-orange-200 dark:border-orange-800/50 hover:shadow-xl transition-all">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-orange-900 dark:text-orange-100">Weaknesses</h3>
+                <div className="p-2 rounded-lg bg-orange-100 dark:bg-orange-900/50">
+                  <Target className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                </div>
+              </div>
+              <p className="text-gray-600 dark:text-gray-300 text-sm">No items yet</p>
+            </Card>
+          </motion.div>
+          
+          {/* Opportunities */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.9 }}
           >
-            <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-4">Opportunities</h3>
-              <p className="text-muted-foreground">No items yet</p>
+            <Card className="p-6 bg-gradient-to-br from-green-50 via-green-50/50 to-white dark:from-green-950/30 dark:via-green-900/20 dark:to-gray-900/90 backdrop-blur-xl border border-green-200 dark:border-green-800/50 hover:shadow-xl transition-all">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-green-900 dark:text-green-100">Opportunities</h3>
+                <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/50">
+                  <TrendingUp className="w-4 h-4 text-green-600 dark:text-green-400" />
+                </div>
+              </div>
+              <p className="text-gray-600 dark:text-gray-300 text-sm">No items yet</p>
+            </Card>
+          </motion.div>
+          
+          {/* Threats */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.95 }}
+          >
+            <Card className="p-6 bg-gradient-to-br from-red-50 via-red-50/50 to-white dark:from-red-950/30 dark:via-red-900/20 dark:to-gray-900/90 backdrop-blur-xl border border-red-200 dark:border-red-800/50 hover:shadow-xl transition-all">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-red-900 dark:text-red-100">Threats</h3>
+                <div className="p-2 rounded-lg bg-red-100 dark:bg-red-900/50">
+                  <Zap className="w-4 h-4 text-red-600 dark:text-red-400" />
+                </div>
+              </div>
+              <p className="text-gray-600 dark:text-gray-300 text-sm">No items yet</p>
             </Card>
           </motion.div>
         </div>
