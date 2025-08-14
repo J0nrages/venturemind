@@ -21,6 +21,10 @@ import { supabase } from '../lib/supabase';
 import { ConversationService, ConversationMessage } from '../services/ConversationService';
 import { DocumentService, UserDocument } from '../services/DocumentService';
 import { useSSEConnection } from '../hooks/useSSEConnection';
+import { useThreading } from '../hooks/useThreading';
+import ThreadedChatMessage from './ThreadedChatMessage';
+import ReplyModal from './ReplyModal';
+import BranchModal from './BranchModal';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -46,11 +50,39 @@ export default function ModernChatSidebar({
   const [user, setUser] = useState<any>(null);
   const [aiStatus, setAiStatus] = useState<'unknown' | 'working' | 'error' | 'no-key'>('unknown');
   
+  // Modal states
+  const [replyModal, setReplyModal] = useState<{
+    isOpen: boolean;
+    messageId: string;
+    quotedText?: string;
+    parentMessage?: string;
+  }>({
+    isOpen: false,
+    messageId: '',
+    quotedText: undefined,
+    parentMessage: undefined
+  });
+  
+  const [branchModal, setBranchModal] = useState<{
+    isOpen: boolean;
+    messageId: string;
+    selectedText?: string;
+    parentMessage?: string;
+  }>({
+    isOpen: false,
+    messageId: '',
+    selectedText: undefined,
+    parentMessage: undefined
+  });
+  
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   
   // SSE connection for real-time orchestration updates
   const sseState = useSSEConnection(user?.id);
+  
+  // Threading functionality
+  const threading = useThreading(user?.id);
 
   useEffect(() => {
     if (isOpen) {
@@ -309,46 +341,41 @@ export default function ModernChatSidebar({
                   </div>
                 </div>
 
-                {/* Messages Area with Glassmorphic Cards */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                {/* Messages Area with Threading Support */}
+                <div className="flex-1 overflow-y-auto p-4 space-y-2">
                   {messages.map((message, index) => (
                     <motion.div
                       key={message.id}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.05 }}
-                      className={cn(
-                        "flex",
-                        message.sender === 'user' ? 'justify-end' : 'justify-start'
-                      )}
                     >
-                      <div
-                        className={cn(
-                          "max-w-[85%] p-3 rounded-2xl",
-                          "backdrop-blur-sm transition-all duration-200",
-                          message.sender === 'user'
-                            ? "bg-primary/90 text-primary-foreground ml-8 hover:bg-primary"
-                            : "bg-card/80 text-card-foreground border border-border/50 mr-8 hover:bg-card/90"
-                        )}
-                      >
-                        <div className="flex items-start gap-2">
-                          {message.sender === 'ai' && (
-                            <Bot className="w-4 h-4 mt-0.5 text-primary flex-shrink-0" />
-                          )}
-                          <div className="flex-1">
-                            <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
-                            
-                            {message.document_updates && message.document_updates.length > 0 && (
-                              <div className="mt-2 flex items-center gap-2">
-                                <FileText className="w-3 h-3" />
-                                <span className="text-xs opacity-80">
-                                  Updated: {message.document_updates.join(', ')}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
+                      <ThreadedChatMessage
+                        message={message}
+                        onArchive={(messageId) => threading.archiveMessage(messageId)}
+                        onRestore={(messageId) => threading.restoreMessage(messageId)}
+                        onReply={(messageId, quotedText) => {
+                          const parentMessage = messages.find(m => m.id === messageId);
+                          setReplyModal({
+                            isOpen: true,
+                            messageId,
+                            quotedText,
+                            parentMessage: parentMessage?.content
+                          });
+                        }}
+                        onBranch={(messageId, selectedText) => {
+                          const parentMessage = messages.find(m => m.id === messageId);
+                          setBranchModal({
+                            isOpen: true,
+                            messageId,
+                            selectedText,
+                            parentMessage: parentMessage?.content
+                          });
+                        }}
+                        showArchived={threading.showArchived}
+                        isRoot={!message.parent_message_id}
+                        depth={0}
+                      />
                     </motion.div>
                   ))}
                   
@@ -405,6 +432,27 @@ export default function ModernChatSidebar({
           </>
         )}
       </AnimatePresence>
+      
+      {/* Modals */}
+      <ReplyModal
+        isOpen={replyModal.isOpen}
+        onClose={() => setReplyModal(prev => ({ ...prev, isOpen: false }))}
+        onSubmit={(content) => {
+          threading.createReply(replyModal.messageId, content, replyModal.quotedText);
+        }}
+        quotedText={replyModal.quotedText}
+        parentMessage={replyModal.parentMessage}
+      />
+      
+      <BranchModal
+        isOpen={branchModal.isOpen}
+        onClose={() => setBranchModal(prev => ({ ...prev, isOpen: false }))}
+        onSubmit={(content) => {
+          threading.createBranch(branchModal.messageId, branchModal.selectedText || '', content);
+        }}
+        selectedText={branchModal.selectedText}
+        parentMessage={branchModal.parentMessage}
+      />
     </>
   );
 }

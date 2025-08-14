@@ -557,26 +557,35 @@ export class ConversationService {
     quotedText?: string
   ): Promise<ConversationMessage | null> {
     try {
-      // Get the message being replied to for thread context
-      const { data: parentMessage } = await supabase
-        .from('conversation_messages')
-        .select('thread_id, user_id')
-        .eq('id', replyToMessageId)
-        .single();
-
-      if (!parentMessage) {
-        throw new Error('Parent message not found');
+      // Try to get the message being replied to for thread context
+      let parentThreadId = null;
+      try {
+        const { data: parentMessage } = await supabase
+          .from('conversation_messages')
+          .select('thread_id, user_id')
+          .eq('id', replyToMessageId)
+          .single();
+        
+        if (parentMessage) {
+          parentThreadId = parentMessage.thread_id;
+        }
+      } catch (err) {
+        console.warn('Could not get parent thread_id, continuing without threading');
       }
 
+      // Create reply message with threading if available
       const replyMessage: Omit<ConversationMessage, 'id' | 'created_at'> = {
         user_id: userId,
-        content,
+        content: quotedText ? `> ${quotedText}\n\n${content}` : content,
         sender: 'user',
         document_updates: [],
         context_confidence: 0,
-        thread_id: parentMessage.thread_id,
-        reply_to_message_id: replyToMessageId,
-        quoted_text: quotedText
+        // Only add threading fields if database supports them
+        ...(parentThreadId && {
+          thread_id: parentThreadId,
+          reply_to_message_id: replyToMessageId,
+          quoted_text: quotedText
+        })
       };
 
       return await this.saveMessage(replyMessage);

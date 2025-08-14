@@ -40,6 +40,10 @@ import { ConversationService, ConversationMessage } from '../services/Conversati
 import { useWebSocket } from '../hooks/useWebSocket';
 import CollaborativeEditor from '../components/CollaborativeEditor';
 import PresenceIndicator from '../components/PresenceIndicator';
+import ThreadedChatMessage from '../components/ThreadedChatMessage';
+import ReplyModal from '../components/ReplyModal';
+import BranchModal from '../components/BranchModal';
+import { useThreading } from '../hooks/useThreading';
 import toast from 'react-hot-toast';
 import { useDialog } from '../contexts/DialogContext';
 
@@ -79,6 +83,31 @@ export default function DocumentMemory() {
   const [showNewTemplateMenu, setShowNewTemplateMenu] = useState(false);
   const [collaborativeMode, setCollaborativeMode] = useState(false);
   
+  // Modal states
+  const [replyModal, setReplyModal] = useState<{
+    isOpen: boolean;
+    messageId: string;
+    quotedText?: string;
+    parentMessage?: string;
+  }>({
+    isOpen: false,
+    messageId: '',
+    quotedText: undefined,
+    parentMessage: undefined
+  });
+  
+  const [branchModal, setBranchModal] = useState<{
+    isOpen: boolean;
+    messageId: string;
+    selectedText?: string;
+    parentMessage?: string;
+  }>({
+    isOpen: false,
+    messageId: '',
+    selectedText: undefined,
+    parentMessage: undefined
+  });
+  
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatInputRef = useRef<HTMLInputElement>(null);
   const dialog = useDialog();
@@ -90,6 +119,9 @@ export default function DocumentMemory() {
     joinDocument,
     leaveDocument
   } = useWebSocket(user?.id);
+
+  // Threading functionality
+  const threading = useThreading(user?.id);
 
   useEffect(() => {
     initializeUser();
@@ -829,35 +861,32 @@ export default function DocumentMemory() {
           {/* Messages */}
           <div className="flex-1 overflow-auto p-4 space-y-4">
             {messages.map(message => (
-              <motion.div
+              <ThreadedChatMessage
                 key={message.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-              >
-                <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                  message.sender === 'user'
-                    ? 'bg-emerald-600 text-white'
-                    : 'bg-card/80 backdrop-blur-xl border border-border/50 text-gray-900 dark:text-white'
-                }`}>
-                  <div className="flex items-start gap-2">
-                    {message.sender === 'ai' && <Bot className="w-4 h-4 mt-1 text-emerald-600" />}
-                    <div className="flex-1">
-                      <p className="text-sm">{message.content}</p>
-                      {message.document_updates && message.document_updates.length > 0 && (
-                        <div className="mt-2 text-xs opacity-75">
-                          Updated: {message.document_updates.join(', ')}
-                        </div>
-                      )}
-                      {message.sender === 'ai' && message.context_confidence > 0 && (
-                        <div className="mt-1 text-xs opacity-60">
-                          Confidence: {Math.round(message.context_confidence * 100)}%
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
+                message={message}
+                onArchive={(messageId) => threading.archiveMessage(messageId)}
+                onRestore={(messageId) => threading.restoreMessage(messageId)}
+                onReply={(messageId, quotedText) => {
+                  const parentMessage = messages.find(m => m.id === messageId);
+                  setReplyModal({
+                    isOpen: true,
+                    messageId,
+                    quotedText,
+                    parentMessage: parentMessage?.content
+                  });
+                }}
+                onBranch={(messageId, selectedText) => {
+                  const parentMessage = messages.find(m => m.id === messageId);
+                  setBranchModal({
+                    isOpen: true,
+                    messageId,
+                    selectedText,
+                    parentMessage: parentMessage?.content
+                  });
+                }}
+                showArchived={threading.showArchived}
+                isRoot={!message.parent_message_id}
+              />
             ))}
             
             {loading && (
@@ -1013,6 +1042,27 @@ export default function DocumentMemory() {
           </div>
         )}
       </div>
+      
+      {/* Modals */}
+      <ReplyModal
+        isOpen={replyModal.isOpen}
+        onClose={() => setReplyModal(prev => ({ ...prev, isOpen: false }))}
+        onSubmit={(content) => {
+          threading.createReply(replyModal.messageId, content, replyModal.quotedText);
+        }}
+        quotedText={replyModal.quotedText}
+        parentMessage={replyModal.parentMessage}
+      />
+      
+      <BranchModal
+        isOpen={branchModal.isOpen}
+        onClose={() => setBranchModal(prev => ({ ...prev, isOpen: false }))}
+        onSubmit={(content) => {
+          threading.createBranch(branchModal.messageId, branchModal.selectedText || '', content);
+        }}
+        selectedText={branchModal.selectedText}
+        parentMessage={branchModal.parentMessage}
+      />
     </div>
   );
 }
