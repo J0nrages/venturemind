@@ -39,6 +39,7 @@ export default function ThreadedChatMessage({
   onRestore,
   onReply,
   onBranch,
+  onRetry,
   showArchived,
   isRoot = false,
   depth = 0,
@@ -53,6 +54,24 @@ export default function ThreadedChatMessage({
   const isArchived = !!message.archived_at;
   const isReply = !!message.reply_to_message_id;
   const isBranch = !!message.parent_message_id && !message.reply_to_message_id;
+  
+  // Determine if message should show retry button
+  const shouldShowRetry = () => {
+    // Show retry for user messages that may have failed AI responses
+    if (message.sender === 'user' && onRetry) return true;
+    
+    // Show retry for AI messages that failed or have errors
+    if (message.sender === 'ai' && onRetry) {
+      // Check if message content indicates an error
+      const hasError = message.content.toLowerCase().includes('error') ||
+                      message.content.toLowerCase().includes('failed') ||
+                      message.content.toLowerCase().includes('try again') ||
+                      message.thread_title_status === 'failed';
+      return hasError;
+    }
+    
+    return false;
+  };
 
   // Handle text selection for branching
   useEffect(() => {
@@ -263,6 +282,18 @@ export default function ThreadedChatMessage({
               >
                 <Archive className="w-3 h-3" />
               </Button>
+              
+              {shouldShowRetry() && (
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  className="h-6 w-6 p-0"
+                  onClick={() => onRetry!(message.id)}
+                  title="Retry"
+                >
+                  <RefreshCw className="w-3 h-3" />
+                </Button>
+              )}
             </motion.div>
           )}
 

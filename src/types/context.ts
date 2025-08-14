@@ -1,4 +1,23 @@
-export type ContextType = 'conversation' | 'project' | 'task' | 'meeting' | 'document';
+export enum ContextType {
+  MAIN = 'main',                    // Primary conversation
+  BRANCH = 'branch',               // User-initiated branch
+  THREAD = 'thread',               // Text selection thread
+  AGENT_WORKSTREAM = 'agent_workstream', // Agent-spawned context
+  LISTENER = 'listener'            // Hidden prefetch context
+}
+
+export enum ContextVisibility {
+  ACTIVE = 'active',               // Visible and interactable
+  BACKGROUND = 'background',       // Running but minimized
+  HIDDEN = 'hidden'               // Not visible (for listeners)
+}
+
+export interface ContextMetadata {
+  origin?: 'text_selection' | 'branch_action' | 'agent_spawn' | 'user_created';
+  agentId?: string;
+  selectedText?: string;
+  prefetchData?: any;
+}
 
 export interface Agent {
   id: string;
@@ -38,6 +57,7 @@ export interface ContextSurfaces {
 export interface Context {
   id: string;
   type: ContextType;
+  visibility: ContextVisibility;
   title: string;
   description?: string;
   badge?: string;
@@ -66,6 +86,7 @@ export interface Context {
   archived?: boolean;
   parentContextId?: string; // For branched conversations
   workspaceMode?: 'compact' | 'expanded' | 'full';
+  metadata: ContextMetadata;
 }
 
 export interface ContextAction {
@@ -130,9 +151,15 @@ export const AVAILABLE_AGENTS: Agent[] = [
 ];
 
 // Helper function to create a new context
-export const createNewContext = (title: string, type: ContextType = 'conversation'): Omit<Context, 'conversationHistory'> => ({
+export const createNewContext = (
+  title: string, 
+  type: ContextType = ContextType.MAIN,
+  visibility: ContextVisibility = ContextVisibility.ACTIVE,
+  metadata: ContextMetadata = {}
+): Omit<Context, 'conversationHistory'> => ({
   id: `context-${Date.now()}`,
   type,
+  visibility,
   title,
   color: {
     primary: '#6366F1', // indigo-500
@@ -154,9 +181,64 @@ export const createNewContext = (title: string, type: ContextType = 'conversatio
   isActive: true,
   createdAt: new Date(),
   updatedAt: new Date(),
+  metadata,
 });
 
-// Default starting context (empty conversation)
-export const DEFAULT_CONTEXTS: Omit<Context, 'conversationHistory'>[] = [
-  createNewContext('General Chat', 'conversation'),
-];
+// Helper to create main context
+export const createMainContext = (): Omit<Context, 'conversationHistory'> => 
+  createNewContext('Main Conversation', ContextType.MAIN, ContextVisibility.ACTIVE, {
+    origin: 'user_created'
+  });
+
+// Helper to create branch context
+export const createBranchContext = (
+  title: string, 
+  parentId: string, 
+  selectedText?: string
+): Omit<Context, 'conversationHistory'> => ({
+  ...createNewContext(
+    title, 
+    selectedText ? ContextType.THREAD : ContextType.BRANCH, 
+    ContextVisibility.ACTIVE,
+    {
+      origin: selectedText ? 'text_selection' : 'branch_action',
+      selectedText
+    }
+  ),
+  parentContextId: parentId,
+});
+
+// Helper to create agent workstream
+export const createAgentWorkstream = (
+  agentId: string, 
+  parentId: string,
+  title?: string
+): Omit<Context, 'conversationHistory'> => ({
+  ...createNewContext(
+    title || `Agent ${agentId} Workstream`,
+    ContextType.AGENT_WORKSTREAM,
+    ContextVisibility.BACKGROUND,
+    {
+      origin: 'agent_spawn',
+      agentId
+    }
+  ),
+  parentContextId: parentId,
+});
+
+// Helper to create listener context
+export const createListenerContext = (
+  agentId: string,
+  parentId: string
+): Omit<Context, 'conversationHistory'> => ({
+  ...createNewContext(
+    `${agentId} Listener`,
+    ContextType.LISTENER,
+    ContextVisibility.HIDDEN,
+    {
+      origin: 'agent_spawn',
+      agentId
+    }
+  ),
+  parentContextId: parentId,
+});

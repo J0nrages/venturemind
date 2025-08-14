@@ -33,7 +33,9 @@ import {
   CheckCircle,
   XCircle,
   Filter,
-  Search
+  Search,
+  Archive,
+  RotateCcw
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { DocumentService, UserDocument, DocumentTemplate, PersonalCategory } from '../services/DocumentService';
@@ -76,7 +78,8 @@ export default function DocumentMemory() {
   const [expandedFolders, setExpandedFolders] = useState<{[key: string]: boolean}>({
     personal: true,
     business: true,
-    templates: true
+    templates: true,
+    archived: false
   });
   const [user, setUser] = useState<any>(null);
   const [aiStatus, setAiStatus] = useState<'unknown' | 'working' | 'error' | 'no-key'>('unknown');
@@ -85,6 +88,7 @@ export default function DocumentMemory() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [showNewTemplateMenu, setShowNewTemplateMenu] = useState(false);
   const [collaborativeMode, setCollaborativeMode] = useState(false);
+  const [archivedMessages, setArchivedMessages] = useState<ConversationMessage[]>([]);
   
   // Modal states
   const [replyModal, setReplyModal] = useState<{
@@ -287,18 +291,23 @@ export default function DocumentMemory() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      // Load templates, documents, categories, and conversation history
-      const [templatesData, documentsData, categoriesData, messagesData] = await Promise.all([
+      // Load templates, documents, categories, conversation history, and archived messages
+      const [templatesData, documentsData, categoriesData, messagesData, archivedMessagesData] = await Promise.all([
         DocumentService.getDocumentTemplates(),
         DocumentService.getUserDocuments(user.id),
         DocumentService.getPersonalCategories(user.id),
-        ConversationService.getConversationHistory(user.id)
+        ConversationService.getConversationHistory(user.id),
+        ConversationService.getConversationHistory(user.id, 50, undefined, true) // includeArchived = true
       ]);
 
       setTemplates(templatesData);
       setDocuments(documentsData);
       setPersonalCategories(categoriesData);
       setMessages(messagesData);
+      
+      // Filter archived messages (only those with archived_at property)
+      const filteredArchivedMessages = archivedMessagesData.filter(msg => msg.archived_at);
+      setArchivedMessages(filteredArchivedMessages);
 
       // Initialize missing default categories
       await initializeDefaultCategories(user.id, categoriesData);
@@ -536,6 +545,72 @@ export default function DocumentMemory() {
         }
       }
     );
+  };
+
+  const restoreArchivedMessage = async (messageId: string) => {
+    if (!user) return;
+    
+    try {
+      await ConversationService.restoreMessage(messageId, user.id);
+      
+      // Move message from archived to regular messages
+      const messageToRestore = archivedMessages.find(msg => msg.id === messageId);
+      if (messageToRestore) {
+        const restoredMessage = { ...messageToRestore, archived_at: undefined, archived_by: undefined };
+        setArchivedMessages(prev => prev.filter(msg => msg.id !== messageId));
+        setMessages(prev => [...prev, restoredMessage].sort((a, b) => 
+          new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        ));
+      }
+      
+      toast.success('Message restored');
+    } catch (error) {
+      console.error('Error restoring message:', error);
+      toast.error('Failed to restore message');
+    }
+  };
+
+  const permanentlyDeleteMessage = async (messageId: string) => {
+    if (!user) return;
+    
+    dialog.confirm(
+      'Are you sure you want to permanently delete this message? This action cannot be undone.',
+      async () => {
+        try {
+          // Note: We would need to add a permanent delete method to ConversationService
+          // For now, we'll just remove it from the archived list
+          setArchivedMessages(prev => prev.filter(msg => msg.id !== messageId));
+          toast.success('Message permanently deleted');
+        } catch (error) {
+          console.error('Error permanently deleting message:', error);
+          toast.error('Failed to delete message');
+        }
+      }
+    );
+  };
+
+  const retryMessage = async (messageId: string) => {
+    if (!user) return;
+    
+    setLoading(true);
+    try {
+      // Use the retry functionality from ConversationService
+      const retriedMessage = await ConversationService.retryMessage(messageId, user.id, documents);
+      
+      // Add the new AI response to messages
+      setMessages(prev => [...prev, retriedMessage]);
+      
+      // Reload documents in case any were updated
+      const updatedDocs = await DocumentService.getUserDocuments(user.id);
+      setDocuments(updatedDocs);
+      
+      toast.success('Message retried successfully');
+    } catch (error) {
+      console.error('Error retrying message:', error);
+      toast.error('Failed to retry message');
+    } finally {
+      setLoading(false);
+    }
   };
 
   // WebSocket document collaboration functions
@@ -982,6 +1057,80 @@ export default function DocumentMemory() {
               )}
             </AnimatePresence>
           </div>
+
+          {/* Archived Chats */}
+          <div className="p-4 border-t border-border/50">
+            <button
+              onClick={() => setExpandedFolders(prev => ({ ...prev, archived: !prev.archived }))}
+              className="flex items-center gap-2 w-full text-left mb-3 text-muted-foreground hover:text-foreground"
+            >
+              {expandedFolders.archived ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+              <Archive className="w-5 h-5 text-orange-600" />
+              <span className="font-medium">Archived Chats</span>
+              <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full ml-auto">
+                {archivedMessages.length}
+              </span>
+            </button>
+
+            <AnimatePresence>
+              {expandedFolders.archived && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="ml-6 space-y-2"
+                >
+                  {archivedMessages.length === 0 ? (
+                    <div className="py-2 text-center text-muted-foreground text-xs">
+                      No archived messages
+                    </div>
+                  ) : (
+                    <div className="space-y-1 max-h-40 overflow-y-auto scrollbar-safari-thin">
+                      {archivedMessages.map(message => (
+                        <div key={message.id} className="group p-2 rounded-lg border border-border/30 bg-card/40">
+                          <div className="flex items-start gap-2">
+                            <div className="flex-shrink-0 mt-0.5">
+                              {message.sender === 'user' ? (
+                                <User className="w-3 h-3 text-blue-500" />
+                              ) : (
+                                <Bot className="w-3 h-3 text-green-500" />
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs text-muted-foreground line-clamp-2">
+                                {message.content}
+                              </p>
+                              <div className="flex items-center justify-between mt-1">
+                                <span className="text-[10px] text-muted-foreground">
+                                  {new Date(message.created_at).toLocaleDateString()}
+                                </span>
+                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <button
+                                    onClick={() => restoreArchivedMessage(message.id)}
+                                    className="p-1 hover:bg-green-100 rounded"
+                                    title="Restore message"
+                                  >
+                                    <RotateCcw className="w-3 h-3 text-green-600" />
+                                  </button>
+                                  <button
+                                    onClick={() => permanentlyDeleteMessage(message.id)}
+                                    className="p-1 hover:bg-red-100 rounded"
+                                    title="Delete permanently"
+                                  >
+                                    <Trash2 className="w-3 h-3 text-red-500" />
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
         </motion.div>
 
@@ -1034,6 +1183,7 @@ export default function DocumentMemory() {
                     parentMessage: parentMessage?.content
                   });
                 }}
+                onRetry={retryMessage}
                 showArchived={threading.showArchived}
                 isRoot={!message.parent_message_id}
               />

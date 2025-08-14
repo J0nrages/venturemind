@@ -170,6 +170,29 @@ export default function ModernChatSidebar({
     });
   };
 
+  const retryMessage = async (messageId: string) => {
+    if (!user) return;
+    
+    setLoading(true);
+    try {
+      // Use the retry functionality from ConversationService
+      const retriedMessage = await ConversationService.retryMessage(messageId, user.id, documents);
+      
+      // Add the new AI response to messages
+      setMessages(prev => [...prev, retriedMessage]);
+      
+      // Reload documents in case any were updated
+      await loadDocuments(user.id);
+      
+      toast.success('Message retried successfully');
+    } catch (error) {
+      console.error('Error retrying message:', error);
+      toast.error('Failed to retry message');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const sendMessage = async () => {
     if (!currentMessage.trim() || loading || !user) return;
     
@@ -381,6 +404,7 @@ export default function ModernChatSidebar({
                             parentMessage: parentMessage?.content
                           });
                         }}
+                        onRetry={retryMessage}
                         showArchived={threading.showArchived}
                         isRoot={!message.parent_message_id}
                         depth={0}

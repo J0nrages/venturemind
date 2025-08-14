@@ -19,275 +19,457 @@ Syna is a sophisticated AI-powered business intelligence platform built with a m
 └─────────────────┘    └─────────────────┘    └─────────────────┘
 ```
 
+## Project Structure Overview
+
+```
+syna/
+├── src/                    # Frontend React/TypeScript application
+├── backend/                # Python FastAPI backend with AI agents
+├── supabase/              # Database, auth, and edge functions
+├── public/                # Static assets and favicon
+├── *.md                   # Documentation files
+├── *.json                 # Configuration files
+└── *.config.*             # Build and development configuration
+```
+
 ## Frontend Architecture (`/src`)
 
-### Core Structure
+### Complete Directory Structure
+
 ```
 src/
-├── pages/           # Route components
-├── components/      # Reusable UI components
-├── contexts/        # React Context providers
-├── hooks/           # Custom React hooks
-├── services/        # Business logic & API calls
-├── lib/             # Utilities & configurations
-└── utils/           # Helper functions
+├── App.tsx                           # Main application component
+├── main.tsx                          # Application entry point
+├── index.css                         # Global styles
+├── vite-env.d.ts                     # Vite type definitions
+├── types.ts                          # Global type definitions
+├── components/                       # UI Components
+│   ├── AgenticAIChatOrchestrator.tsx # AI agent coordination interface
+│   ├── AgentRail.tsx                 # Visual agent status display
+│   ├── AuthGuard.tsx                 # Route protection component
+│   ├── BackButton.tsx                # Navigation back button
+│   ├── BranchModal.tsx               # Conversation branching interface
+│   ├── CollaborativeEditor.tsx       # Real-time document editor
+│   ├── ContextCard.tsx               # Individual context/workspace card
+│   ├── ContextMenu.tsx               # Context management menu
+│   ├── ContextSwitcher.tsx           # Multi-context navigation interface
+│   ├── ConversationalSetup.tsx       # AI-guided business setup
+│   ├── ConversationSpine.tsx         # Core chat interface per context
+│   ├── Dialog.tsx                    # Modal dialog component
+│   ├── ErrorBoundary.tsx             # Error handling boundary
+│   ├── MetricCard.tsx                # Reusable metric display
+│   ├── ModernChatSidebar.tsx         # Floating chat sidebar with threading
+│   ├── OnboardingCheck.tsx           # User onboarding validation
+│   ├── PageHeader.tsx                # Standard page header
+│   ├── PageLayout.tsx                # Standard page layout wrapper
+│   ├── PageSurface.tsx               # Context surface for documents/data
+│   ├── PresenceIndicator.tsx         # Real-time user presence
+│   ├── ReplyModal.tsx                # Message reply interface
+│   ├── Sidebar.tsx                   # Main navigation sidebar
+│   ├── SimpleSidebar.tsx             # Simplified navigation
+│   ├── Surface.tsx                   # Generic surface component
+│   ├── SynaApp.tsx                   # Main SYNA interface wrapper
+│   ├── ThemeToggle.tsx               # Theme switching component
+│   ├── ThreadedChatMessage.tsx       # Individual chat message with threading
+│   ├── ThreadSidebar.tsx             # Thread management sidebar
+│   ├── proforma/                     # Financial modeling components
+│   │   ├── ProformaAssumptions.tsx   # Financial assumption inputs
+│   │   ├── ProformaFinancials.tsx    # Financial statement generation
+│   │   ├── ProformaMetrics.tsx       # Key financial metrics display
+│   │   └── ProformaScenarios.tsx     # Scenario planning interface
+│   └── ui/                           # Shadcn/ui component library
+│       ├── badge.tsx                 # Badge component
+│       ├── button.tsx                # Button component
+│       ├── card.tsx                  # Card layout component
+│       ├── checkbox.tsx              # Checkbox input
+│       ├── dialog.tsx                # Dialog/modal component
+│       ├── dropdown-menu.tsx         # Dropdown menu component
+│       ├── input.tsx                 # Text input component
+│       ├── label.tsx                 # Form label component
+│       ├── progress.tsx              # Progress bar component
+│       ├── radio-group.tsx           # Radio button group
+│       ├── select.tsx                # Select dropdown component
+│       ├── separator.tsx             # Visual separator component
+│       ├── sheet.tsx                 # Slide-out panel component
+│       ├── sidebar.tsx               # Sidebar layout component
+│       ├── skeleton.tsx              # Loading skeleton component
+│       ├── tabs.tsx                  # Tab navigation component
+│       ├── textarea.tsx              # Multi-line text input
+│       └── tooltip.tsx               # Tooltip component
+├── contexts/                         # React Context Providers
+│   ├── ChatContext.tsx               # Global chat state management
+│   ├── ContextProvider.tsx           # SYNA context/workspace management
+│   ├── DialogContext.tsx             # Modal and dialog state
+│   └── ThemeContext.tsx              # Theme and appearance settings
+├── hooks/                            # Custom React Hooks
+│   ├── useBusinessData.ts            # Business data fetching and caching
+│   ├── useChatSidebar.ts             # Chat sidebar state management
+│   ├── use-mobile.tsx                # Mobile responsiveness detection
+│   ├── usePageTitle.ts               # Dynamic page title updates
+│   ├── useScrollVisibility.ts        # Scroll-based UI behavior
+│   ├── useSSEConnection.ts           # Server-sent events connection
+│   ├── useStrategicData.ts           # Strategic planning data management
+│   ├── useThreading.ts               # Conversation threading logic
+│   ├── useWebSocketChat.ts           # WebSocket-based chat functionality
+│   └── useWebSocket.ts               # Generic WebSocket connection
+├── lib/                              # Utility Libraries
+│   ├── api.ts                        # API client configuration
+│   ├── proforma.ts                   # Financial modeling utilities
+│   ├── supabase.ts                   # Supabase client configuration
+│   ├── types.ts                      # Common type definitions
+│   └── utils.ts                      # General utility functions
+├── pages/                            # Route Components (Pages)
+│   ├── AIProcessing.tsx              # AI processing status and management
+│   ├── Auth.tsx                      # Authentication flow
+│   ├── BusinessPlan.tsx              # Comprehensive business planning
+│   ├── BusinessSetup.tsx             # Initial business configuration
+│   ├── Company.tsx                   # Company profile and settings
+│   ├── Customers.tsx                 # Customer relationship management
+│   ├── Dashboard.tsx                 # Legacy dashboard (being phased out)
+│   ├── DocumentMemory.tsx            # AI document management with chat
+│   ├── Documents.tsx                 # Document library and management
+│   ├── Integrations.tsx              # Third-party integrations
+│   ├── Metrics.tsx                   # Detailed analytics and metrics
+│   ├── ModernDashboard.tsx           # Main dashboard with real-time data
+│   ├── Plans.tsx                     # Subscription and pricing plans
+│   ├── ProformaPage.tsx              # Financial projections and modeling
+│   ├── Revenue.tsx                   # Revenue tracking and forecasting
+│   ├── Settings.tsx                  # Application configuration
+│   ├── Strategy.tsx                  # Strategic planning with SWOT
+│   └── SwotAnalysis.tsx              # Interactive SWOT analysis tool
+├── services/                         # Business Logic Layer
+│   ├── AgentOrchestrationService.ts  # High-level agent coordination
+│   ├── AgentOrchestrator.ts          # Multi-agent task orchestration
+│   ├── BusinessService.ts            # Business data operations
+│   ├── CollaborativeDocumentService.ts # Real-time document collaboration
+│   ├── ConversationService.ts        # Chat and messaging operations
+│   ├── DocumentService.ts            # Document CRUD operations
+│   ├── GeminiService.ts              # Google Gemini AI integration
+│   ├── IntegrationService.ts         # Third-party API integrations
+│   ├── MetricsService.ts             # Analytics and performance tracking
+│   ├── OrchestrationService.ts       # Workflow management and execution
+│   ├── ProformaService.ts            # Financial modeling and projections
+│   ├── SSEService.ts                 # Server-sent events for real-time updates
+│   ├── StrategicService.ts           # Strategic planning and SWOT analysis
+│   ├── UserSettingsService.ts        # User preferences and settings
+│   └── WebSocketService.ts           # WebSocket connection management
+├── types/                            # Type Definitions
+│   ├── context.ts                    # SYNA context and workspace types
+│   └── page-mapping.ts               # Page routing type definitions
+└── utils/                            # Utility Functions
+    └── jsonParser.ts                 # JSON parsing utilities
 ```
-
-### Pages (`/src/pages`)
-The application is organized around distinct business modules:
-
-#### Authentication & Setup
-- **`Auth.tsx`** - Authentication flow with Supabase integration
-- **`BusinessSetup.tsx`** - Initial business configuration and onboarding
-
-#### Business Intelligence Dashboard
-- **`ModernDashboard.tsx`** - Main dashboard with real-time metrics and KPIs
-- **`Dashboard.tsx`** - Legacy dashboard (being phased out)
-- **`Metrics.tsx`** - Detailed analytics and performance metrics
-
-#### Strategic Planning
-- **`BusinessPlan.tsx`** - Comprehensive business planning interface
-- **`Strategy.tsx`** - Strategic planning with SWOT analysis integration
-- **`SwotAnalysis.tsx`** - Interactive SWOT analysis tool
-
-#### Financial Management
-- **`ProformaPage.tsx`** - Financial projections and modeling
-- **`Revenue.tsx`** - Revenue tracking and forecasting
-- **`Plans.tsx`** - Subscription and pricing plans
-
-#### AI & Automation
-- **`AIProcessing.tsx`** - AI processing status and management
-- **`DocumentMemory.tsx`** - Collaborative document editing with AI chat
-
-#### Data Management
-- **`Documents.tsx`** - Document library and management
-- **`Company.tsx`** - Company profile and settings
-- **`Customers.tsx`** - Customer relationship management
-- **`Integrations.tsx`** - Third-party integrations management
-- **`Settings.tsx`** - Application configuration
-
-### Components (`/src/components`)
-
-#### Core UI Components
-- **`ModernChatSidebar.tsx`** - Advanced chat interface with threading, branching, SSE
-- **`PageLayout.tsx`** - Standard page wrapper with navigation
-- **`Sidebar.tsx`** / **`SimpleSidebar.tsx`** - Navigation sidebars
-- **`AuthGuard.tsx`** - Route protection component
-
-#### Specialized Components  
-- **`AgenticAIChatOrchestrator.tsx`** - AI agent coordination interface
-- **`CollaborativeEditor.tsx`** - Real-time collaborative text editor
-- **`ThreadedChatMessage.tsx`** - Threaded conversation component
-- **`BranchModal.tsx`** - Conversation branching interface
-- **`ReplyModal.tsx`** - Reply and response management
-
-#### Business Logic Components
-- **`ConversationalSetup.tsx`** - AI-guided business setup
-- **`OnboardingCheck.tsx`** - User onboarding validation
-- **`MetricCard.tsx`** - Reusable metric display component
-
-#### UI Foundation (`/src/components/ui`)
-Shadcn/ui component library implementation:
-- Form controls: `input.tsx`, `button.tsx`, `select.tsx`, `textarea.tsx`
-- Layout: `card.tsx`, `sheet.tsx`, `separator.tsx`, `tabs.tsx`
-- Feedback: `badge.tsx`, `progress.tsx`, `skeleton.tsx`, `tooltip.tsx`
-- Interaction: `dialog.tsx`, `dropdown-menu.tsx`
-
-#### Specialized Modules (`/src/components/proforma`)
-Financial modeling components:
-- **`ProformaAssumptions.tsx`** - Financial assumption inputs
-- **`ProformaFinancials.tsx`** - Financial statement generation
-- **`ProformaMetrics.tsx`** - Key financial metrics display
-- **`ProformaScenarios.tsx`** - Scenario planning interface
-
-### Services Layer (`/src/services`)
-Business logic abstracted into service classes:
-
-#### Core Services
-- **`BusinessService.ts`** - Business data operations and validation
-- **`StrategicService.ts`** - Strategic planning and SWOT analysis
-- **`ProformaService.ts`** - Financial modeling and projections
-- **`MetricsService.ts`** - Analytics and performance tracking
-
-#### AI & Orchestration
-- **`AgentOrchestrator.ts`** - Multi-agent task coordination
-- **`OrchestrationService.ts`** - Workflow management and execution
-- **`GeminiService.ts`** - Google Gemini AI integration
-
-#### Real-time Communication
-- **`WebSocketService.ts`** - WebSocket connection management
-- **`SSEService.ts`** - Server-sent events for real-time updates
-- **`ConversationService.ts`** - Chat and messaging operations
-
-#### Document & Integration
-- **`DocumentService.ts`** - Document CRUD operations
-- **`CollaborativeDocumentService.ts`** - Real-time document collaboration
-- **`IntegrationService.ts`** - Third-party API integrations
-
-### Custom Hooks (`/src/hooks`)
-React hooks for state management and side effects:
-
-#### Business Logic Hooks
-- **`useBusinessData.ts`** - Business data fetching and caching
-- **`useStrategicData.ts`** - Strategic planning data management
-
-#### Real-time Communication
-- **`useWebSocket.ts`** - WebSocket connection hook
-- **`useWebSocketChat.ts`** - WebSocket-based chat functionality
-- **`useSSEConnection.ts`** - Server-sent events connection
-
-#### UI State Management
-- **`useChatSidebar.ts`** - Chat sidebar state and interactions
-- **`useThreading.ts`** - Conversation threading logic
-- **`useScrollVisibility.ts`** - Scroll-based UI behavior
-- **`usePageTitle.ts`** - Dynamic page title updates
-- **`use-mobile.tsx`** - Mobile responsiveness detection
-
-### Context Providers (`/src/contexts`)
-- **`ChatContext.tsx`** - Global chat state management
-- **`DialogContext.tsx`** - Modal and dialog management
-- **`ThemeContext.tsx`** - Theme and appearance settings
 
 ## Backend Architecture (`/backend`)
 
-### Core Structure
+### Complete Directory Structure
+
 ```
 backend/
-├── app/
-│   ├── agents/          # AI agent system
-│   ├── api/             # REST API endpoints
-│   ├── core/            # Core infrastructure
-│   ├── db/              # Database layer
-│   ├── services/        # Business services
-│   ├── models/          # Data models
-│   ├── orchestration/   # Workflow orchestration
-│   ├── integrations/    # External integrations
-│   └── utils/           # Utility functions
-├── tests/               # Test suites
-└── scripts/             # Deployment scripts
+├── main.py                           # Application entry point
+├── pyproject.toml                    # Python project configuration
+├── uv.lock                           # Dependency lock file
+├── docker-compose.yml                # Docker services configuration
+├── Makefile                          # Build and deployment scripts
+├── README.md                         # Backend documentation
+├── app/                              # Main application package
+│   ├── __init__.py                   # Package initialization
+│   ├── main.py                       # FastAPI application factory
+│   ├── config.py                     # Application configuration
+│   ├── agents/                       # AI Agent System
+│   │   ├── __init__.py               # Agent package initialization
+│   │   ├── marketplace.py            # Agent marketplace functionality
+│   │   ├── definitions/              # Agent Configuration Files
+│   │   │   ├── analyst.yaml          # Data analyst agent configuration
+│   │   │   ├── critic.yaml           # Quality assurance agent config
+│   │   │   ├── engineer.yaml         # Software engineer agent config
+│   │   │   ├── ops.yaml              # Operations agent configuration
+│   │   │   ├── planner.yaml          # Task planning agent config
+│   │   │   ├── researcher.yaml       # Research agent configuration
+│   │   │   ├── scheduler.yaml        # Scheduling agent configuration
+│   │   │   └── writer.yaml           # Content writing agent config
+│   │   ├── engine/                   # Agent Implementation
+│   │   │   ├── analyst.py            # Data analysis and insights agent
+│   │   │   ├── base.py               # Abstract base agent class
+│   │   │   ├── critic.py             # Code/content review agent
+│   │   │   ├── engineer.py           # Software development agent
+│   │   │   ├── ops.py                # System operations agent
+│   │   │   ├── planner.py            # Task decomposition agent
+│   │   │   ├── registry.py           # Agent discovery and management
+│   │   │   ├── researcher.py         # Information gathering agent
+│   │   │   ├── scheduler.py          # Time management agent
+│   │   │   └── writer.py             # Content creation agent
+│   │   ├── prompts/                  # Agent Prompt Templates
+│   │   └── tools/                    # Agent Tools
+│   │       └── base_tools.py         # Common tools for agents
+│   ├── api/                          # REST API Layer
+│   │   ├── __init__.py               # API package initialization
+│   │   ├── events.py                 # Server-sent events endpoint
+│   │   └── v1/                       # API Version 1
+│   │       ├── __init__.py           # V1 API initialization
+│   │       ├── agents.py             # Agent management endpoints
+│   │       ├── auth.py               # Authentication endpoints
+│   │       ├── conversations.py      # Chat/conversation endpoints
+│   │       ├── marketplace.py        # Agent marketplace API
+│   │       ├── tasks.py              # Task management endpoints
+│   │       ├── threading.py          # Conversation threading API
+│   │       └── websocket.py          # WebSocket connection handling
+│   ├── core/                         # Core Infrastructure
+│   │   ├── __init__.py               # Core package initialization
+│   │   ├── atomic_operations.py      # Database transaction management
+│   │   ├── auth.py                   # Authentication and authorization
+│   │   ├── middleware.py             # Request/response processing
+│   │   ├── redis_manager.py          # Caching and session management
+│   │   └── websocket_manager.py      # Multi-agent coordination, real-time
+│   ├── db/                           # Database Layer
+│   │   ├── migrations/               # Database migration scripts
+│   │   └── repositories/             # Data access layer
+│   ├── integrations/                 # External Integration Layer
+│   ├── models/                       # Data Models
+│   │   └── __init__.py               # Models package initialization
+│   ├── orchestration/                # Workflow Orchestration
+│   │   ├── graphs/                   # LangGraph workflow definitions
+│   │   └── supervisor.py             # High-level workflow coordination
+│   ├── services/                     # Business Services
+│   │   ├── __init__.py               # Services package initialization
+│   │   ├── gemini_service.py         # Google Gemini AI integration
+│   │   └── thread_summarization.py   # Conversation summarization
+│   └── utils/                        # Utility Functions
+├── scripts/                          # Deployment and Build Scripts
+└── tests/                            # Test Suites
+    ├── e2e/                          # End-to-end tests
+    ├── integration/                  # Integration tests
+    └── unit/                         # Unit tests
 ```
-
-### Agent System (`/backend/app/agents`)
-
-#### Agent Engine (`/backend/app/agents/engine`)
-Production-ready LangChain/LangGraph implementation:
-
-- **`base.py`** - Abstract base agent with events, status, capabilities
-- **`planner.py`** - Task decomposition with dependency graphs  
-- **`writer.py`** - Content creation with multiple styles
-- **`engineer.py`** - Code development and technical implementation
-- **`researcher.py`** - Information gathering and analysis
-- **`analyst.py`** - Data analysis and insights generation
-- **`ops.py`** - System operations and deployments
-- **`scheduler.py`** - Time management and task scheduling
-- **`critic.py`** - Review and quality assurance
-- **`registry.py`** - Agent discovery and orchestration
-
-#### Agent Definitions (`/backend/app/agents/definitions`)
-YAML configuration for each agent:
-- Agent capabilities, tools, and behavioral parameters
-- Prompt templates and instruction sets
-
-#### Agent Tools (`/backend/app/agents/tools`)
-- **`base_tools.py`** - Common tools available to agents
-
-### API Layer (`/backend/app/api`)
-
-#### Core API (`/backend/app/api/v1`)
-- **`agents.py`** - Agent management endpoints
-- **`conversations.py`** - Conversation CRUD operations
-- **`threading.py`** - Conversation threading API
-- **`tasks.py`** - Task management endpoints
-- **`websocket.py`** - WebSocket connection handling
-- **`auth.py`** - Authentication endpoints
-- **`marketplace.py`** - Agent marketplace functionality
-
-#### Event Streaming (`/backend/app/api`)
-- **`events.py`** - Server-sent events implementation
-
-### Core Infrastructure (`/backend/app/core`)
-- **`websocket_manager.py`** - Multi-agent coordination, document locks, real-time presence
-- **`redis_manager.py`** - Caching and session management
-- **`auth.py`** - Authentication and authorization
-- **`middleware.py`** - Request/response processing
-- **`atomic_operations.py`** - Database transaction management
-
-### Orchestration Layer (`/backend/app/orchestration`)
-- **`supervisor.py`** - High-level workflow coordination
-- **`graphs/`** - LangGraph workflow definitions
-
-### Services (`/backend/app/services`)
-- **`gemini_service.py`** - Google Gemini AI integration
-- **`thread_summarization.py`** - Conversation summarization
-
-### Database Layer (`/backend/app/db`)
-- **`repositories/`** - Data access layer
-- **`migrations/`** - Database schema evolution
 
 ## Supabase Integration (`/supabase`)
 
-### Database
-- PostgreSQL with Row Level Security (RLS)
-- Migrations in `/supabase/migrations/`
-- Real-time subscriptions for live updates
+### Directory Structure
 
-### Edge Functions (`/supabase/functions`)
-- **`events/index.ts`** - Server-sent events endpoint
-- **`websocket/index.ts`** - WebSocket connections
+```
+supabase/
+├── config.toml                       # Supabase configuration
+├── functions/                        # Edge Functions
+│   ├── events/                       # Server-Sent Events
+│   │   └── index.ts                  # SSE endpoint implementation
+│   └── websocket/                    # WebSocket Connections
+│       └── index.ts                  # WebSocket handling
+└── migrations/                       # Database Migrations
+    ├── 20250316052725_red_island.sql # Initial schema setup
+    ├── 20250316061433_winter_sun.sql # User management
+    ├── 20250316061609_peaceful_brook.sql # Business data tables
+    ├── 20250316062046_muddy_sea.sql   # Document management
+    ├── 20250316063226_fading_cake.sql # Strategic planning
+    ├── 20250316063356_green_snowflake.sql # Financial modeling
+    ├── 20250316063700_damp_disk.sql   # Integration settings
+    ├── 20250316065046_cold_water.sql  # User preferences
+    ├── 20250316065114_precious_spark.sql # Metrics tracking
+    ├── 20250317040211_maroon_grove.sql # Advanced features
+    ├── 20250317044415_summer_rice.sql # Performance optimizations
+    ├── 20250630035949_bronze_violet.sql # Extended functionality
+    ├── 20250630041232_shy_fountain.sql # Security enhancements
+    ├── 20250630141831_dawn_haze.sql   # Real-time features
+    ├── 20250630161515_tight_spark.sql # Agent integration
+    ├── 20250718031004_light_term.sql  # Workflow management
+    ├── 20250810150541_azure_bread.sql # Advanced AI features
+    ├── 20250810153232_super_tree.sql  # Multi-agent support
+    ├── 20250813000001_enhanced_chat_threading.sql # Chat threading
+    └── 20250814000001_add_user_context_preferences.sql # Context prefs
+```
 
-### Authentication
-- Supabase Auth integration
-- JWT-based session management
-- Social login providers
+## Key Component Relationships and Terminology
 
-## Key Architectural Patterns
+### SYNA Interface Architecture
+
+```
+                    Syna Application
+                         │
+        ┌────────────────┼────────────────┐
+        │                │                │
+        ▼                ▼                ▼
+┌─────────────┐ ┌─────────────┐ ┌─────────────┐
+│Traditional  │ │SYNA Context │ │Floating     │
+│Dashboard    │ │Interface    │ │Chat         │
+│(/pages/*)   │ │(SynaApp)    │ │(Sidebar)    │
+└─────────────┘ └─────────────┘ └─────────────┘
+        │                │                │
+        ▼                ▼                ▼
+┌─────────────┐ ┌─────────────┐ ┌─────────────┐
+│DocumentMemory│ │ContextCard  │ │ModernChat   │
+│ModernDashboard│ │ConversationSpine│ │Sidebar    │
+│BusinessPlan  │ │AgentRail    │ │ThreadedChat │
+└─────────────┘ └─────────────┘ └─────────────┘
+```
+
+The application has **two main UI paradigms**:
+
+#### 1. **Traditional Business Dashboard** (`/pages/*`)
+- **DocumentMemory.tsx** - AI-powered document management with integrated chat
+- **ModernDashboard.tsx** - Primary business intelligence dashboard
+- **BusinessPlan.tsx**, **Strategy.tsx**, etc. - Specialized business modules
+- **ModernChatSidebar.tsx** - Floating chat interface that appears across pages
+
+#### 2. **SYNA Context Interface** (`SynaApp.tsx`)
+- **ContextSwitcher.tsx** - Multi-context navigation (card-based interface)
+- **ContextCard.tsx** - Individual workspace/conversation containers
+- **ConversationSpine.tsx** - Chat interface within each context
+- **AgentRail.tsx** - Visual agent status and management
+- **Surface.tsx**/**PageSurface.tsx** - Live document/data surfaces
+
+### Chat and Conversation Architecture
+
+```
+                    Chat System Architecture
+                           │
+           ┌───────────────┼───────────────┐
+           │               │               │
+           ▼               ▼               ▼
+    ┌─────────────┐ ┌─────────────┐ ┌─────────────┐
+    │DocumentMemory│ │SYNA Context │ │Floating     │
+    │   Chat      │ │   Chat      │ │  Sidebar    │
+    └─────────────┘ └─────────────┘ └─────────────┘
+           │               │               │
+           ▼               ▼               ▼
+    ┌─────────────┐ ┌─────────────┐ ┌─────────────┐
+    │ThreadedChat │ │Conversation │ │ModernChat   │
+    │Message      │ │Spine        │ │Sidebar      │
+    └─────────────┘ └─────────────┘ └─────────────┘
+           │               │               │
+           └───────────────┼───────────────┘
+                           ▼
+                   ┌─────────────┐
+                   │Threading    │
+                   │Logic        │
+                   │(useThreading)│
+                   └─────────────┘
+```
+
+```
+ThreadedChatMessage Features:
+┌─────────────────────────────────────────┐
+│ Individual Message Component            │
+├─────────────────────────────────────────┤
+│ • Archive/Restore ←→ Database           │
+│ • Reply Threading ←→ Parent Messages    │
+│ • Branch Creation ←→ New Conversations  │
+│ • Retry Failed   ←→ ConversationService │
+│ • Text Selection ←→ Branch/Quote Menus  │
+└─────────────────────────────────────────┘
+```
+
+The system supports **multiple conversation patterns**:
+
+1. **ThreadedChatMessage.tsx** - Individual message component with:
+   - Archive/restore functionality
+   - Reply/branch threading
+   - Retry functionality for failed messages
+   - Text selection for conversation branching
+
+2. **ConversationSpine.tsx** - Main chat interface within SYNA contexts
+3. **ModernChatSidebar.tsx** - Floating chat accessible across traditional pages
+4. **Chat Threading Logic** (useThreading.ts) - Manages conversation branching
+
+### Agent System Integration
+
+```
+                    Multi-Agent Architecture
+                            │
+        ┌───────────────────┼───────────────────┐
+        │                   │                   │
+        ▼                   ▼                   ▼
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│Frontend     │     │Backend      │     │Real-time    │
+│Orchestration│◄───►│Agent Engine │◄───►│Communication│
+└─────────────┘     └─────────────┘     └─────────────┘
+        │                   │                   │
+        ▼                   ▼                   ▼
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│AgentOrch-   │     │Specialized  │     │WebSocket/   │
+│estrator.ts  │     │Agents:      │     │SSE Events   │
+│             │     │• Planner    │     │             │
+│AgenticAI    │     │• Writer     │     │Event        │
+│ChatOrch-    │     │• Engineer   │     │Streaming    │
+│estrator.tsx │     │• Analyst    │     │             │
+└─────────────┘     └─────────────┘     └─────────────┘
+```
+
+```
+Agent Workflow:
+User Request → Planner Agent → Task Decomposition → Multi-Agent Execution → Coordinated Response
+      │              │                │                      │                    │
+      ▼              ▼                ▼                      ▼                    ▼
+┌──────────┐ ┌──────────────┐ ┌──────────────┐ ┌────────────────────┐ ┌──────────────┐
+│Frontend  │ │Task Planning │ │Agent         │ │Parallel Execution: │ │Response      │
+│Chat UI   │ │& Analysis    │ │Assignment    │ │• Writer creates    │ │Coordination  │
+│          │ │              │ │              │ │• Engineer codes    │ │& Delivery    │
+│          │ │              │ │              │ │• Analyst reviews   │ │              │
+└──────────┘ └──────────────┘ └──────────────┘ └────────────────────┘ └──────────────┘
+```
+
+Components:
+- **AgentOrchestrator.ts** - Frontend orchestration service
+- **AgenticAIChatOrchestrator.tsx** - UI for agent coordination
+- **Backend Agent Engine** - Specialized AI agents (planner, writer, engineer, etc.)
+- **WebSocket/SSE** - Real-time communication between frontend and agents
+
+### Document and Context Management
+
+- **DocumentService.ts** - Document CRUD operations
+- **CollaborativeDocumentService.ts** - Real-time collaborative editing
+- **ContextProvider.tsx** - Manages SYNA workspaces/contexts
+- **UserSettingsService.ts** - User preferences and context settings
+
+## Architecture Patterns
 
 ### 1. Service-Oriented Architecture
-- Clear separation of concerns between UI, business logic, and data access
-- Services handle complex business operations
+- Clear separation between UI components and business logic
+- Services handle complex operations and API communication
 - Custom hooks provide clean React integration
 
 ### 2. Multi-Agent AI System
-- Specialized agents for different domains (planning, writing, engineering, etc.)
-- Event-driven communication between agents
+- Specialized agents for different domains (planning, writing, analysis, etc.)
+- Event-driven communication via WebSocket/SSE
 - Task decomposition with dependency management
 
 ### 3. Real-time Communication
-- WebSocket connections for instant updates
-- Server-sent events for streaming responses
+- WebSocket connections for instant updates and agent communication
+- Server-sent events for streaming AI responses
 - Collaborative editing with conflict resolution
 
-### 4. Context-Aware UI
-- React Context for global state management
-- Custom hooks for complex state logic
-- Component composition for reusability
+### 4. Context-Aware Design
+- SYNA contexts represent distinct workspaces/conversations
+- Each context can have multiple agents and documents
+- Context switching provides instant workspace changes
 
-### 5. Glass-morphism Design System
-- Modern UI with backdrop-blur effects
-- Framer Motion for smooth animations
-- Responsive design with Tailwind CSS
+### 5. Threading and Conversation Management
+- Conversation branching from text selection
+- Reply threading for complex discussions
+- Archive/restore functionality for message management
+- Retry capability for failed AI interactions
 
 ## Technology Stack
 
 ### Frontend
 - **Framework**: React 18 with TypeScript
 - **Build Tool**: Vite
-- **Styling**: Tailwind CSS + Shadcn/ui
-- **Animations**: Framer Motion  
+- **Styling**: Tailwind CSS + Shadcn/ui components
+- **Animations**: Framer Motion
 - **Charts**: Tremor React
-- **State**: React Context + Custom Hooks
+- **State Management**: React Context + Custom Hooks
+- **Real-time**: WebSocket + Server-Sent Events
 
 ### Backend
 - **Framework**: FastAPI (Python)
-- **AI/ML**: LangChain + LangGraph
-- **Database**: PostgreSQL (Supabase)
+- **AI/ML**: LangChain + LangGraph for agent orchestration
+- **Database**: PostgreSQL via Supabase
 - **Caching**: Redis
 - **Real-time**: WebSocket + SSE
+- **Authentication**: Supabase Auth (JWT)
 
 ### Infrastructure
-- **Database**: Supabase (PostgreSQL + Auth + Edge Functions)
+- **Database & Auth**: Supabase (PostgreSQL + Auth + Edge Functions)
 - **Deployment**: Docker containers
-- **Environment**: Development/staging/production separation
+- **Development**: Local Supabase + FastAPI + Vite
 
 ## Real-time Architecture
 
@@ -303,61 +485,64 @@ Frontend ◄──► WebSocketService ◄──► Backend WebSocketManager ◄
 User Request → Planner Agent → Task Decomposition → Multi-Agent Execution → Coordinated Response
 ```
 
-## Security & Performance
+## Current Threading/Context Issues
 
-### Security
-- JWT authentication with Supabase
-- Row Level Security (RLS) on database
-- CORS configuration for API access
-- Input validation and sanitization
-
-### Performance
-- Component lazy loading
-- Service worker caching
-- Database query optimization
-- Real-time connection pooling
-
-## Development Workflow
-
-### Environment Setup
-```bash
-# Frontend
-bun install
-bun run dev
-
-# Backend
-cd backend
-pip install -r requirements.txt
-python -m uvicorn app.main:app --reload
-
-# Database
-supabase start
-supabase db reset
+### Problem Diagram
+```
+                    Current Issue: Multiple Auto-Created Contexts
+                                        │
+                    ┌───────────────────┼───────────────────┐
+                    │                   │                   │
+                    ▼                   ▼                   ▼
+            ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+            │Context 1    │     │Context 2    │     │Context 3    │
+            │(Auto-loaded)│     │(Auto-loaded)│     │(Auto-loaded)│
+            └─────────────┘     └─────────────┘     └─────────────┘
+                    │                   │                   │
+                    ▼                   ▼                   ▼
+            ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+            │Conversation │     │Conversation │     │Conversation │
+            │Spine #1     │     │Spine #2     │     │Spine #3     │
+            └─────────────┘     └─────────────┘     └─────────────┘
 ```
 
-### Testing Strategy
-- **Unit Tests**: `/backend/tests/unit`
-- **Integration Tests**: `/backend/tests/integration`
-- **E2E Tests**: `/backend/tests/e2e`
+### Expected Behavior Diagram
+```
+                    Expected: Single Default Context + Explicit Creation
+                                        │
+                    ┌───────────────────┼───────────────────┐
+                    │                   │                   │
+                    ▼                   ▼                   ▼
+            ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+            │Single       │     │Text         │     │Agent        │
+            │Default      │     │Selection    │     │Workstream   │
+            │Context      │     │→ Branch     │     │→ New Context│
+            └─────────────┘     └─────────────┘     └─────────────┘
+                    │                   │                   │
+                    ▼                   ▼                   ▼
+            ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+            │Main         │     │Branched     │     │Agent        │
+            │Conversation │     │Conversation │     │Conversation │
+            └─────────────┘     └─────────────┘     └─────────────┘
+```
 
-## Future Architecture Considerations
+**Issue Identified**: Multiple contexts are auto-loaded from the database, causing multiple conversation windows to appear in the SYNA interface. 
 
-### SYNA Vision Alignment
-The current architecture is 90% ready for SYNA transformation:
+**Root Cause**: `ContextProvider.tsx` loads all saved user contexts on initialization, and each context renders its own `ConversationSpine` chat interface.
 
-1. **Context Switching**: 3D card interface for instant context changes
-2. **Surface Protocol**: Live, editable artifacts within conversation
-3. **Agent Rail**: Visual display of active agents
-4. **Conversation Spine**: Chat as central OS interface
+**Expected Behavior**: 
+- New contexts/threads should only be created when:
+  1. User explicitly selects text and creates a branch
+  2. An AI agent spins up its own workstream
+  3. User manually creates a new context
 
-### Scalability
-- Microservices decomposition for agent specialization
-- Event sourcing for complex workflow tracking
-- Horizontal scaling for agent execution
-- CDN integration for static assets
+**Solution Areas**:
+- Modify context loading logic to start with single default context
+- Add explicit user controls for context/thread creation
+- Review agent workstream creation to prevent auto-context generation
 
 ---
 
-**Last Updated**: January 2025  
-**Architecture Version**: 2.0  
-**Status**: Production Ready with SYNA Extensions Planned
+**Last Updated**: August 2025  
+**Architecture Version**: 3.0  
+**Status**: Production Ready with Active Development

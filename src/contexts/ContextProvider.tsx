@@ -1,5 +1,16 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Context, DEFAULT_CONTEXTS, ContextAction, createNewContext, AVAILABLE_AGENTS } from '../types/context';
+import { 
+  Context, 
+  ContextAction, 
+  createNewContext, 
+  createMainContext,
+  createBranchContext,
+  createAgentWorkstream,
+  createListenerContext,
+  AVAILABLE_AGENTS,
+  ContextType,
+  ContextVisibility 
+} from '../types/context';
 import { UserSettingsService, UserSettings } from '../services/UserSettingsService';
 import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
@@ -19,7 +30,9 @@ interface ContextContextType extends ContextState {
   switchContext: (index: number) => void;
   createNewContext: (title: string) => string; // Returns new context ID
   archiveContext: (contextId: string) => void;
-  branchContext: (contextId: string, title: string) => string; // Returns new context ID
+  branchContext: (contextId: string, title: string, selectedText?: string) => string; // Returns new context ID
+  spawnAgentWorkstream: (agentId: string, parentContextId: string, title?: string) => string; // Returns new context ID
+  createListenerContext: (agentId: string, parentContextId: string) => string; // Returns new context ID
   renameContext: (contextId: string, title: string) => void;
   addAgentToContext: (contextId: string, agentId: string) => void;
   removeAgentFromContext: (contextId: string, agentId: string) => void;
@@ -30,6 +43,8 @@ interface ContextContextType extends ContextState {
   updateAgentStatus: (contextId: string, agentId: string, status: any) => void;
   dispatchAction: (action: ContextAction) => void;
   getActiveContexts: () => Context[];
+  getContextsByType: (type: ContextType) => Context[];
+  getMainContext: () => Context | undefined;
   saveUserSettings: (settings: Partial<UserSettings>) => Promise<void>;
   loadUserContexts: () => Promise<void>;
 }
@@ -42,16 +57,16 @@ interface ContextProviderProps {
 
 export function ContextProvider({ children }: ContextProviderProps) {
   const [state, setState] = useState<ContextState>(() => {
-    // Initialize contexts with empty conversation history
-    const initialContexts = DEFAULT_CONTEXTS.map(context => ({
-      ...context,
+    // Initialize with only a main context
+    const mainContext = {
+      ...createMainContext(),
       conversationHistory: []
-    }));
+    };
 
     return {
-      contexts: initialContexts,
-      currentContextIndex: 0, // Start with first context
-      currentContext: initialContexts[0],
+      contexts: [mainContext],
+      currentContextIndex: 0,
+      currentContext: mainContext,
       expandedMode: 'compact',
       documentSurfaceVisible: false,
       agentRailVisible: false,
@@ -60,43 +75,24 @@ export function ContextProvider({ children }: ContextProviderProps) {
     };
   });
 
-  // Load user settings and contexts on mount
+  // Load user settings only (not all contexts)
   useEffect(() => {
     const loadUserData = async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
-          // Load user settings
+          // Load user settings only
           const settings = await UserSettingsService.loadUserSettings(user.id);
           
-          // Load saved contexts
-          const savedContexts = await UserSettingsService.loadUserContexts(user.id);
+          setState(prev => ({
+            ...prev,
+            userSettings: settings,
+            expandedMode: settings.ui_preferences.expanded_mode,
+            isLoading: false,
+          }));
           
-          if (savedContexts.length > 0) {
-            // Convert saved contexts to Context objects
-            const contexts = savedContexts.map(sc => ({
-              ...UserSettingsService.savedContextToContext(sc),
-              conversationHistory: []
-            }));
-            
-            setState(prev => ({
-              ...prev,
-              contexts,
-              currentContextIndex: 0,
-              currentContext: contexts[0],
-              userSettings: settings,
-              expandedMode: settings.ui_preferences.expanded_mode,
-              isLoading: false,
-            }));
-          } else {
-            // First time user, start with default context
-            setState(prev => ({
-              ...prev,
-              userSettings: settings,
-              expandedMode: settings.ui_preferences.expanded_mode,
-              isLoading: false,
-            }));
-          }
+          // Initialize agent listeners for the main context
+          initializeAgentListeners(prev.currentContext.id);
         } else {
           setState(prev => ({ ...prev, isLoading: false }));
         }
@@ -108,6 +104,23 @@ export function ContextProvider({ children }: ContextProviderProps) {
 
     loadUserData();
   }, []);
+
+  // Initialize agent listeners for background prefetching
+  const initializeAgentListeners = (mainContextId: string) => {
+    const agentIds = ['planner', 'analyst', 'engineer'];
+    
+    agentIds.forEach(agentId => {
+      const listenerContext = {
+        ...createListenerContext(agentId, mainContextId),
+        conversationHistory: []
+      };
+      
+      setState(prev => ({
+        ...prev,
+        contexts: [...prev.contexts, listenerContext]
+      }));
+    });
+  };
 
   // Update current context when index changes
   useEffect(() => {
@@ -287,14 +300,13 @@ export function ContextProvider({ children }: ContextProviderProps) {
     archiveInDB();
   };
 
-  const branchContext = (contextId: string, title: string): string => {
+  const branchContext = (contextId: string, title: string, selectedText?: string): string => {
     const sourceContext = state.contexts.find(ctx => ctx.id === contextId);
     if (!sourceContext) return '';
 
     const branchedContext = {
-      ...createNewContext(title),
+      ...createBranchContext(title, contextId, selectedText),
       conversationHistory: [...sourceContext.conversationHistory],
-      parentContextId: contextId,
       activeAgents: [...sourceContext.activeAgents]
     };
     
@@ -306,6 +318,35 @@ export function ContextProvider({ children }: ContextProviderProps) {
     }));
     
     return branchedContext.id;
+  };
+
+  const spawnAgentWorkstream = (agentId: string, parentContextId: string, title?: string): string => {
+    const agentContext = {
+      ...createAgentWorkstream(agentId, parentContextId, title),
+      conversationHistory: []
+    };
+    
+    setState(prev => ({
+      ...prev,
+      contexts: [...prev.contexts, agentContext]
+      // Don't change active context - agent runs in background
+    }));
+    
+    return agentContext.id;
+  };
+
+  const createListenerContextFunc = (agentId: string, parentContextId: string): string => {
+    const listenerContext = {
+      ...createListenerContext(agentId, parentContextId),
+      conversationHistory: []
+    };
+    
+    setState(prev => ({
+      ...prev,
+      contexts: [...prev.contexts, listenerContext]
+    }));
+    
+    return listenerContext.id;
   };
 
   const renameContext = (contextId: string, title: string) => {
@@ -354,6 +395,14 @@ export function ContextProvider({ children }: ContextProviderProps) {
 
   const getActiveContexts = (): Context[] => {
     return state.contexts.filter(ctx => ctx.isActive && !ctx.archived);
+  };
+
+  const getContextsByType = (type: ContextType): Context[] => {
+    return state.contexts.filter(ctx => ctx.type === type && ctx.isActive && !ctx.archived);
+  };
+
+  const getMainContext = (): Context | undefined => {
+    return state.contexts.find(ctx => ctx.type === ContextType.MAIN);
   };
 
   const saveUserSettings = async (settings: Partial<UserSettings>): Promise<void> => {
@@ -441,6 +490,8 @@ export function ContextProvider({ children }: ContextProviderProps) {
     createNewContext: createNewContextFunc,
     archiveContext,
     branchContext,
+    spawnAgentWorkstream,
+    createListenerContext: createListenerContextFunc,
     renameContext,
     addAgentToContext,
     removeAgentFromContext,
@@ -451,6 +502,8 @@ export function ContextProvider({ children }: ContextProviderProps) {
     updateAgentStatus,
     dispatchAction,
     getActiveContexts,
+    getContextsByType,
+    getMainContext,
     saveUserSettings,
     loadUserContexts,
   };
