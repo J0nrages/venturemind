@@ -3,15 +3,15 @@ import React from 'react';
 import { DollarSign } from 'lucide-react';
 import MetricCard from '../components/MetricCard';
 import { usePageTitle } from '../hooks/usePageTitle';
+import { PageLayout } from '../components/PageLayout';
 
 export default function Revenue() {
   usePageTitle('Revenue');
   return (
-    <div className="space-y-8 pt-14">
-      <div>
-        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Revenue Analytics</h1>
-        <p className="text-gray-500 dark:text-gray-400 mt-1">Track your business revenue and financial metrics</p>
-      </div>
+    <PageLayout 
+      title="Revenue Analytics" 
+      subtitle="Track your business revenue and financial metrics"
+    >
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <MetricCard
@@ -21,6 +21,6 @@ export default function Revenue() {
           icon={DollarSign}
         />
       </div>
-    </div>
+    </PageLayout>
   );
 }

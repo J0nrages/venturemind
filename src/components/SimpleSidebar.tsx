@@ -122,7 +122,7 @@ export function SimpleSidebar({ children }: SimpleSidebarProps) {
               exit={{ x: navPosition === 'left' ? -256 : 256 }}
               transition={{ type: 'spring', damping: 30, stiffness: 300 }}
               className={cn(
-                "fixed top-0 w-64 h-full z-30",
+                "fixed top-0 w-64 h-full z-50",
                 navPosition === 'left' ? 'left-0' : 'right-0',
                 'bg-card/80 backdrop-blur-xl border-r border-border/50 shadow-2xl'
               )}
@@ -276,7 +276,7 @@ export function SimpleSidebar({ children }: SimpleSidebarProps) {
       {/* Main Content - Shift to accommodate open side panels on large screens */}
       <div
         className={cn(
-          "flex-1 bg-background transition-[margin] duration-300 pt-14",
+          "flex-1 bg-background transition-[margin] duration-300",
           // Reserve space for chat on large screens
           isChatOpen && chatPosition === 'right' ? 'lg:mr-96' : '',
           isChatOpen && chatPosition === 'left' ? 'lg:ml-96' : '',
@@ -298,7 +298,7 @@ export function SimpleSidebar({ children }: SimpleSidebarProps) {
             transition={{ duration: 0.2 }}
             onClick={() => setIsOpen(true)}
             className={cn(
-              "fixed top-6 z-30 p-3 rounded-xl group",
+              "fixed top-6 z-[60] p-3 rounded-xl group",
               "bg-primary backdrop-blur-lg",
               "shadow-lg shadow-primary/20",
               "hover:shadow-xl hover:shadow-primary/30",

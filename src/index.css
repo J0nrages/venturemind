@@ -172,6 +172,94 @@
   .gradient-border > * {
     @apply bg-background rounded-2xl;
   }
+  
+  /* Mac Safari-style scrollbars with smooth scrolling */
+  .scroll-smooth {
+    scroll-behavior: smooth;
+    scroll-padding: 1rem;
+  }
+  
+  /* Safari-like overlay scrollbars - appear only when scrolling */
+  .scrollbar-safari {
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+    scroll-behavior: smooth;
+  }
+  
+  .scrollbar-safari::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+  }
+  
+  .scrollbar-safari::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .scrollbar-safari::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.4);
+    border-radius: 6px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+    opacity: 0;
+    transition: opacity 0.3s ease, background-color 0.2s ease;
+  }
+  
+  .scrollbar-safari::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.6);
+    opacity: 1;
+  }
+  
+  .scrollbar-safari::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+  
+  /* Show scrollbar on hover and when actively scrolling */
+  .scrollbar-safari:hover::-webkit-scrollbar-thumb,
+  .scrollbar-safari.scrolling::-webkit-scrollbar-thumb {
+    opacity: 1;
+  }
+  
+  /* Thin variant for smaller areas */
+  .scrollbar-safari-thin {
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+    scroll-behavior: smooth;
+  }
+  
+  .scrollbar-safari-thin::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  .scrollbar-safari-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .scrollbar-safari-thin::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.4);
+    border-radius: 4px;
+    border: 1px solid transparent;
+    background-clip: padding-box;
+    opacity: 0;
+    transition: opacity 0.3s ease, background-color 0.2s ease;
+  }
+  
+  .scrollbar-safari-thin::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.6);
+    opacity: 1;
+  }
+  
+  .scrollbar-safari-thin:hover::-webkit-scrollbar-thumb,
+  .scrollbar-safari-thin.scrolling::-webkit-scrollbar-thumb {
+    opacity: 1;
+  }
+  
+  /* Enhanced smooth scrolling for chat areas */
+  .chat-scroll {
+    scroll-behavior: smooth;
+    scroll-padding: 2rem;
+    overscroll-behavior: contain;
+  }
 }
 
 @theme inline {

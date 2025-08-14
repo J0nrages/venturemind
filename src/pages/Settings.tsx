@@ -1,6 +1,7 @@
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import React, { useState, useEffect } from 'react';
+import { PageLayout } from '../components/PageLayout';
 import { motion } from 'framer-motion';
 import { supabase } from '../lib/supabase';
 import { ConversationService } from '../services/ConversationService';
@@ -113,13 +114,12 @@ export default function Settings() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
-      <div>
-        <h1 className="text-2xl font-semibold text-foreground">Settings</h1>
-        <p className="text-muted-foreground mt-1">Manage your application settings and integrations</p>
-      </div>
-
-      <div className="bg-card/80 backdrop-blur-xl rounded-xl shadow-sm p-6 space-y-6">
+    <PageLayout 
+      title="Settings" 
+      subtitle="Manage your application settings and integrations"
+    >
+      <div className="max-w-4xl mx-auto">
+        <div className="bg-card/80 backdrop-blur-xl rounded-xl shadow-sm p-6 space-y-6">
         <div className="pb-6 border-b border-border/50">
           <h2 className="text-lg font-medium text-foreground">Account Information</h2>
           <p className="mt-1 text-sm text-muted-foreground">Manage your account details and preferences</p>
@@ -271,6 +271,7 @@ export default function Settings() {
           <p>• <strong>Fallback:</strong> The system works without AI but with limited intelligence</p>
         </div>
       </div>
-    </div>
+      </div>
+    </PageLayout>
   );
 }

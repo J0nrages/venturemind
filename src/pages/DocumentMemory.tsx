@@ -45,6 +45,7 @@ import ThreadedChatMessage from '../components/ThreadedChatMessage';
 import ReplyModal from '../components/ReplyModal';
 import BranchModal from '../components/BranchModal';
 import { useThreading } from '../hooks/useThreading';
+import { useScrollVisibility } from '../hooks/useScrollVisibility';
 import toast from 'react-hot-toast';
 import { useDialog } from '../contexts/DialogContext';
 
@@ -112,7 +113,13 @@ export default function DocumentMemory() {
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatInputRef = useRef<HTMLInputElement>(null);
+  const messagesScrollRef = useRef<HTMLDivElement>(null);
+  const sidebarScrollRef = useRef<HTMLDivElement>(null);
   const dialog = useDialog();
+  
+  // Safari-style scrollbar visibility
+  const messagesScroll = useScrollVisibility(messagesScrollRef.current);
+  const sidebarScroll = useScrollVisibility(sidebarScrollRef.current);
 
   const {
     connected: wsConnected,
@@ -193,7 +200,11 @@ export default function DocumentMemory() {
   };
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ 
+      behavior: 'smooth',
+      block: 'end',
+      inline: 'nearest'
+    });
   };
 
   const loadData = async () => {
@@ -518,17 +529,44 @@ export default function DocumentMemory() {
   const documentCategories = ['all', 'product', 'engineering', 'finance', 'strategy', 'operations', 'marketing', 'technical', 'legal'];
 
   return (
-    <div className="h-screen flex bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/20 dark:from-gray-900 dark:via-blue-900/10 dark:to-purple-900/5">
-      {/* Sidebar */}
-      <Card className="w-80 bg-card/80 backdrop-blur-xl border-border/50 rounded-none border-l-0 border-t-0 border-b-0 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-background p-8">
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="max-w-7xl mx-auto"
+      >
+        {/* Header */}
+        <div className="mb-8">
+          <motion.div 
+            className="flex items-center justify-between"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+          >
+            <div>
+              <h1 className="text-4xl font-bold mb-2 text-foreground">AI Document Memory</h1>
+              <p className="text-muted-foreground">Intelligent document management with AI assistance</p>
+            </div>
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              {getAIStatusIndicator()}
+            </motion.div>
+          </motion.div>
+        </div>
+
+        <div className="flex gap-6 h-[calc(100vh-12rem)]">
+        {/* Sidebar */}
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="w-80 bg-card/80 backdrop-blur-xl border border-border/50 rounded-xl flex flex-col"
+        >
         <div className="p-4 border-b border-border/50">
-          <h1 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-            <Brain className="w-6 h-6 text-emerald-600" />
-            AI Document Memory
-          </h1>
-          
           {/* Search bar */}
-          <div className="relative mt-3">
+          <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <input
               type="text"
@@ -539,29 +577,28 @@ export default function DocumentMemory() {
             />
           </div>
           
-          {/* AI Status Indicator */}
-          <div className="mt-3 flex items-center justify-between">
-            {getAIStatusIndicator()}
-            {aiStatus !== 'working' && (
+          {/* AI Test Button */}
+          {aiStatus !== 'working' && (
+            <div className="mt-3">
               <Button
                 onClick={testAIIntegration}
                 disabled={testingAI}
                 variant="secondary"
                 size="sm"
-                className="flex items-center gap-1 px-2 py-1 text-xs"
+                className="flex items-center gap-1 px-2 py-1 text-xs w-full"
               >
                 {testingAI ? (
                   <Loader2 className="w-3 h-3 animate-spin" />
                 ) : (
                   <Zap className="w-3 h-3" />
                 )}
-                Test AI
+                Test AI Integration
               </Button>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
-        <div className="flex-1 overflow-auto">
+        <div ref={sidebarScrollRef} className="flex-1 overflow-auto scrollbar-safari">
           {/* Template Library */}
           <div className="p-4 border-b border-border/50">
             <div className="flex items-center justify-between mb-3">
@@ -648,7 +685,7 @@ export default function DocumentMemory() {
                   </div>
                   
                   {/* Template List */}
-                  <div className="ml-6 space-y-1 max-h-40 overflow-y-auto">
+                  <div className="ml-6 space-y-1 max-h-40 overflow-y-auto scrollbar-safari-thin">
                     {filteredTemplates.map(template => {
                       const IconComponent = getIconComponent(template.icon);
                       
@@ -835,33 +872,33 @@ export default function DocumentMemory() {
             </AnimatePresence>
           </div>
         </div>
-      </Card>
+        </motion.div>
 
-      {/* Main Content */}
-      <div className="flex-1 flex">
-        {/* Chat Interface */}
-        <div className="flex-1 flex flex-col">
+        {/* Main Content - Chat Interface */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+          className="flex-1 bg-card/80 backdrop-blur-xl border border-border/50 rounded-xl flex flex-col"
+        >
           {/* Chat Header */}
-          <Card className="p-4 bg-card/80 backdrop-blur-xl border-border/50 rounded-none border-l-0 border-r-0 border-t-0">
+          <div className="p-4 border-b border-border/50">
             <div className="flex items-center gap-2">
               <MessageCircle className="w-5 h-5 text-emerald-600" />
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">AI Assistant</h2>
-              <div className="ml-auto flex items-center gap-4">
-                {getAIStatusIndicator()}
-                {aiStatus === 'no-key' && (
-                  <a
-                    href="/settings"
-                    className="text-sm text-blue-600 hover:text-blue-700 underline"
-                  >
-                    Add API Key
-                  </a>
-                )}
-              </div>
+              <h2 className="text-lg font-semibold text-foreground">AI Assistant</h2>
+              {aiStatus === 'no-key' && (
+                <a
+                  href="/settings"
+                  className="ml-auto text-sm text-blue-600 hover:text-blue-700 underline"
+                >
+                  Add API Key
+                </a>
+              )}
             </div>
-          </Card>
+          </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-auto p-4 space-y-4">
+          <div ref={messagesScrollRef} className="flex-1 overflow-auto scrollbar-safari chat-scroll p-4 space-y-4">
             {messages.map(message => (
               <ThreadedChatMessage
                 key={message.id}
@@ -912,8 +949,8 @@ export default function DocumentMemory() {
           </div>
 
           {/* Chat Input */}
-          <Card className="p-4 bg-card/80 backdrop-blur-xl border-border/50 rounded-none border-l-0 border-r-0 border-b-0">
-            <div className="flex gap-2">
+          <div className="p-4 border-t border-border/50">
+            <div className="flex gap-3">
               <input
                 ref={chatInputRef}
                 type="text"
@@ -925,23 +962,28 @@ export default function DocumentMemory() {
                     ? "Tell me about your business or share information to save..." 
                     : "Share information to organize in your documents..."
                 }
-                className="flex-1 px-4 py-2 border border-border/50 rounded-lg bg-card/50 backdrop-blur-md focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                className="flex-1 px-4 py-3 border border-border/50 rounded-xl bg-card/60 backdrop-blur-md text-foreground placeholder:text-muted-foreground transition-all duration-200 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:bg-card/80 hover:bg-card/70 hover:border-border/70"
                 disabled={loading}
               />
               <button
                 onClick={handleSendMessage}
                 disabled={!currentMessage.trim() || loading}
-                className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:shadow-md active:scale-95"
               >
                 <Send className="w-4 h-4" />
               </button>
             </div>
-          </Card>
-        </div>
+          </div>
+        </motion.div>
 
         {/* Document Viewer */}
         {selectedDoc && (
-          <div className="w-1/2 bg-card/80 backdrop-blur-xl border-l border-border/50 flex flex-col">
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+            className="w-1/2 bg-card/80 backdrop-blur-xl border border-border/50 rounded-xl ml-6 flex flex-col"
+          >
             {/* Document Header */}
             <div className="p-4 border-b border-border/50">
               <div className="flex items-center justify-between">
@@ -1013,7 +1055,7 @@ export default function DocumentMemory() {
             </div>
 
             {/* Document Content - Collaborative or Solo */}
-            <div className="flex-1 overflow-auto p-4">
+            <div className="flex-1 overflow-auto scrollbar-safari p-4">
               {collaborativeMode ? (
                 <CollaborativeEditor
                   document={selectedDoc}
@@ -1029,7 +1071,7 @@ export default function DocumentMemory() {
                     <textarea
                       value={editContent}
                       onChange={(e) => setEditContent(e.target.value)}
-                      className="w-full h-full p-4 border border-gray-300 rounded-lg font-mono text-sm resize-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      className="w-full h-full p-4 border border-gray-300 rounded-lg font-mono text-sm resize-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 scrollbar-safari-thin"
                     />
                   ) : (
                     <div className="prose prose-sm max-w-none">
@@ -1041,7 +1083,7 @@ export default function DocumentMemory() {
                 </>
               )}
             </div>
-          </div>
+          </motion.div>
         )}
       </div>
       
@@ -1065,6 +1107,7 @@ export default function DocumentMemory() {
         selectedText={branchModal.selectedText}
         parentMessage={branchModal.parentMessage}
       />
+      </motion.div>
     </div>
   );
 }

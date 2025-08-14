@@ -1,6 +1,7 @@
 import { Card } from '@/components/ui/card';
 import { usePageTitle } from '../hooks/usePageTitle';
 import React, { useState, useEffect } from 'react';
+import { PageLayout } from '../components/PageLayout';
 import { motion } from 'framer-motion';
 import { 
   BarChart3, 
@@ -177,30 +178,31 @@ export default function Metrics() {
     );
   }
 
+  const headerActions = (
+    <div className="flex items-center gap-3">
+      <button
+        onClick={() => setShowNewMetricForm(true)}
+        className="flex items-center gap-2 px-4 py-2 bg-muted text-foreground rounded-lg hover:bg-muted/80"
+      >
+        <Plus className="w-4 h-4" />
+        Add Metric
+      </button>
+      <button
+        onClick={loadMetrics}
+        className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
+      >
+        <RefreshCw className="w-4 h-4" />
+        Refresh
+      </button>
+    </div>
+  );
+
   return (
-    <div className="space-y-8 pt-14">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-semibold text-foreground">Business Metrics</h1>
-          <p className="text-muted-foreground mt-1">Monitor key performance indicators</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setShowNewMetricForm(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-muted text-foreground rounded-lg hover:bg-muted/80"
-          >
-            <Plus className="w-4 h-4" />
-            Add Metric
-          </button>
-          <button
-            onClick={loadMetrics}
-            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
-          >
-            <RefreshCw className="w-4 h-4" />
-            Refresh
-          </button>
-        </div>
-      </div>
+    <PageLayout 
+      title="Business Metrics" 
+      subtitle="Monitor key performance indicators"
+      headerActions={headerActions}
+    >
 
       {/* Metric Categories Filter */}
       <div className="flex items-center gap-2 overflow-x-auto pb-2">
@@ -590,6 +592,6 @@ export default function Metrics() {
           </div>
         </div>
       )}
-    </div>
+    </PageLayout>
   );
 }

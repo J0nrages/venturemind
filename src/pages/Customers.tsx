@@ -1,6 +1,7 @@
 import { Card } from '@/components/ui/card';
 import React from 'react';
 import { motion } from 'framer-motion';
+import { PageLayout } from '../components/PageLayout';
 import { Users, UserPlus, UserMinus, UserCheck, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 import MetricCard from '../components/MetricCard';
@@ -111,21 +112,22 @@ export default function Customers() {
       { name: 'SMB', customers: 571, percentage: 20 }
     ];
 
+  const refreshButton = (
+    <button
+      onClick={refreshData}
+      className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
+    >
+      <RefreshCw className="w-4 h-4" />
+      Refresh Data
+    </button>
+  );
+
   return (
-    <div className="space-y-8 pt-14">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-semibold text-foreground">Customer Overview</h1>
-          <p className="text-muted-foreground mt-1">Track and analyze your customer base</p>
-        </div>
-        <button
-          onClick={refreshData}
-          className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
-        >
-          <RefreshCw className="w-4 h-4" />
-          Refresh Data
-        </button>
-      </div>
+    <PageLayout 
+      title="Customer Overview" 
+      subtitle="Track and analyze your customer base"
+      headerActions={refreshButton}
+    >
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {customerMetrics.map((metric, index) => (
@@ -289,6 +291,6 @@ export default function Customers() {
           </div>
         </div>
       </div>
-    </div>
+    </PageLayout>
   );
 }

@@ -22,6 +22,7 @@ import { ConversationService, ConversationMessage } from '../services/Conversati
 import { DocumentService, UserDocument } from '../services/DocumentService';
 import { useSSEConnection } from '../hooks/useSSEConnection';
 import { useThreading } from '../hooks/useThreading';
+import { useScrollVisibility } from '../hooks/useScrollVisibility';
 import ThreadedChatMessage from './ThreadedChatMessage';
 import ReplyModal from './ReplyModal';
 import BranchModal from './BranchModal';
@@ -76,7 +77,11 @@ export default function ModernChatSidebar({
   });
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesScrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  
+  // Safari-style scrollbar visibility
+  const messagesScroll = useScrollVisibility(messagesScrollRef.current);
   
   // SSE connection for real-time orchestration updates
   const sseState = useSSEConnection(user?.id);
@@ -158,7 +163,11 @@ export default function ModernChatSidebar({
   };
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ 
+      behavior: 'smooth',
+      block: 'end',
+      inline: 'nearest'
+    });
   };
 
   const sendMessage = async () => {
@@ -342,7 +351,7 @@ export default function ModernChatSidebar({
                 </div>
 
                 {/* Messages Area with Threading Support */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-2">
+                <div ref={messagesScrollRef} className="flex-1 overflow-y-auto scrollbar-safari chat-scroll p-4 space-y-2">
                   {messages.map((message, index) => (
                     <motion.div
                       key={message.id}

@@ -1,445 +1,516 @@
-# Syna UI Alignment Report: Current State vs. PRD Vision
+# Syna Implementation Guide: Unified Vision
 
-**Generated:** 2025-08-14
-**Purpose:** Comprehensive analysis of existing UI architecture versus PRD requirements for Syna AI Operating System
-**Recommendation:** Strategic transformation with selective retention
+**Version:** 1.0  
+**Purpose:** Consolidated implementation guide for Syna AI Operating System  
+**Core Principle:** Conversation orchestrates work through intelligent, living surfaces
 
 ---
 
 ## Executive Summary
 
-The current Syna codebase is architected as a **traditional business intelligence dashboard** with 83% of pages (15/18) focused on financial metrics, strategic planning, and business analytics. This fundamentally misaligns with the PRD vision of an **AI Operating System for conversation-native work** where chat is the primary interface and agents autonomously complete multi-step workflows.
+Syna is an **AI Operating System where conversation is the primary interface** and agents complete multi-step work across tools without breaking user flow. Building on insights from tools like Claudia's code awareness, Syna makes all business operations conversational while preserving direct manipulation capabilities.
 
-**Key Finding:** Only **DocumentMemory.tsx** embodies the conversation-native, agent-driven paradigm required by the PRD. This page should serve as the architectural blueprint for transformation.
-
-**Recommendation:** Execute a phased transformation that preserves domain expertise while reimagining interfaces as agent-mediated conversations rather than traditional CRUD operations.
+**Key Innovation:** Surfaces (dashboards, documents, models) are **live, editable artifacts** within conversation - not separate apps. Users can directly edit while agents observe and assist, or request changes through natural language while agents execute.
 
 ---
 
-## Part 1: Current State Analysis
+## Part 1: Core Architecture
 
-### 1.1 Page Inventory & Classification
+### 1.1 Fundamental Components
 
-#### Business Intelligence Pages (15 pages - 83%)
-| Page | Current Function | Key Components | Alignment Score |
-|------|-----------------|----------------|-----------------|
-| **BusinessPlan.tsx** | Main dashboard with metrics, SWOT, strategic initiatives | MetricCards, Charts, Real-time updates | ⭐☆☆☆☆ |
-| **ModernDashboard.tsx** | Alternative modern UI dashboard | AI insights panel, Strategic overview | ⭐⭐☆☆☆ |
-| **ProformaPage.tsx** | 3-year financial modeling tool | Income statements, Cash flow, Assumptions | ⭐☆☆☆☆ |
-| **Metrics.tsx** | Custom metrics management | Live integrations, Performance charts | ⭐☆☆☆☆ |
-| **Revenue.tsx** | Basic revenue analytics | Single metric card | ⭐☆☆☆☆ |
-| **Customers.tsx** | Customer analytics dashboard | Growth trends, Segment analysis | ⭐☆☆☆☆ |
-| **Strategy.tsx** | Strategic planning hub | Initiative management, AI suggestions | ⭐⭐☆☆☆ |
-| **SwotAnalysis.tsx** | SWOT analysis viewer | Static data display | ⭐☆☆☆☆ |
-| **BusinessSetup.tsx** | Multi-step setup wizard | Form-based onboarding | ⭐⭐☆☆☆ |
-| **Company.tsx** | Company overview (minimal) | Basic info display | ⭐☆☆☆☆ |
-| **Plans.tsx** | Subscription plan selection | Pricing tiers | ⭐☆☆☆☆ |
-| **Integrations.tsx** | API integration management | Stripe, HubSpot, PostHog | ⭐⭐☆☆☆ |
-| **Settings.tsx** | Account settings | API keys, Auth management | ⭐⭐⭐☆☆ |
-| **Auth.tsx** | Authentication | Sign in/up, Password reset | ⭐⭐⭐☆☆ |
-| **Dashboard.tsx** | Redirect wrapper | Routes to ModernDashboard | ⭐☆☆☆☆ |
-
-#### AI Operating System Pages (3 pages - 17%)
-| Page | Current Function | Key Components | Alignment Score |
-|------|-----------------|----------------|-----------------|
-| **DocumentMemory.tsx** | AI document assistant | Conversational AI, Threading, Branching, Collaboration | ⭐⭐⭐⭐⭐ |
-| **AIProcessing.tsx** | AI performance monitoring | Processing metrics, API usage | ⭐⭐⭐☆☆ |
-| **Documents.tsx** | Document metrics (minimal) | Processing statistics | ⭐⭐☆☆☆ |
-
-### 1.2 Component Architecture Analysis
-
-#### Current Component Patterns
-```
-src/components/
-├── Business-Focused (70%)
-│   ├── MetricCard.tsx         - Static metric display
-│   ├── proforma/*             - Financial modeling components
-│   └── ErrorBoundary.tsx      - Error handling
-│
-├── AI-Aligned (20%)
-│   ├── AgenticAIChatOrchestrator.tsx  - Agent orchestration
-│   ├── ThreadedChatMessage.tsx        - Conversation threading
-│   ├── ReplyModal.tsx                 - Thread branching
-│   ├── BranchModal.tsx                - Context forking
-│   └── ConversationalSetup.tsx        - Chat configuration
-│
-└── UI Infrastructure (10%)
-    ├── ui/*                   - shadcn components
-    ├── Sidebar.tsx            - Navigation
-    └── ThemeToggle.tsx        - Dark mode
-```
-
-### 1.3 Service Layer Assessment
-
-#### Current Services
-- **Business Services:** BusinessService, ProformaService, StrategicService (60%)
-- **AI Services:** AgentOrchestrator, OrchestrationService, GeminiService (25%)
-- **Infrastructure:** WebSocketService, SSEService, DocumentService (15%)
-
-**Key Gap:** No unified conversation management service that orchestrates agents across different domains.
-
----
-
-## Part 2: PRD Requirements Mapping
-
-### 2.1 Core Concept Alignment
-
-| PRD Concept | Current Implementation | Gap Analysis |
-|-------------|----------------------|--------------|
-| **Workspace** | ❌ Not implemented | Need workspace isolation, member management |
-| **Project** | ❌ Not implemented | No project containers for tasks/docs/threads |
-| **Thread** | ✅ Partial (DocumentMemory) | Only in one page, needs system-wide |
-| **Context Pack** | ❌ Not implemented | No reusable memory bundles |
-| **Agent (@mentions)** | ✅ Partial (backend exists) | Backend agents exist, no UI integration |
-| **Task Graph** | ❌ Not implemented | No DAG visualization or dependencies |
-| **Run Observability** | ❌ Not implemented | No trace viewing or provenance |
-| **Quick Switcher (⌘K)** | ❌ Not implemented | No keyboard-first navigation |
-| **Action Chips** | ❌ Not implemented | No suggested next actions |
-| **Inline Approvals** | ❌ Not implemented | No diff preview/approval flow |
-
-### 2.2 Experience Flow Gaps
-
-#### Planning → Execution Flow (Section 4.1)
-- **Current:** Static dashboards require manual navigation
-- **Required:** Natural language triggers agent orchestration
-- **Gap:** No @Planner integration, no task decomposition UI
-
-#### Research → Brief → Outreach Flow (Section 4.2)
-- **Current:** Separate tools for each step
-- **Required:** Unified conversation with @Researcher, @Writer, @Scheduler
-- **Gap:** No agent handoffs, no approval gates
-
-#### Engineering Flow (Section 4.3)
-- **Current:** No engineering-specific features
-- **Required:** @Engineer creates issues, scaffolds tests, opens PRs
-- **Gap:** No GitHub integration in UI, no PR preview
-
----
-
-## Part 3: Transformation Recommendations
-
-### 3.1 Page-Level Transformation Strategy
-
-#### Phase 1: Core Infrastructure (v0 - Weeks 1-4)
-
-**NEW PAGES REQUIRED:**
+#### Conversation Operating System
 ```typescript
-// Primary conversation interface
-src/pages/ConversationHub.tsx
-- Central chat interface
-- Agent @mentions
-- Thread management
-- Context pack attachments
-- Suggested action chips
-
-// Workspace & project management
-src/pages/Workspace.tsx
-- Workspace settings
-- Member management
-- Agent configuration
-- Policy templates
-
-src/pages/Projects.tsx
-- Project creation/management
-- Task graph visualization
-- Kanban/Timeline views
-- Status tracking
-
-// Agent & automation
-src/pages/AgentCatalog.tsx
-- Browse agents (Planner, Writer, Engineer, etc.)
-- Autonomy level configuration
-- Budget settings
-- Performance metrics
-
-src/pages/Observability.tsx
-- Run logs with traces
-- Audit trail
-- Provenance viewing
-- Cost tracking
+interface SynaCore {
+  // The conversation spine that orchestrates everything
+  thread: Message[];
+  surfaces: LiveSurface[];        // Visual work artifacts
+  contextPacks: ContextBundle[];   // Reusable memory bundles
+  agents: ActiveAgent[];           // Specialized capabilities
+  workspace: WorkspaceContext;     // Organizational boundary
+}
 ```
 
-**TRANSFORM EXISTING:**
+#### Surface Protocol
+All visual interfaces must implement:
+- **Trigger phrases** for natural language activation
+- **Live editing** capability with bidirectional data flow
+- **Agent binding** for observation and manipulation
+- **State serialization** for interruptions and persistence
+- **Lifecycle management** (appear/dismiss/persist rules)
+
+#### Context Management System
+- **Context Packs**: Reusable bundles of memory (docs, threads, datasets) attachable to any thread
+- **Workspace Context**: Organization-wide knowledge and state
+- **Thread Context**: Conversation-specific working memory
+- **Interruption Handling**: Preserve, queue, and merge context during switches
+
+### 1.2 Agent Architecture
+
+#### Core Agent Capabilities
+- **Planner**: Decomposes intents into tasks with dependencies
+- **Researcher**: Gathers and synthesizes information
+- **Writer**: Creates and edits documents
+- **Engineer**: Generates code and manages technical tasks
+- **Analyst**: Processes data and creates visualizations
+- **Scheduler**: Manages time-based activities
+- **Critic**: Reviews and validates outputs
+- **Ops**: Handles automation and workflows
+
+#### Autonomy Levels
+Each task operates at one of three levels:
+- **Suggest**: Proposes actions, highlights potential changes
+- **Draft** (default): Creates content, shows preview, awaits approval
+- **Execute**: Performs actions directly with rollback capability
+
+---
+
+## Part 2: Surface System Specification
+
+### 2.1 Surface Transformation Requirements
+
+Existing pages must be transformed into Live Surfaces:
+
+| Current Page | Target Surface | Capabilities | Agent Integration |
+|--------------|----------------|--------------|-------------------|
+| ProformaPage | ProformaSurface | Cell editing, formulas | @Analyst observes/modifies |
+| MetricsDashboard | MetricsSurface | Filter controls, drill-down | @Analyst queries/updates |
+| Strategy | StrategySurface | Canvas manipulation | @Planner arranges/connects |
+| DocumentMemory | DocumentSurface | Rich text editing | @Writer drafts/edits |
+| TaskBoard | KanbanSurface | Card movement | @Planner creates/assigns |
+
+### 2.2 Surface Lifecycle Rules
+
 ```typescript
-BusinessSetup.tsx → WorkspaceOnboarding.tsx
-- Repurpose for workspace/project setup
-- Add agent selection
-- Configure initial policies
-
-Settings.tsx → AgentSettings.tsx
-- Expand for agent configurations
-- Autonomy defaults
-- Budget limits
-- Integration scopes
-
-DocumentMemory.tsx → KEEP AS REFERENCE
-- Use as architectural blueprint
-- Extract threading components
-- Reuse conversation patterns
+interface SurfaceLifecycle {
+  // Surfaces appear when:
+  appearTriggers: [
+    'agent needs to show visual content',
+    'user requests specific view',
+    'task requires visual manipulation',
+    'context naturally leads to visualization'
+  ];
+  
+  // Surfaces auto-dismiss after 5 minutes unless:
+  persistConditions: [
+    'user is actively editing',
+    'user has pinned surface',
+    'agent is monitoring for changes',
+    'surface has unsaved changes'
+  ];
+  
+  // Surfaces handle interruptions by:
+  interruptionBehavior: [
+    'freeze current state',
+    'serialize to context pack',
+    'queue new context',
+    'offer merge/switch/dismiss options'
+  ];
+}
 ```
 
-#### Phase 2: Agent-Mediated Interfaces (v1 - Weeks 5-8)
+### 2.3 Surface-Agent Binding
 
-**REIMAGINE BUSINESS PAGES:**
+Every surface must support bidirectional agent interaction:
+
 ```typescript
-// Instead of direct UI, use conversational agents
-ProformaPage.tsx → @Analyst agent handles:
-"Generate 3-year financial projection based on current metrics"
-
-Strategy.tsx → @Planner agent handles:
-"Create strategic initiative for Q2 product launch"
-
-Metrics.tsx → @Analyst agent handles:
-"Show me customer acquisition trends and suggest improvements"
-
-// These become views rendered WITHIN conversation threads
-// Not separate pages but agent-generated artifacts
+interface SurfaceAgentContract {
+  // Agent → Surface
+  acceptProposal(changes: Change[]): void;
+  applyDiff(diff: Diff): void;
+  highlight(elements: Element[]): void;
+  
+  // Surface → Agent
+  onUserEdit(callback: (edit: Edit) => void): void;
+  onStateChange(callback: (state: State) => void): void;
+  requestAssistance(context: string): void;
+  
+  // Shared
+  synchronize(): Promise<SyncState>;
+  getDiff(): Diff;
+  validate(): ValidationResult;
+}
 ```
 
-#### Phase 3: Advanced Features (v1.1+ - Weeks 9-12)
+---
 
-**ENHANCED CAPABILITIES:**
-- Context pack library
-- Automation builder
-- Marketplace integration
-- Advanced approval workflows
+## Part 3: Essential Features Implementation
 
-### 3.2 Component Architecture Recommendations
+### 3.1 Context Packs (Critical Priority)
 
-#### New Component Structure
+Context Packs enable sub-second context switching - the defining characteristic of Syna's UX.
+
+**Implementation Requirements:**
+- Pre-computed embeddings for semantic search
+- Cached in memory for instant access
+- Background enrichment without blocking
+- Composable and shareable across threads
+- Version controlled with rollback capability
+
+**Core Functionality:**
 ```typescript
-src/components/
-├── conversation/
-│   ├── ChatInterface.tsx       // Main conversation UI
-│   ├── AgentMention.tsx        // @agent autocomplete
-│   ├── ThreadBranch.tsx        // Fork conversations
-│   ├── ContextPackSelector.tsx // Attach memory bundles
-│   └── ActionChips.tsx         // Suggested actions
-│
-├── agents/
-│   ├── AgentCard.tsx           // Agent profile display
-│   ├── AutonomySlider.tsx      // Suggest/Draft/Execute
-│   ├── BudgetConfig.tsx        // Time/token/cost limits
-│   └── RunTrace.tsx            // Execution visualization
-│
-├── tasks/
-│   ├── TaskGraph.tsx           // DAG visualization
-│   ├── TaskCard.tsx            // Task details/status
-│   ├── DependencyEditor.tsx    // Link tasks
-│   └── AcceptanceCriteria.tsx  // Define success
-│
-├── approvals/
-│   ├── DiffPreview.tsx         // Show changes
-│   ├── ApprovalGate.tsx        // Accept/reject/edit
-│   └── ConflictResolver.tsx    // Handle conflicts
-│
-└── shared/
-    ├── QuickSwitcher.tsx       // ⌘K navigation
-    ├── PresenceIndicator.tsx   // Keep from current
-    └── LiveStatusChip.tsx      // Real-time status
+interface ContextPack {
+  // Instant switching (cached, pre-computed)
+  warm(): WarmContext;
+  
+  // Background enhancement (non-blocking)
+  enrich(): Promise<EnrichedContext>;
+  
+  // Composition
+  merge(other: ContextPack): ContextPack;
+  filter(criteria: FilterCriteria): ContextPack;
+  
+  // Persistence
+  serialize(): SerializedContextPack;
+  restore(data: SerializedContextPack): void;
+}
 ```
 
-### 3.3 Service Layer Recommendations
+### 3.2 Quick Switcher (⌘K)
 
-#### New Service Architecture
-```typescript
-src/services/
-├── core/
-│   ├── ConversationService.ts  // Thread management
-│   ├── AgentService.ts         // Agent orchestration
-│   ├── TaskService.ts          // Task graph/DAG
-│   └── ContextService.ts       // Memory/context packs
-│
-├── agents/
-│   ├── PlannerAgent.ts         // Task decomposition
-│   ├── ResearcherAgent.ts      // Information gathering
-│   ├── WriterAgent.ts          // Content generation
-│   ├── EngineerAgent.ts        // Code/PR generation
-│   ├── AnalystAgent.ts         // Data analysis (absorbs ProformaService)
-│   └── CriticAgent.ts          // Review/validation
-│
-├── integrations/
-│   ├── GitHubService.ts        // PR/issue management
-│   ├── GoogleService.ts        // Drive/Docs/Calendar
-│   ├── NotionService.ts        // Document sync
-│   └── SlackService.ts         // Communication
-│
-└── infrastructure/
-    ├── WebSocketService.ts      // Keep & enhance
-    ├── SSEService.ts            // Keep for streaming
-    └── ObservabilityService.ts  // New - traces/logs
-```
+Universal command palette for all navigation and actions.
 
-### 3.4 UI/UX Transformation Guidelines
+**Required Commands:**
+- `>` Execute command (e.g., `>show revenue metrics`)
+- `@` Mention agent (e.g., `@analyst help with model`)
+- `#` Switch project (e.g., `#fundraising`)
+- `/` Search surfaces (e.g., `/proforma`)
+- `?` Get help (e.g., `?how to create tasks`)
+- `!` Quick action (e.g., `!create task from selection`)
+- `~` Switch thread (e.g., `~previous conversation`)
+- `^` Open document (e.g., `^Q3 planning doc`)
 
-#### From Dashboard to Conversation
-**BEFORE (Current):**
-```tsx
-// Traditional form-based UI
-<MetricCard title="Revenue" value={revenue} />
-<Button onClick={updateMetric}>Update</Button>
-```
+**Implementation Requirements:**
+- Fuzzy matching across all content types
+- Recent/frequent ordering
+- Keyboard-only navigation
+- Sub-50ms response time
+- Contextual suggestions
 
-**AFTER (Recommended):**
-```tsx
-// Conversation-driven interaction
-<ChatMessage>
-  User: "Update our revenue forecast to $2M ARR"
-  @Analyst: "I'll update the forecast. Here's the impact analysis..."
-  <ActionChip onClick={approve}>Approve Changes</ActionChip>
-</ChatMessage>
-```
+### 3.3 Right Rail System
 
-#### Keyboard-First Navigation
-- **⌘K** - Universal quick switcher
-- **⌘N** - New thread
-- **⌘P** - Switch projects
-- **@** - Agent mention autocomplete
-- **#** - Project reference
-- **^** - Document reference
+Four essential tabs providing workspace awareness:
 
----
+**Now Tab:**
+- Real-time agent activity stream
+- Progress indicators with time/token usage
+- Running tasks with pause/cancel controls
+- Resource consumption meters
 
-## Part 4: Implementation Roadmap
+**Clips Tab:**
+- Retrieved context snippets with sources
+- Citation provenance tracking
+- Relevance scoring
+- One-click expansion to full source
 
-### 4.1 Migration Strategy
+**Tasks Tab:**
+- Active task graph visualization
+- Dependency tracking
+- Status indicators (Backlog, In Progress, Blocked, Done)
+- Owner assignments (human or agent)
 
-#### Week 1-2: Foundation
-1. Set up new page structure
-2. Create ConversationHub base
-3. Implement thread management
-4. Add agent mention system
+**Docs Tab:**
+- Linked documents with live status chips
+- Version history
+- Collaborative presence indicators
+- Quick preview on hover
 
-#### Week 3-4: Core Features
-1. Build task graph visualization
-2. Add approval workflows
-3. Implement Quick Switcher
-4. Create action chips
+### 3.4 Interruption Model
 
-#### Week 5-6: Agent Integration
-1. Connect backend agents to UI
-2. Implement @mentions
-3. Add autonomy controls
-4. Build run observability
+**Required Behavior:**
+1. Detect context switch request
+2. Freeze all active surfaces and agents
+3. Serialize current state to recoverable snapshot
+4. Present options to user:
+   - Dismiss current and switch
+   - Keep current, add new in split view
+   - Queue for later
+   - Cancel interruption
+5. Execute choice with full state preservation
 
-#### Week 7-8: Business Feature Migration
-1. Wrap business logic in agents
-2. Convert dashboards to agent views
-3. Migrate financial modeling to @Analyst
-4. Transform strategy to @Planner tasks
+### 3.5 Observability & Approvals
 
-#### Week 9-10: Polish & Testing
-1. Add keyboard shortcuts
-2. Implement context packs
-3. Enhance performance (sub-second switches)
-4. User acceptance testing
+**Every agent action must be:**
+- Traceable with full provenance
+- Previewable before application
+- Reversible with one-click rollback
+- Auditable with complete logs
 
-#### Week 11-12: Advanced Features
-1. Automation builder
-2. Marketplace prep
-3. Advanced approvals
-4. Enterprise features
-
-### 4.2 Backwards Compatibility
-
-**Dual-Mode Operation:**
-- Keep legacy pages accessible via `/legacy/*` routes
-- Gradual migration of users
-- Feature flags for new UI
-- Data compatibility layer
-
-### 4.3 Performance Targets
-
-| Metric | Current | Target | Implementation |
-|--------|---------|--------|----------------|
-| Context Switch | 2-3s | <2s | Preload context packs |
-| First Token | 1-2s | <800ms | Edge caching |
-| Task Creation | Manual | <10s | Agent decomposition |
-| Approval Flow | N/A | <30s | Inline previews |
+**Approval Gates:**
+- External communications (>10 recipients)
+- Repository writes (PR creation allowed, merge requires approval)
+- Data modifications above threshold
+- Budget exceedances (time, tokens, cost)
 
 ---
 
-## Part 5: Risk Assessment & Mitigation
+## Part 4: Integration Requirements
 
-### 5.1 Technical Risks
+### 4.1 Day-1 Connectors
 
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-| Agent response latency | High | Implement optimistic UI updates |
-| Context loss during switches | High | Persistent thread state in Redis |
-| Complex approval flows | Medium | Progressive disclosure of options |
-| Integration conflicts | Medium | Graceful degradation to comments |
+**Required Integrations:**
+- Google (Drive, Docs, Calendar)
+- GitHub (Issues, PRs, Code)
+- Notion (Pages, Databases)
+- Slack (Messages, Channels)
+- Email (Send, Receive, Schedule)
 
-### 5.2 User Adoption Risks
+**Integration Principles:**
+- Least-privilege scope requests
+- Preview all write-backs before execution
+- Degrade to comments when conflicts occur
+- Maintain bi-directional sync where possible
 
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-| Learning curve | High | Interactive onboarding, tooltips |
-| Loss of familiar features | High | Dual-mode with legacy access |
-| Agent trust issues | Medium | Full observability, easy rollback |
-| Overwhelming automation | Medium | Default to "Draft" autonomy |
+### 4.2 Data Synchronization
 
----
-
-## Part 6: Success Metrics
-
-### 6.1 Key Performance Indicators
-
-**North Star:** Tasks completed by agents per user per week
-- **Target:** 10+ tasks/week by Month 3
-- **Current:** 0 (no agent task completion)
-
-**Supporting Metrics:**
-- **Activation:** 70% complete first flow in 24h
-- **Context Reuse:** 50% threads use context packs
-- **Approval Time:** <2 min average
-- **Agent Accuracy:** >90% first-attempt success
-
-### 6.2 User Satisfaction Metrics
-
-- **CSAT:** ≥4/5 for agent interactions
-- **Time to Value:** <10 min to first success
-- **Feature Adoption:** 80% use @mentions daily
-- **Retention:** 60% D30 retention
+**Conflict Resolution:**
+- Use CRDT for real-time collaboration
+- Maintain operation log for replay
+- Surface conflicts to user for resolution
+- Never lose user work
 
 ---
 
-## Part 7: Conclusion & Next Steps
+## Part 5: Performance Requirements
 
-### 7.1 Summary
+### 5.1 Critical Performance Targets
 
-The current Syna codebase represents a **sophisticated business intelligence platform** that needs fundamental transformation to become the **AI Operating System for conversation-native work** described in the PRD. While 83% of existing pages don't align with the vision, they contain valuable domain expertise that should be preserved through agent mediation rather than direct UI interaction.
+| Operation | Target | Why It Matters |
+|-----------|--------|----------------|
+| Context Switch | <2s perceived | Defines "instant" feel |
+| Surface Render | <500ms | Maintains flow |
+| First Token | <800ms P95 | Conversational pace |
+| Quick Switcher | <50ms | Feels immediate |
+| Surface Sync | <100ms | Real-time collaboration |
+| Context Pack Load | <1s | Enables fast switching |
 
-### 7.2 Critical Success Factors
+### 5.2 Optimization Strategies
 
-1. **Preserve Value:** Don't discard business logic, wrap it in agents
-2. **User-Centric Migration:** Gradual transition with legacy support
-3. **Performance First:** Sub-second switches are non-negotiable
-4. **Observable Everything:** Every agent action must be traceable
-5. **Keyboard-Driven:** Power users should rarely touch the mouse
-
-### 7.3 Immediate Actions
-
-1. **Validate** this report with stakeholders
-2. **Prototype** ConversationHub with basic @mentions
-3. **Test** agent integration with backend
-4. **Design** migration plan for existing users
-5. **Establish** performance baseline metrics
-
-### 7.4 Final Recommendation
-
-**Transform, don't replace.** The existing codebase has strong foundations in WebSocket communication, real-time updates, and business domain modeling. The transformation should focus on:
-
-1. **Making conversation the primary interface** (not dashboards)
-2. **Agents as first-class citizens** (not hidden automation)
-3. **Context continuity** across all interactions
-4. **Observable, reversible actions** with clear provenance
-5. **Keyboard-first, fast interactions** for power users
-
-The **DocumentMemory.tsx** page proves the team can build conversation-native interfaces. This capability should be elevated to become the entire product's architectural principle.
+**Required Optimizations:**
+- Preload adjacent contexts (anticipatory loading)
+- Virtualize large surfaces (viewport + buffer)
+- Use differential updates (send only changes)
+- Implement tiered caching (memory → IndexedDB → server)
+- Stream responses progressively
 
 ---
 
-**Document Version:** 1.0
-**Next Review:** After stakeholder feedback
-**Questions/Clarifications:** Contact Product & Engineering leads
+## Part 6: Implementation Tasks
+
+### Foundation Tasks
+
+**Core Infrastructure:**
+- [ ] Implement WorkspaceContext system with project/thread/memory management
+- [ ] Build ConversationHub with message threading and agent orchestration
+- [ ] Create SurfaceManager with lifecycle rules and state management
+- [ ] Establish WebSocket infrastructure for real-time synchronization
+- [ ] Implement base Agent class with autonomy levels and tool usage
+
+**Context System:**
+- [ ] Build Context Pack architecture with serialization and caching
+- [ ] Implement instant context switching with preloading
+- [ ] Create context composition and filtering mechanisms
+- [ ] Build semantic search across context packs
+- [ ] Implement interruption handling with state preservation
+
+### Surface Transformation Tasks
+
+**Surface Protocol Implementation:**
+- [ ] Define Surface base class with required interfaces
+- [ ] Transform ProformaPage into ProformaSurface with live editing
+- [ ] Transform MetricsDashboard into MetricsSurface with real-time updates
+- [ ] Transform DocumentMemory into DocumentSurface with collaborative editing
+- [ ] Transform TaskBoard into KanbanSurface with drag-and-drop
+- [ ] Transform Strategy into StrategySurface with canvas manipulation
+
+**Surface-Agent Binding:**
+- [ ] Implement bidirectional data flow between surfaces and agents
+- [ ] Create observation system for agent monitoring of user edits
+- [ ] Build proposal/preview/approval flow for agent modifications
+- [ ] Implement diff generation and application
+- [ ] Create rollback mechanism for all surface changes
+
+### User Interface Tasks
+
+**Command & Control:**
+- [ ] Build Quick Switcher (⌘K) with all command prefixes
+- [ ] Implement fuzzy search across all content types
+- [ ] Create keyboard shortcut system
+- [ ] Build command palette with contextual suggestions
+
+**Right Rail Implementation:**
+- [ ] Create Now tab with real-time agent activity stream
+- [ ] Build Clips tab with source attribution
+- [ ] Implement Tasks tab with dependency visualization
+- [ ] Create Docs tab with live status chips
+
+**Chat Enhancement:**
+- [ ] Implement Action Chips for suggested next steps
+- [ ] Build inline approval interface
+- [ ] Create branching mechanism for conversations
+- [ ] Implement @mentions for agents and #references for projects
+
+### Agent Development Tasks
+
+**Core Agent Implementation:**
+- [ ] Build Planner agent with task decomposition
+- [ ] Create Researcher agent with source synthesis
+- [ ] Implement Writer agent with document manipulation
+- [ ] Build Engineer agent with code generation
+- [ ] Create Analyst agent with data processing
+- [ ] Implement Scheduler agent with calendar integration
+- [ ] Build Critic agent with review capabilities
+- [ ] Create Ops agent with automation workflows
+
+**Agent Capabilities:**
+- [ ] Implement autonomy level controls per task
+- [ ] Build budget management (time, tokens, cost)
+- [ ] Create approval workflow for destructive actions
+- [ ] Implement agent collaboration protocols
+- [ ] Build agent explanation/reasoning system
+
+### Integration Tasks
+
+**External Services:**
+- [ ] Implement Google Workspace integration (Drive, Docs, Calendar)
+- [ ] Build GitHub integration with PR/Issue management
+- [ ] Create Notion connector with bi-directional sync
+- [ ] Implement Slack integration with channel awareness
+- [ ] Build email integration with smart scheduling
+
+**Data Synchronization:**
+- [ ] Implement CRDT for conflict-free collaboration
+- [ ] Build operation log for audit trail
+- [ ] Create state synchronization protocol
+- [ ] Implement offline support with sync queue
+- [ ] Build backup and recovery system
+
+### Observability Tasks
+
+**Monitoring & Debugging:**
+- [ ] Build comprehensive trace system for all agent actions
+- [ ] Implement audit log with full provenance
+- [ ] Create performance monitoring dashboard
+- [ ] Build error tracking and recovery system
+- [ ] Implement usage analytics and metrics
+
+**User Trust Features:**
+- [ ] Create preview system for all changes
+- [ ] Build rollback capability for every action
+- [ ] Implement explanation system for agent decisions
+- [ ] Create cost and resource usage tracking
+- [ ] Build approval history and audit trail viewer
+
+---
+
+## Part 7: Success Validation
+
+### Functional Validation
+
+**Context System:**
+- Context switches feel instantaneous (<2s)
+- Context Packs are reused across threads
+- Interruptions preserve full state
+- No context is lost during switches
+
+**Surface System:**
+- Surfaces appear automatically when needed
+- Live editing works bidirectionally
+- Agent modifications are previewable
+- All changes are reversible
+
+**Agent System:**
+- Agents complete multi-step tasks
+- Autonomy levels work as specified
+- Approvals gate dangerous actions
+- Collaboration between agents works
+
+### User Experience Validation
+
+**Core Flows:**
+- User can complete end-to-end task in <10 minutes
+- Context switching requires no re-explanation
+- Surface interactions feel natural
+- Agent assistance is helpful, not intrusive
+
+**Trust & Control:**
+- Every action has visible provenance
+- Users can preview before accepting
+- Rollback is always available
+- Costs and resources are transparent
+
+---
+
+## Part 8: Architecture Decisions
+
+### Confirmed Decisions
+
+✅ **Architecture Choices:**
+- Surface Protocol for all visualizations
+- Context Packs as primary memory abstraction
+- CRDT for conflict-free collaboration
+- Command palette as primary navigation
+- Right rail with four essential tabs
+- 5-minute auto-dismiss for inactive surfaces
+- Draft as default autonomy level
+- WebSocket for real-time synchronization
+
+### Open Decisions
+
+⚠️ **To Be Determined:**
+- Specific CRDT library (Yjs vs Automerge vs custom)
+- Maximum concurrent surfaces limit
+- Custom surface development SDK
+- Browser extension for overlay mode
+- Marketplace for custom agents/surfaces
+- Self-hosting capabilities
+- Offline-first architecture extent
+
+---
+
+## Part 9: Risk Mitigation
+
+### Technical Risks
+
+**Context Pack Complexity:**
+- Risk: Performance degradation with large contexts
+- Mitigation: Implement aggressive caching and pagination
+
+**Surface State Management:**
+- Risk: Conflicts in collaborative editing
+- Mitigation: CRDT with clear conflict resolution UI
+
+**Agent Coordination:**
+- Risk: Agents interfering with each other
+- Mitigation: Clear ownership model and locking
+
+### User Experience Risks
+
+**Cognitive Overload:**
+- Risk: Too many surfaces and agents active
+- Mitigation: Progressive disclosure and smart defaults
+
+**Trust in Automation:**
+- Risk: Users don't trust agent actions
+- Mitigation: Always preview, explain, and allow rollback
+
+---
+
+## Conclusion
+
+Syna represents a new category of software that treats conversation as the operating system for knowledge work. By implementing the tasks outlined in this guide, we create a system where:
+
+1. **Context is continuous** - No re-explanation needed
+2. **Surfaces are alive** - Direct manipulation with AI assistance
+3. **Agents are partners** - Configurable autonomy with human control
+4. **Everything is observable** - Full provenance and rollback
+5. **Work flows naturally** - Conversation orchestrates complexity
+
+The critical path is: **Context Packs → Surface Protocol → Agent Binding → Integration Layer**
+
+Success is measured by users completing complex multi-step workflows through natural conversation while maintaining full control and visibility.
+
+---
+
+**Document Status:** Implementation Ready  
+**Critical Path:** Context System must be built first  
+**Key Risk:** Context Pack performance at scale

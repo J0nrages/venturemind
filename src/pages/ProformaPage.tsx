@@ -1,6 +1,7 @@
 import { Card } from '@/components/ui/card';
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { PageLayout } from '../components/PageLayout';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import { DollarSign, Users, TrendingUp, Clock, Wallet, Save, Building2, BarChart3, FileText, Calculator } from 'lucide-react';
 import { supabase } from '../lib/supabase';
@@ -669,12 +670,10 @@ export default function ProformaPage() {
   }
 
   return (
-    <div className="space-y-8 pt-14">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-semibold text-foreground">Financial Proforma Model</h1>
-           <p className="text-muted-foreground mt-1">Comprehensive financial modeling and projections</p>
-        </div>
+    <PageLayout 
+      title="Financial Proforma Model" 
+      subtitle="Comprehensive financial modeling and projections"
+      headerActions={
         <button
           onClick={saveAssumptions}
           disabled={saving}
@@ -683,8 +682,8 @@ export default function ProformaPage() {
           <Save className="w-4 h-4" />
           <span>{saving ? 'Saving...' : 'Save Model'}</span>
         </button>
-      </div>
-
+      }
+    >
       {/* Tab Navigation */}
       <div className="border-b border-border/50">
         <nav className="-mb-px flex space-x-8">
@@ -1017,6 +1016,6 @@ export default function ProformaPage() {
           </div>
         </div>
       )}
-    </div>
+    </PageLayout>
   );
 }

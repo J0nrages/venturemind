@@ -1,5 +1,6 @@
 import { Card } from '@/components/ui/card';
 import { usePageTitle } from '../hooks/usePageTitle';
+import { PageLayout } from '../components/PageLayout';
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
@@ -181,21 +182,22 @@ export default function AIProcessing() {
     );
   }
 
+  const refreshButton = (
+    <button
+      onClick={fetchMetrics}
+      className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
+    >
+      <RefreshCw className="w-4 h-4" />
+      Refresh Metrics
+    </button>
+  );
+
   return (
-    <div className="space-y-8 pt-14">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">AI Processing</h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1">Monitor AI processing metrics and performance</p>
-        </div>
-        <button
-          onClick={fetchMetrics}
-          className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
-        >
-          <RefreshCw className="w-4 h-4" />
-          Refresh Metrics
-        </button>
-      </div>
+    <PageLayout 
+      title="AI Processing" 
+      subtitle="Monitor AI processing metrics and performance"
+      headerActions={refreshButton}
+    >
 
       {!metrics?.hasData ? (
         <div className="bg-card/80 backdrop-blur-xl rounded-xl shadow-sm p-8 text-center">
@@ -384,7 +386,7 @@ const result = await response.json();`}
           </div>
         </>
       )}
-    </div>
+    </PageLayout>
   );
 }
 
