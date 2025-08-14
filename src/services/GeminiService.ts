@@ -22,6 +22,37 @@ export interface DocumentClassification {
 }
 
 export class GeminiService {
+  // Check if Gemini is available and initialize if needed
+  static async initialize(userId: string): Promise<boolean> {
+    console.log('🔑 GeminiService.initialize called for user:', userId);
+    
+    try {
+      // Check if user has Gemini API key configured
+      const { data, error } = await supabase
+        .from('user_settings')
+        .select('gemini_api_key')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error checking user settings:', error);
+        return false;
+      }
+      
+      const hasKey = !!(data?.gemini_api_key);
+      console.log('🔑 Gemini key check result:', {
+        userId,
+        hasKey,
+        timestamp: new Date().toISOString()
+      });
+      
+      return hasKey;
+    } catch (error) {
+      console.error('Error initializing GeminiService:', error);
+      return false;
+    }
+  }
+
   // Generate content with Gemini through backend API
   static async generateContent(prompt: string, context?: string): Promise<GeminiResponse> {
     console.log('🔄 GeminiService.generateContent called with:', {

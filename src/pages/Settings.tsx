@@ -5,18 +5,56 @@ import { PageLayout } from '../components/PageLayout';
 import { motion } from 'framer-motion';
 import { supabase } from '../lib/supabase';
 import { ConversationService } from '../services/ConversationService';
+import { useContexts } from '../contexts/ContextProvider';
+import { UserSettingsService } from '../services/UserSettingsService';
 import toast from 'react-hot-toast';
-import { Key, FileText, Brain, TestTube, CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { 
+  Key, 
+  FileText, 
+  Brain, 
+  TestTube, 
+  CheckCircle, 
+  XCircle, 
+  Loader2,
+  Settings as SettingsIcon,
+  Users,
+  MessageSquare,
+  Sliders,
+  Archive,
+  Eye,
+  EyeOff
+} from 'lucide-react';
 import { usePageTitle } from '../hooks/usePageTitle';
 
 export default function Settings() {
-  usePageTitle('Settings');
+  usePageTitle('Settings - Updated'); // Cache bust
   const [googleDocsToken, setGoogleDocsToken] = useState('');
   const [geminiApiKey, setGeminiApiKey] = useState('');
   const [loading, setLoading] = useState(false);
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
   const [user, setUser] = useState<any>(null);
+  
+  // Context and agent preferences
+  const { userSettings, saveUserSettings } = useContexts();
+  const [contextPrefs, setContextPrefs] = useState({
+    auto_create_contexts: true,
+    max_contexts: 10,
+    context_switching_hotkeys: true,
+    show_context_suggestions: true,
+  });
+  const [agentPrefs, setAgentPrefs] = useState({
+    auto_activate_agents: true,
+    confidence_threshold: 30,
+    max_active_agents: 5,
+    agent_suggestions: true,
+    agent_notifications: true,
+  });
+  const [uiPrefs, setUIPrefs] = useState({
+    sidebar_position: 'right' as 'left' | 'right',
+    show_agent_badges: true,
+    show_confidence_scores: true,
+  });
 
   useEffect(() => {
     const getUser = async () => {
@@ -40,11 +78,25 @@ export default function Settings() {
     getUser();
   }, []);
 
+  // Load user preferences when userSettings is available
+  useEffect(() => {
+    if (userSettings) {
+      setContextPrefs(userSettings.context_preferences);
+      setAgentPrefs(userSettings.agent_preferences);
+      setUIPrefs({
+        sidebar_position: userSettings.ui_preferences.sidebar_position,
+        show_agent_badges: userSettings.ui_preferences.show_agent_badges,
+        show_confidence_scores: userSettings.ui_preferences.show_confidence_scores,
+      });
+    }
+  }, [userSettings]);
+
   const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
+      // Save API keys directly to database
       const { error } = await supabase
         .from('user_settings')
         .upsert({
@@ -55,9 +107,23 @@ export default function Settings() {
         });
 
       if (error) throw error;
+      
+      // Save preferences through context provider
+      await saveUserSettings({
+        google_docs_token: googleDocsToken,
+        gemini_api_key: geminiApiKey,
+        context_preferences: contextPrefs,
+        agent_preferences: agentPrefs,
+        ui_preferences: {
+          ...userSettings?.ui_preferences!,
+          ...uiPrefs,
+        },
+      });
+      
       toast.success('Settings saved successfully');
-      setTestResult(null); // Clear previous test results
+      setTestResult(null);
     } catch (error: any) {
+      console.error('Settings save error:', error);
       toast.error('Failed to save settings');
     } finally {
       setLoading(false);
@@ -244,6 +310,192 @@ export default function Settings() {
                   onChange={(e) => setGoogleDocsToken(e.target.value)}
                   className="w-full px-4 py-2 border border-border/50 rounded-lg bg-card/60 backdrop-blur-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Enter your Google Docs token (optional)"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Context Management Preferences */}
+          <div>
+            <h2 className="text-lg font-medium text-foreground mb-4 flex items-center gap-2">
+              <MessageSquare className="w-5 h-5 text-blue-600" />
+              Context Management
+            </h2>
+            
+            <div className="space-y-4 border border-border/50 rounded-lg p-4 bg-card/70 backdrop-blur-xl">
+              <div className="flex items-center justify-between">
+                <div>
+                  <label className="text-sm font-medium text-foreground">Auto-create contexts</label>
+                  <p className="text-xs text-muted-foreground">Automatically create new contexts when needed</p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={contextPrefs.auto_create_contexts}
+                  onChange={(e) => setContextPrefs(prev => ({ ...prev, auto_create_contexts: e.target.checked }))}
+                  className="rounded"
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <label className="text-sm font-medium text-foreground">Context switching hotkeys</label>
+                  <p className="text-xs text-muted-foreground">Enable keyboard shortcuts for switching contexts</p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={contextPrefs.context_switching_hotkeys}
+                  onChange={(e) => setContextPrefs(prev => ({ ...prev, context_switching_hotkeys: e.target.checked }))}
+                  className="rounded"
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <label className="text-sm font-medium text-foreground">Show context suggestions</label>
+                  <p className="text-xs text-muted-foreground">Suggest new contexts based on conversation topics</p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={contextPrefs.show_context_suggestions}
+                  onChange={(e) => setContextPrefs(prev => ({ ...prev, show_context_suggestions: e.target.checked }))}
+                  className="rounded"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">Maximum contexts</label>
+                <input
+                  type="number"
+                  min="1"
+                  max="20"
+                  value={contextPrefs.max_contexts}
+                  onChange={(e) => setContextPrefs(prev => ({ ...prev, max_contexts: parseInt(e.target.value) }))}
+                  className="w-full px-3 py-2 border border-border/50 rounded-lg bg-card/60 backdrop-blur-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+                <p className="text-xs text-muted-foreground mt-1">Maximum number of active contexts to keep</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Agent Behavior Settings */}
+          <div>
+            <h2 className="text-lg font-medium text-foreground mb-4 flex items-center gap-2">
+              <Users className="w-5 h-5 text-green-600" />
+              Agent Behavior
+            </h2>
+            
+            <div className="space-y-4 border border-border/50 rounded-lg p-4 bg-card/70 backdrop-blur-xl">
+              <div className="flex items-center justify-between">
+                <div>
+                  <label className="text-sm font-medium text-foreground">Auto-activate agents</label>
+                  <p className="text-xs text-muted-foreground">Automatically add relevant agents to conversations</p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={agentPrefs.auto_activate_agents}
+                  onChange={(e) => setAgentPrefs(prev => ({ ...prev, auto_activate_agents: e.target.checked }))}
+                  className="rounded"
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <label className="text-sm font-medium text-foreground">Show agent suggestions</label>
+                  <p className="text-xs text-muted-foreground">Display suggested agents based on conversation topic</p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={agentPrefs.agent_suggestions}
+                  onChange={(e) => setAgentPrefs(prev => ({ ...prev, agent_suggestions: e.target.checked }))}
+                  className="rounded"
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <label className="text-sm font-medium text-foreground">Agent notifications</label>
+                  <p className="text-xs text-muted-foreground">Show notifications when agents join or leave</p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={agentPrefs.agent_notifications}
+                  onChange={(e) => setAgentPrefs(prev => ({ ...prev, agent_notifications: e.target.checked }))}
+                  className="rounded"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  Auto-activation confidence threshold: {agentPrefs.confidence_threshold}%
+                </label>
+                <input
+                  type="range"
+                  min="10"
+                  max="90"
+                  value={agentPrefs.confidence_threshold}
+                  onChange={(e) => setAgentPrefs(prev => ({ ...prev, confidence_threshold: parseInt(e.target.value) }))}
+                  className="w-full"
+                />
+                <p className="text-xs text-muted-foreground mt-1">Higher values require more confidence before auto-adding agents</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">Maximum active agents per context</label>
+                <input
+                  type="number"
+                  min="1"
+                  max="10"
+                  value={agentPrefs.max_active_agents}
+                  onChange={(e) => setAgentPrefs(prev => ({ ...prev, max_active_agents: parseInt(e.target.value) }))}
+                  className="w-full px-3 py-2 border border-border/50 rounded-lg bg-card/60 backdrop-blur-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* UI Preferences */}
+          <div>
+            <h2 className="text-lg font-medium text-foreground mb-4 flex items-center gap-2">
+              <Sliders className="w-5 h-5 text-orange-600" />
+              Interface Preferences
+            </h2>
+            
+            <div className="space-y-4 border border-border/50 rounded-lg p-4 bg-card/70 backdrop-blur-xl">
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">Chat sidebar position</label>
+                <select
+                  value={uiPrefs.sidebar_position}
+                  onChange={(e) => setUIPrefs(prev => ({ ...prev, sidebar_position: e.target.value as 'left' | 'right' }))}
+                  className="w-full px-3 py-2 border border-border/50 rounded-lg bg-card/60 backdrop-blur-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                >
+                  <option value="left">Left</option>
+                  <option value="right">Right</option>
+                </select>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <label className="text-sm font-medium text-foreground">Show agent badges</label>
+                  <p className="text-xs text-muted-foreground">Display active agent badges in context headers</p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={uiPrefs.show_agent_badges}
+                  onChange={(e) => setUIPrefs(prev => ({ ...prev, show_agent_badges: e.target.checked }))}
+                  className="rounded"
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <label className="text-sm font-medium text-foreground">Show confidence scores</label>
+                  <p className="text-xs text-muted-foreground">Display confidence percentages in agent suggestions</p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={uiPrefs.show_confidence_scores}
+                  onChange={(e) => setUIPrefs(prev => ({ ...prev, show_confidence_scores: e.target.checked }))}
+                  className="rounded"
                 />
               </div>
             </div>

@@ -260,6 +260,125 @@
     scroll-padding: 2rem;
     overscroll-behavior: contain;
   }
+  
+  /* SYNA-specific 3D transforms and animations */
+  .perspective-1500 {
+    perspective: 1500px;
+  }
+  
+  .transform-3d {
+    transform-style: preserve-3d;
+  }
+  
+  /* Context card 3D positioning */
+  .context-card-prev {
+    transform: translateX(max(-50vw, -450px)) scale(0.6) rotateY(40deg);
+    opacity: 0.3;
+    filter: brightness(0.6) blur(2px);
+    z-index: 1;
+  }
+  
+  .context-card-next {
+    transform: translateX(min(50vw, 450px)) scale(0.6) rotateY(-40deg);
+    opacity: 0.3;
+    filter: brightness(0.6) blur(2px);
+    z-index: 1;
+  }
+  
+  .context-card-active {
+    transform: translateX(0) scale(1) rotateY(0);
+    opacity: 1;
+    z-index: 20;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 0 100px rgba(102, 126, 234, 0.1);
+  }
+  
+  /* Hover effects for side cards */
+  .context-card-prev:hover {
+    transform: translateX(max(-50vw, -450px)) scale(0.65) rotateY(35deg);
+    opacity: 0.5;
+    filter: brightness(0.75) blur(1px);
+  }
+  
+  .context-card-next:hover {
+    transform: translateX(min(50vw, 450px)) scale(0.65) rotateY(-35deg);
+    opacity: 0.5;
+    filter: brightness(0.75) blur(1px);
+  }
+  
+  /* Subtle pulse animation for inactive cards */
+  @keyframes subtle-pulse {
+    0%, 100% {
+      opacity: 0.3;
+    }
+    50% {
+      opacity: 0.4;
+    }
+  }
+  
+  .context-card-prev,
+  .context-card-next {
+    animation: subtle-pulse 4s ease-in-out infinite;
+  }
+  
+  .context-card-next {
+    animation-delay: 2s;
+  }
+  
+  /* Responsive 3D adjustments */
+  @media (min-width: 1400px) {
+    .context-card-prev {
+      transform: translateX(-500px) scale(0.65) rotateY(35deg);
+    }
+    
+    .context-card-next {
+      transform: translateX(500px) scale(0.65) rotateY(-35deg);
+    }
+    
+    .context-card-prev:hover {
+      transform: translateX(-480px) scale(0.7) rotateY(30deg);
+    }
+    
+    .context-card-next:hover {
+      transform: translateX(480px) scale(0.7) rotateY(-30deg);
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .context-card-prev,
+    .context-card-next {
+      transform: scale(0.5);
+      opacity: 0.2;
+    }
+    
+    .context-card-prev {
+      transform: translateX(-70vw) scale(0.5) rotateY(45deg);
+    }
+    
+    .context-card-next {
+      transform: translateX(70vw) scale(0.5) rotateY(-45deg);
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .context-card-prev,
+    .context-card-next {
+      display: none;
+    }
+  }
+  
+  /* Gradient animation for background */
+  @keyframes gradient-shift {
+    0%, 100% {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    50% {
+      background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    }
+  }
+  
+  .gradient-animated {
+    animation: gradient-shift 10s ease infinite;
+  }
 }
 
 @theme inline {

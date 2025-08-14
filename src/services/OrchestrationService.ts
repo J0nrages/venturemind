@@ -91,11 +91,20 @@ export class OrchestrationService {
 
   // Semantic search for relevant clips
   static async searchClips(userId: string, query: string, limit = 10): Promise<Clip[]> {
+    console.log(`🔍 [PLACEHOLDER] Semantic search for clips: "${query}"`);
+    console.log('🔍 Real implementation would:');
+    console.log('  - Generate embeddings using OpenAI/Gemini embedding models');
+    console.log('  - Search pgvector database for similar content');
+    console.log('  - Return ranked clips by semantic similarity');
+    console.log('  - Consider user context and conversation history');
+    
     try {
-      // Generate embedding for query
+      // [PLACEHOLDER] Generate embedding for query
+      console.log('🧠 [SIMULATED] Generating embeddings...');
       const embedding = await this.generateEmbedding(query);
       
-      // Use pgvector similarity search
+      // [PLACEHOLDER] Use pgvector similarity search
+      console.log('🗄️ [SIMULATED] Searching vector database...');
       const { data, error } = await supabase.rpc('search_clips', {
         query_embedding: embedding,
         match_threshold: 0.7,
@@ -103,10 +112,13 @@ export class OrchestrationService {
         user_id: userId
       });
 
-      if (error) throw error;
+      if (error) {
+        console.log('⚠️ [EXPECTED] Vector search function not implemented in Supabase');
+        return [];
+      }
       return data || [];
     } catch (error) {
-      console.error('Error searching clips:', error);
+      console.log('⚠️ [EXPECTED] Semantic search not fully implemented:', error.message);
       return [];
     }
   }
@@ -563,8 +575,14 @@ Keep it concise (2-3 sentences).
 
   // Helper methods
   private static async generateEmbedding(text: string): Promise<number[]> {
-    // In a real implementation, this would call OpenAI or another embedding service
-    // For now, return a mock embedding
+    console.log(`🧠 [PLACEHOLDER] Generating embedding for text: "${text.slice(0, 50)}..."`);
+    console.log('🧠 Real implementation would:');
+    console.log('  - Use OpenAI text-embedding-ada-002 or similar');
+    console.log('  - Cache embeddings to reduce API calls');
+    console.log('  - Handle rate limiting and retries');
+    console.log('  - Normalize and validate embedding vectors');
+    
+    // [SIMULATED] Return a mock embedding (1536 dimensions for OpenAI compatibility)
     return new Array(1536).fill(0).map(() => Math.random() - 0.5);
   }
 

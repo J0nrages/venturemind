@@ -73,21 +73,45 @@ export class WebSocketService extends EventEmitter {
     this.loadToken();
   }
 
-  private loadToken(): void {
-    this.token = localStorage.getItem('auth_token');
+  private async loadToken(): Promise<void> {
+    try {
+      // Try to get current Supabase session
+      const { createClient } = await import('@supabase/supabase-js');
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+      const supabase = createClient(supabaseUrl, supabaseAnonKey);
+      
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.access_token) {
+        this.token = session.access_token;
+        console.log('🔑 Using Supabase access token for WebSocket auth');
+        return;
+      }
+    } catch (e) {
+      console.warn('Could not get Supabase session:', e);
+    }
+    
+    // Fallback to anonymous token
+    this.token = 'anonymous';
+    console.log('🔑 Using anonymous token for WebSocket connection');
   }
 
   /**
    * Connect to WebSocket server
    */
-  connect(sessionId: string): void {
+  async connect(sessionId: string): Promise<void> {
     if (this.ws?.readyState === WebSocket.OPEN) {
       console.log('WebSocket already connected');
       return;
     }
 
+    // Load fresh token before connecting
+    await this.loadToken();
+
     this.sessionId = sessionId;
     const wsUrl = this.buildWebSocketUrl(sessionId);
+
+    console.log(`🔌 Connecting to WebSocket: ${wsUrl}`);
 
     try {
       this.ws = new WebSocket(wsUrl);

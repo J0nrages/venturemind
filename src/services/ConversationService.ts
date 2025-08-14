@@ -2,6 +2,8 @@ import { supabase } from '../lib/supabase';
 import { GeminiService } from './GeminiService';
 import { StrategicService } from './StrategicService';
 import { DocumentService } from './DocumentService';
+import { AgentOrchestrator } from './AgentOrchestrator';
+import { SSEService } from './SSEService';
 import toast from 'react-hot-toast';
 
 export interface ConversationMessage {
@@ -74,17 +76,234 @@ export class ConversationService {
     return data;
   }
 
-  // Get conversation history
-  static async getConversationHistory(userId: string, limit = 50): Promise<ConversationMessage[]> {
-    const { data, error } = await supabase
+  // Get conversation history with optional context filtering
+  static async getConversationHistory(
+    userId: string, 
+    limit = 50, 
+    contextId?: string,
+    includeArchived = false
+  ): Promise<ConversationMessage[]> {
+    let query = supabase
       .from('conversation_messages')
       .select('*')
       .eq('user_id', userId)
       .order('created_at', { ascending: true })
       .limit(limit);
 
+    // Add context filtering if provided (using thread_id)
+    if (contextId) {
+      query = query.eq('thread_id', contextId);
+    }
+
+    // By default, exclude archived messages unless specifically requested
+    if (!includeArchived) {
+      query = query.is('archived_at', null);
+    }
+
+    const { data, error } = await query;
     if (error) throw error;
     return data || [];
+  }
+
+  // ===== MESSAGE DELETION & MANAGEMENT METHODS =====
+
+  // Soft delete (archive) a message
+  static async archiveMessage(messageId: string, userId: string): Promise<boolean> {
+    console.log(`🗂️ Archiving message: ${messageId}`);
+    
+    const { error } = await supabase
+      .from('conversation_messages')
+      .update({ 
+        archived_at: new Date().toISOString(),
+        archived_by: userId
+      })
+      .eq('id', messageId)
+      .eq('user_id', userId); // Ensure user can only archive their own messages
+
+    if (error) {
+      console.error('❌ Error archiving message:', error);
+      throw error;
+    }
+
+    console.log('✅ Message archived successfully');
+    return true;
+  }
+
+  // Restore an archived message
+  static async restoreMessage(messageId: string, userId: string): Promise<boolean> {
+    console.log(`📤 Restoring message: ${messageId}`);
+    
+    const { error } = await supabase
+      .from('conversation_messages')
+      .update({ 
+        archived_at: null,
+        archived_by: null
+      })
+      .eq('id', messageId)
+      .eq('user_id', userId);
+
+    if (error) {
+      console.error('❌ Error restoring message:', error);
+      throw error;
+    }
+
+    console.log('✅ Message restored successfully');
+    return true;
+  }
+
+  // Hard delete a message (permanent deletion)
+  static async hardDeleteMessage(messageId: string, userId: string): Promise<boolean> {
+    console.log(`🗑️ HARD DELETING message: ${messageId} - This action cannot be undone!`);
+    
+    const { error } = await supabase
+      .from('conversation_messages')
+      .delete()
+      .eq('id', messageId)
+      .eq('user_id', userId); // Ensure user can only delete their own messages
+
+    if (error) {
+      console.error('❌ Error hard deleting message:', error);
+      throw error;
+    }
+
+    console.log('✅ Message permanently deleted');
+    return true;
+  }
+
+  // Clear all conversation history (with options)
+  static async clearConversationHistory(
+    userId: string, 
+    options: {
+      hardDelete?: boolean;
+      threadId?: string;
+      olderThan?: Date;
+    } = {}
+  ): Promise<{ deletedCount: number; action: string }> {
+    const { hardDelete = false, threadId, olderThan } = options;
+    const action = hardDelete ? 'PERMANENTLY DELETED' : 'ARCHIVED';
+    
+    console.log(`🧹 Clearing conversation history for user: ${userId} (${action})`);
+    
+    let query = supabase.from('conversation_messages').select('id', { count: 'exact' });
+    
+    // Apply filters
+    query = query.eq('user_id', userId);
+    if (threadId) {
+      query = query.eq('thread_id', threadId);
+    }
+    if (olderThan) {
+      query = query.lt('created_at', olderThan.toISOString());
+    }
+    if (!hardDelete) {
+      // Only include non-archived messages for soft delete
+      query = query.is('archived_at', null);
+    }
+
+    // First, count how many messages will be affected
+    const { count, error: countError } = await query;
+    if (countError) throw countError;
+
+    if (!count || count === 0) {
+      console.log('ℹ️ No messages found to clear');
+      return { deletedCount: 0, action };
+    }
+
+    // Perform the deletion/archiving
+    let updateQuery = supabase.from('conversation_messages');
+    
+    if (hardDelete) {
+      updateQuery = updateQuery.delete();
+    } else {
+      updateQuery = updateQuery.update({
+        archived_at: new Date().toISOString(),
+        archived_by: userId
+      });
+    }
+
+    // Apply the same filters
+    updateQuery = updateQuery.eq('user_id', userId);
+    if (threadId) {
+      updateQuery = updateQuery.eq('thread_id', threadId);
+    }
+    if (olderThan) {
+      updateQuery = updateQuery.lt('created_at', olderThan.toISOString());
+    }
+    if (!hardDelete) {
+      updateQuery = updateQuery.is('archived_at', null);
+    }
+
+    const { error } = await updateQuery;
+    if (error) {
+      console.error(`❌ Error clearing conversation history:`, error);
+      throw error;
+    }
+
+    console.log(`✅ ${action} ${count} messages`);
+    return { deletedCount: count, action };
+  }
+
+  // Retry a failed message (regenerate AI response)
+  static async retryMessage(
+    messageId: string, 
+    userId: string, 
+    documents: any[] = []
+  ): Promise<ConversationMessage> {
+    console.log(`🔄 Retrying message: ${messageId}`);
+    
+    // Get the original message
+    const { data: originalMessage, error: fetchError } = await supabase
+      .from('conversation_messages')
+      .select('*')
+      .eq('id', messageId)
+      .eq('user_id', userId)
+      .single();
+
+    if (fetchError || !originalMessage) {
+      throw new Error('Message not found or access denied');
+    }
+
+    if (originalMessage.sender !== 'user') {
+      throw new Error('Can only retry user messages');
+    }
+
+    // Archive the failed AI response if it exists
+    const { data: aiResponses } = await supabase
+      .from('conversation_messages')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('sender', 'ai')
+      .gt('created_at', originalMessage.created_at)
+      .order('created_at', { ascending: true })
+      .limit(1);
+
+    if (aiResponses && aiResponses.length > 0) {
+      await this.archiveMessage(aiResponses[0].id, userId);
+      console.log('🗂️ Archived previous AI response');
+    }
+
+    // Regenerate AI response using the original message content
+    console.log('🤖 Regenerating AI response...');
+    const aiResult = await this.processUserMessage(
+      userId, 
+      originalMessage.content, 
+      documents
+    );
+
+    // Save the new AI response
+    const newAiMessage: Omit<ConversationMessage, 'id' | 'created_at'> = {
+      user_id: userId,
+      content: aiResult.response,
+      sender: 'ai',
+      document_updates: aiResult.documentUpdates || [],
+      context_confidence: aiResult.confidence || 0,
+      thread_id: originalMessage.thread_id,
+      parent_message_id: originalMessage.id
+    };
+
+    const savedAiMessage = await this.saveMessage(newAiMessage);
+    console.log('✅ Generated new AI response');
+
+    return savedAiMessage;
   }
 
   // Enhanced AI processing with strategic insights
@@ -115,6 +334,40 @@ export class ConversationService {
       
       // Get conversation history for context
       const history = conversationHistory || await this.getConversationHistory(userId, 10);
+
+      // 🎯 NEW: Use Agent Orchestrator for background processing
+      console.log('🤖 Starting Agent Orchestration...');
+      try {
+        const orchestrationResult = await AgentOrchestrator.processMessage(
+          userId,
+          message,
+          history,
+          documents
+        );
+        
+        console.log('🎯 Agent Orchestration completed:', {
+          responseLength: orchestrationResult.response.length,
+          clipsRetrieved: orchestrationResult.clips_retrieved.length,
+          sectionsUpdated: orchestrationResult.sections_updated.length,
+          confidence: orchestrationResult.confidence,
+          traceId: orchestrationResult.trace_id
+        });
+        
+        // Return orchestrated result
+        return {
+          response: orchestrationResult.response,
+          confidence: orchestrationResult.confidence,
+          documentUpdates: orchestrationResult.sections_updated.map(s => s.section_title || s.document_name || 'Document Section'),
+          strategicActions: {
+            initiativesCreated: 0,
+            swotItemsCreated: 0
+          }
+        };
+        
+      } catch (orchestrationError) {
+        console.error('❌ Agent Orchestration failed, falling back to simple processing:', orchestrationError);
+        // Fall through to simple processing below
+      }
       
       // Check for mission statement or important business info to save
       const isMissionStatement = message.toLowerCase().includes('mission') || 
@@ -784,4 +1037,129 @@ export class ConversationService {
       };
     }
   }
+
+  // Context-aware message processing for SYNA contexts
+  static async processWithContextualAI(
+    message: string,
+    userId: string,
+    documents: any[],
+    context: any
+  ): Promise<{
+    response: string;
+    updatedDocuments?: string[];
+    contextConfidence: number;
+    surfaceUpdates?: any[];
+    agentActions?: any[];
+  }> {
+    try {
+      console.log(`Processing message in ${context.type} context:`, message);
+
+      // Get context-specific system prompt
+      const contextPrompt = this.getContextPrompt(context.type);
+      
+      // Check for Gemini key
+      const hasKey = await GeminiService.initialize(userId);
+      let response = "";
+      
+      if (hasKey) {
+        try {
+          // Generate context-aware response
+          response = await GeminiService.generateContextualResponse(
+            message,
+            null, // No specific document updated in this context
+            [], // conversation history - could be enhanced
+            {
+              contextType: context.type,
+              systemPrompt: contextPrompt,
+              availableAgents: context.agents.map((a: any) => a.type),
+              activeSurfaces: Object.keys(context.surfaces).filter(
+                (key) => context.surfaces[key]?.visible
+              )
+            }
+          );
+        } catch (error) {
+          console.error('Error generating contextual response:', error);
+          response = this.getContextFallbackResponse(context.type, message);
+        }
+      } else {
+        response = this.getContextFallbackResponse(context.type, message);
+      }
+
+      // Simulate document updates based on context
+      const updatedDocuments = this.getContextualDocumentUpdates(context.type, message);
+      
+      // Calculate confidence based on context relevance
+      const contextConfidence = this.calculateContextConfidence(message, context.type);
+
+      return {
+        response,
+        updatedDocuments,
+        contextConfidence,
+        surfaceUpdates: [],
+        agentActions: []
+      };
+
+    } catch (error) {
+      console.error('Error in contextual AI processing:', error);
+      return {
+        response: `I encountered an issue processing your ${context.type} request. Please try again.`,
+        contextConfidence: 0
+      };
+    }
+  }
+
+  private static getContextPrompt(contextType: string): string {
+    const prompts = {
+      engineering: "You are an expert software engineer and architect. Focus on code quality, technical solutions, system design, and development best practices. Provide actionable technical advice and consider security, performance, and maintainability.",
+      fundraising: "You are an experienced startup advisor specializing in fundraising and investor relations. Focus on metrics that matter to investors, compelling narratives, market positioning, and fundraising strategy. Help craft clear, data-driven communications.",
+      product: "You are a product management expert. Focus on user needs, feature prioritization, roadmap planning, and strategic product decisions. Consider market fit, user experience, and business value in your responses."
+    };
+    return prompts[contextType as keyof typeof prompts] || "You are a helpful AI assistant.";
+  }
+
+  private static getContextFallbackResponse(contextType: string, message: string): string {
+    const responses = {
+      engineering: `I understand you're working on an engineering task: "${message.substring(0, 50)}...". While I don't have access to advanced AI capabilities right now, I can help you think through technical approaches, architectural decisions, or development processes. What specific aspect would you like to explore?`,
+      fundraising: `I see you're working on fundraising matters: "${message.substring(0, 50)}...". I can help you structure investor communications, think through metrics presentation, or organize fundraising materials. What would be most helpful right now?`,
+      product: `You're focusing on product development: "${message.substring(0, 50)}...". I can assist with product planning frameworks, prioritization approaches, or user research insights. What aspect of product management would you like to dive into?`
+    };
+    return responses[contextType as keyof typeof responses] || "I can help you with that. What would you like to focus on?";
+  }
+
+  private static getContextualDocumentUpdates(contextType: string, message: string): string[] {
+    // Simulate intelligent document updates based on context and message content
+    const updates: string[] = [];
+    
+    if (message.toLowerCase().includes('update') || message.toLowerCase().includes('document')) {
+      const contextDocuments = {
+        engineering: ['Technical Specifications', 'Architecture Documentation'],
+        fundraising: ['Investor Update', 'Pitch Deck', 'Financial Projections'],
+        product: ['Product Roadmap', 'Feature Specifications', 'User Research']
+      };
+      
+      const docs = contextDocuments[contextType as keyof typeof contextDocuments];
+      if (docs && docs.length > 0) {
+        updates.push(docs[0]); // Add the primary document for this context
+      }
+    }
+    
+    return updates;
+  }
+
+  private static calculateContextConfidence(message: string, contextType: string): number {
+    // Simple confidence calculation based on context-relevant keywords
+    const contextKeywords = {
+      engineering: ['code', 'api', 'database', 'architecture', 'bug', 'feature', 'deploy', 'test'],
+      fundraising: ['investor', 'funding', 'revenue', 'metrics', 'raise', 'valuation', 'pitch'],
+      product: ['user', 'feature', 'roadmap', 'priority', 'requirement', 'feedback', 'design']
+    };
+    
+    const keywords = contextKeywords[contextType as keyof typeof contextKeywords] || [];
+    const messageLower = message.toLowerCase();
+    const matches = keywords.filter(keyword => messageLower.includes(keyword)).length;
+    
+    // Return confidence between 0.3 and 0.95 based on keyword matches
+    return Math.min(0.95, 0.3 + (matches * 0.1));
+  }
+
 }

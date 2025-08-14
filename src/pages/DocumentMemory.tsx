@@ -38,7 +38,7 @@ import {
 import { supabase } from '../lib/supabase';
 import { DocumentService, UserDocument, DocumentTemplate, PersonalCategory } from '../services/DocumentService';
 import { ConversationService, ConversationMessage } from '../services/ConversationService';
-import { useWebSocket } from '../hooks/useWebSocket';
+import { websocketService } from '../services/WebSocketService';
 import CollaborativeEditor from '../components/CollaborativeEditor';
 import PresenceIndicator from '../components/PresenceIndicator';
 import ThreadedChatMessage from '../components/ThreadedChatMessage';
@@ -121,13 +121,10 @@ export default function DocumentMemory() {
   const messagesScroll = useScrollVisibility(messagesScrollRef.current);
   const sidebarScroll = useScrollVisibility(sidebarScrollRef.current);
 
-  const {
-    connected: wsConnected,
-    activeUsers,
-    aiActions,
-    joinDocument,
-    leaveDocument
-  } = useWebSocket(user?.id);
+  // WebSocket connection state
+  const [wsConnected, setWsConnected] = useState(false);
+  const [activeUsers, setActiveUsers] = useState<any[]>([]);
+  const [aiActions, setAiActions] = useState<any[]>([]);
 
   // Threading functionality
   const threading = useThreading(user?.id);
@@ -136,6 +133,71 @@ export default function DocumentMemory() {
     initializeUser();
     loadData();
   }, []);
+
+  // Initialize WebSocket when user is available
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const sessionId = `doc_memory_${user.id}_${Date.now()}`;
+    
+    // Set up WebSocket event listeners
+    const handleConnected = () => {
+      console.log('✅ WebSocket connected via WebSocketService');
+      setWsConnected(true);
+    };
+
+    const handleDisconnected = () => {
+      console.log('🔌 WebSocket disconnected');
+      setWsConnected(false);
+      setActiveUsers([]);
+    };
+
+    const handleError = (error: any) => {
+      console.error('❌ WebSocket error:', error);
+      setWsConnected(false);
+    };
+
+    const handleConnectionChange = (data: any) => {
+      console.log('👥 Connection change:', data);
+      // Update active users based on connection events
+      if (data.type === 'connection_joined') {
+        setActiveUsers(prev => [...prev.filter(u => u.id !== data.user_id), {
+          id: data.user_id,
+          name: `User ${data.user_id}`,
+          status: 'online'
+        }]);
+      } else if (data.type === 'connection_left') {
+        setActiveUsers(prev => prev.filter(u => u.id !== data.user_id));
+      }
+    };
+
+    const handleAgentMessage = (data: any) => {
+      console.log('🤖 Agent message:', data);
+      setAiActions(prev => [data, ...prev.slice(0, 19)]);
+    };
+
+    // Register event listeners
+    websocketService.on('connected', handleConnected);
+    websocketService.on('disconnected', handleDisconnected);
+    websocketService.on('error', handleError);
+    websocketService.on('connection:change', handleConnectionChange);
+    websocketService.on('agent:message', handleAgentMessage);
+
+    // Connect to WebSocket
+    websocketService.connect(sessionId).catch(error => {
+      console.error('Failed to connect to WebSocket:', error);
+    });
+
+    // Cleanup on unmount
+    return () => {
+      websocketService.off('connected', handleConnected);
+      websocketService.off('disconnected', handleDisconnected);
+      websocketService.off('error', handleError);
+      websocketService.off('connection:change', handleConnectionChange);
+      websocketService.off('agent:message', handleAgentMessage);
+      websocketService.disconnect();
+    };
+  }, [user?.id]);
 
   useEffect(() => {
     scrollToBottom();
@@ -146,6 +208,19 @@ export default function DocumentMemory() {
       chatInputRef.current.focus();
     }
   }, [loading]);
+
+  // Join/leave documents when selection changes
+  useEffect(() => {
+    if (selectedDoc && wsConnected) {
+      joinDocument(selectedDoc.id);
+    }
+    
+    return () => {
+      if (wsConnected) {
+        leaveDocument();
+      }
+    };
+  }, [selectedDoc?.id, wsConnected]);
 
   const initializeUser = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -463,6 +538,25 @@ export default function DocumentMemory() {
     );
   };
 
+  // WebSocket document collaboration functions
+  const joinDocument = (documentId: string) => {
+    console.log(`📄 Joining document: ${documentId}`);
+    websocketService.sendDocumentEdit(documentId, {
+      type: 'join',
+      user_id: user?.id
+    });
+  };
+
+  const leaveDocument = () => {
+    if (selectedDoc) {
+      console.log(`📄 Leaving document: ${selectedDoc.id}`);
+      websocketService.sendDocumentEdit(selectedDoc.id, {
+        type: 'leave',
+        user_id: user?.id
+      });
+    }
+  };
+
   const getIconComponent = (iconName: string) => {
     return iconMap[iconName] || FileText;
   };
@@ -596,6 +690,23 @@ export default function DocumentMemory() {
               </Button>
             </div>
           )}
+          
+          {/* WebSocket Status */}
+          <div className="mt-3 text-xs">
+            <div className={`flex items-center gap-1 ${
+              wsConnected ? 'text-green-600' : 'text-gray-500'
+            }`}>
+              <div className={`w-2 h-2 rounded-full ${
+                wsConnected ? 'bg-green-500' : 'bg-gray-400'
+              }`}></div>
+              {wsConnected ? 'WebSocket Connected' : 'WebSocket Disconnected'}
+            </div>
+            {activeUsers.length > 0 && (
+              <div className="text-gray-500 mt-1">
+                {activeUsers.length} user(s) online
+              </div>
+            )}
+          </div>
         </div>
 
         <div ref={sidebarScrollRef} className="flex-1 overflow-auto scrollbar-safari">

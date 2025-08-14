@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import BusinessPlan from './pages/BusinessPlan';
 import SwotAnalysis from './pages/SwotAnalysis.tsx';
@@ -18,16 +18,81 @@ import AuthGuard from './components/AuthGuard';
 import { DialogProvider } from './contexts/DialogContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { ChatProvider } from './contexts/ChatContext';
+import { ContextProvider } from './contexts/ContextProvider';
 import ModernChatSidebar from './components/ModernChatSidebar';
 import { useChat } from './contexts/ChatContext';
 import Dialog from './components/Dialog';
+import SynaApp from './components/SynaApp';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Sparkles, Grid3X3, ArrowLeft } from 'lucide-react';
 
 function AppContent() {
   const { isOpen, position, toggleChat, setPosition } = useChat();
+  const [synaMode, setSynaMode] = useState(false);
+  
+  // Check if user prefers SYNA mode (could be stored in localStorage)
+  useEffect(() => {
+    const savedMode = localStorage.getItem('syna-mode');
+    if (savedMode === 'true') {
+      setSynaMode(true);
+    }
+  }, []);
+  
+  const toggleSynaMode = () => {
+    const newMode = !synaMode;
+    setSynaMode(newMode);
+    localStorage.setItem('syna-mode', newMode.toString());
+  };
   
   return (
     <>
-      <Routes>
+      {/* SYNA Mode Toggle */}
+      <motion.button
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.5 }}
+        onClick={toggleSynaMode}
+        className={`fixed top-4 right-4 z-50 px-4 py-2 rounded-xl shadow-lg backdrop-blur-lg transition-all duration-300 hover:scale-105 flex items-center gap-2 ${
+          synaMode 
+            ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-purple-500/20' 
+            : 'bg-white/90 text-gray-700 hover:bg-white'
+        }`}
+        title={synaMode ? 'Switch to Traditional Mode' : 'Switch to SYNA Mode'}
+      >
+        {synaMode ? (
+          <>
+            <Grid3X3 className="w-4 h-4" />
+            <span className="text-sm font-medium">Traditional</span>
+          </>
+        ) : (
+          <>
+            <Sparkles className="w-4 h-4" />
+            <span className="text-sm font-medium">SYNA</span>
+          </>
+        )}
+      </motion.button>
+      
+      <AnimatePresence mode="wait">
+        {synaMode ? (
+          <motion.div
+            key="syna"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.3 }}
+            className="w-full h-screen"
+          >
+            <SynaApp />
+          </motion.div>
+        ) : (
+          <motion.div
+            key="traditional"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.3 }}
+          >
+            <Routes>
             <Route path="/auth" element={<Auth />} />
             
             <Route element={<AuthGuard />}>
@@ -185,7 +250,10 @@ function AppContent() {
           onPositionChange={setPosition}
         />
         
-        <Dialog />
+            <Dialog />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }
@@ -195,9 +263,11 @@ function App() {
     <ThemeProvider>
       <DialogProvider>
         <ChatProvider>
-          <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-            <AppContent />
-          </Router>
+          <ContextProvider>
+            <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+              <AppContent />
+            </Router>
+          </ContextProvider>
         </ChatProvider>
       </DialogProvider>
     </ThemeProvider>

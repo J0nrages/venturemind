@@ -11,7 +11,9 @@ import {
   Loader2,
   CheckCircle,
   XCircle,
-  Clock
+  Clock,
+  Trash2,
+  RefreshCw
 } from 'lucide-react';
 import { ConversationMessage } from '../services/ConversationService';
 import { Button } from './ui/button';
@@ -23,6 +25,8 @@ interface ThreadedChatMessageProps {
   onRestore: (messageId: string) => void;
   onReply: (messageId: string, quotedText?: string) => void;
   onBranch: (messageId: string, selectedText: string) => void;
+  onRetry?: (messageId: string) => void;
+  onHardDelete?: (messageId: string) => void;
   showArchived: boolean;
   isRoot?: boolean;
   depth?: number;
