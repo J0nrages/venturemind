@@ -6,6 +6,7 @@ import { Building2, ChevronRight, ChevronLeft } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
 import BackButton from '../components/BackButton';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 interface BusinessData {
   company_name: string;
@@ -60,6 +61,7 @@ const customerSegments = [
 ];
 
 export default function BusinessSetup() {
+  usePageTitle('Business Setup');
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);

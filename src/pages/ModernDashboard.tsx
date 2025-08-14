@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 interface MetricCardProps {
   title: string;
@@ -121,6 +122,7 @@ const ProgressCard: React.FC<ProgressCardProps> = ({ title, metrics, delay = 0 }
 };
 
 const ModernDashboard: React.FC = () => {
+  usePageTitle('Modern Dashboard');
   const [selectedPeriod, setSelectedPeriod] = useState('This Month');
   const [showAI, setShowAI] = useState(false);
 

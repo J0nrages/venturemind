@@ -1,4 +1,5 @@
 import { Card } from '@/components/ui/card';
+import { usePageTitle } from '../hooks/usePageTitle';
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
@@ -28,6 +29,7 @@ import toast from 'react-hot-toast';
 import { useDialog } from '../contexts/DialogContext';
 
 export default function Strategy() {
+  usePageTitle('Strategy');
   const [activeTab, setActiveTab] = useState('initiatives');
   const [showNewItem, setShowNewItem] = useState(false);
   const [showItemDetails, setShowItemDetails] = useState<string | null>(null);

@@ -6,6 +6,7 @@ import { Check } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
 import BackButton from '../components/BackButton';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 const plans = [
   {
@@ -50,6 +51,7 @@ const plans = [
 ];
 
 export default function Plans() {
+  usePageTitle('Plans');
   const navigate = useNavigate();
   const [loading, setLoading] = useState<string | null>(null);
 

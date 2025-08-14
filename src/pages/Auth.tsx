@@ -5,8 +5,10 @@ import { motion } from 'framer-motion';
 import { FileText, Lock, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 export default function Auth() {
+  usePageTitle('Sign In');
   const [isSignUp, setIsSignUp] = useState(false);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [email, setEmail] = useState('');

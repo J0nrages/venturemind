@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { usePageTitle } from '../hooks/usePageTitle';
 import { motion } from 'framer-motion';
 import {
   Star,
@@ -30,6 +31,7 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { useDialog } from '../contexts/DialogContext';
 
 export default function BusinessPlan() {
+  usePageTitle('Business Plan');
   const navigate = useNavigate();
   const [selectedCard, setSelectedCard] = useState<string | null>(null);
   const [newInitiativeTitle, setNewInitiativeTitle] = useState('');

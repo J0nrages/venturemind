@@ -6,8 +6,10 @@ import { supabase } from '../lib/supabase';
 import { ConversationService } from '../services/ConversationService';
 import toast from 'react-hot-toast';
 import { Key, FileText, Brain, TestTube, CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 export default function Settings() {
+  usePageTitle('Settings');
   const [googleDocsToken, setGoogleDocsToken] = useState('');
   const [geminiApiKey, setGeminiApiKey] = useState('');
   const [loading, setLoading] = useState(false);

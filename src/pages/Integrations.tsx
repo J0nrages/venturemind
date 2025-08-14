@@ -1,4 +1,5 @@
 import { Card } from '@/components/ui/card';
+import { usePageTitle } from '../hooks/usePageTitle';
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
@@ -37,6 +38,7 @@ const iconMap: { [key: string]: React.ComponentType<any> } = {
 };
 
 export default function Integrations() {
+  usePageTitle('Integrations');
   const [integrations, setIntegrations] = useState<ApiIntegration[]>([]);
   const [availableIntegrations, setAvailableIntegrations] = useState<IntegrationTemplate[]>([]);
   const [loading, setLoading] = useState(true);

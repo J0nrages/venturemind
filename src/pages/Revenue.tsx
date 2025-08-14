@@ -2,8 +2,10 @@ import { Card } from '@/components/ui/card';
 import React from 'react';
 import { DollarSign } from 'lucide-react';
 import MetricCard from '../components/MetricCard';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 export default function Revenue() {
+  usePageTitle('Revenue');
   return (
     <div className="space-y-8 pt-14">
       <div>

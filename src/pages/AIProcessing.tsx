@@ -1,4 +1,5 @@
 import { Card } from '@/components/ui/card';
+import { usePageTitle } from '../hooks/usePageTitle';
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
@@ -20,6 +21,7 @@ import { supabase } from '../lib/supabase';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 export default function AIProcessing() {
+  usePageTitle('AI Processing');
   const [metrics, setMetrics] = useState<any>(null);
   const [timeframe, setTimeframe] = useState('week');
   const [loading, setLoading] = useState(true);

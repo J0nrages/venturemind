@@ -3,6 +3,7 @@ import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ChevronLeft } from 'lucide-react';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 const swotData = {
   strengths: {
@@ -68,6 +69,7 @@ const swotData = {
 };
 
 export default function SwotAnalysis() {
+  usePageTitle('SWOT Analysis');
   const { type } = useParams<{ type: keyof typeof swotData }>();
   const navigate = useNavigate();
   const data = type ? swotData[type] : null;

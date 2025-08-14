@@ -5,8 +5,10 @@ import { Users, UserPlus, UserMinus, UserCheck, Loader2, AlertCircle, RefreshCw 
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 import MetricCard from '../components/MetricCard';
 import { useBusinessData } from '../hooks/useBusinessData';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 export default function Customers() {
+  usePageTitle('Customers');
   const { 
     customerData, 
     profile, 

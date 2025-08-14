@@ -5,6 +5,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { DollarSign, Users, TrendingUp, Clock, Wallet, Save, Building2, BarChart3, FileText, Calculator } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 // --- Helper Function for Formatting ---
 const formatCurrency = (value, isPercentage = false) => {
@@ -169,6 +170,7 @@ const defaultAssumptions: Assumptions = {
 };
 
 export default function ProformaPage() {
+  usePageTitle('Financial Proforma');
   const [activeTab, setActiveTab] = useState('overview');
   const [assumptions, setAssumptions] = useState<Assumptions>(defaultAssumptions);
   const [projections, setProjections] = useState<any[]>([]);

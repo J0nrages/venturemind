@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { usePageTitle } from '../hooks/usePageTitle';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -60,6 +61,7 @@ const iconMap: { [key: string]: React.ComponentType<any> } = {
 };
 
 export default function DocumentMemory() {
+  usePageTitle('Document Memory');
   const [messages, setMessages] = useState<ConversationMessage[]>([]);
   const [currentMessage, setCurrentMessage] = useState('');
   const [documents, setDocuments] = useState<UserDocument[]>([]);
