@@ -12,7 +12,7 @@ import {
   Zap
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { UserSettingsService, type ModelConfiguration } from '../services/UserSettingsService';
 
@@ -46,7 +46,7 @@ export default function UnifiedChatInput({
   onChange,
   onSend,
   loading = false,
-  placeholder = "Type your message here...",
+  placeholder = "Message... (Shift+Enter for new line)",
   className,
   showModelSelector = true,
   showWebSearch = true,
@@ -63,7 +63,7 @@ export default function UnifiedChatInput({
 }: UnifiedChatInputProps) {
   const [showModelDropdown, setShowModelDropdown] = useState(false);
   const [localSelectedModel, setLocalSelectedModel] = useState(selectedModel);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const modelDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -81,6 +81,28 @@ export default function UnifiedChatInput({
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // Auto-focus textarea on mount and when focus is lost
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (textareaRef.current && !loading) {
+        textareaRef.current.focus();
+      }
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [loading]);
+
+  // Auto-resize textarea based on content
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      // Reset height to auto to get the correct scrollHeight
+      textarea.style.height = 'auto';
+      // Calculate new height based on scrollHeight
+      const newHeight = Math.min(textarea.scrollHeight, 300); // Max height of ~10-12 lines
+      textarea.style.height = `${newHeight}px`;
+    }
+  }, [value]);
 
   const handleModelSelect = async (modelName: string) => {
     setLocalSelectedModel(modelName);
@@ -105,6 +127,11 @@ export default function UnifiedChatInput({
         console.error('Failed to save model preference:', error);
       }
     }
+
+    // Refocus textarea after model selection
+    setTimeout(() => {
+      textareaRef.current?.focus();
+    }, 0);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -120,7 +147,7 @@ export default function UnifiedChatInput({
 
   const wrapperClass = floating
     ? "bg-background/95 backdrop-blur-lg rounded-2xl shadow-2xl p-4 border border-border"
-    : "p-4 border-t border-gray-200 bg-white/50 backdrop-blur-sm";
+    : "p-4 border-t border-border/10 bg-background/80 backdrop-blur-md";
 
   return (
     <div className={cn(containerClass, className)}>
@@ -131,140 +158,265 @@ export default function UnifiedChatInput({
           transition={{ delay: 0.3 }}
           className={wrapperClass}
         >
-          <ChatInputContent />
+          {/* Message Stats */}
+          {showStats && stats?.lastLatency && (
+            <div className="mb-3 flex items-center gap-4 text-xs text-muted-foreground">
+              <div className="flex items-center gap-1">
+                <Clock className="w-3 h-3" />
+                <span>{(stats.lastLatency / 1000).toFixed(1)}s</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Hash className="w-3 h-3" />
+                <span>{stats.lastTokens} tokens</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Zap className="w-3 h-3" />
+                <span>{stats.lastSpeed} tok/sec</span>
+              </div>
+            </div>
+          )}
+          
+          {/* Model Selector and Controls */}
+          <div className="mb-3 flex items-center gap-2 text-sm">
+            {/* Model Selector */}
+            {showModelSelector && (
+              <div className="relative" ref={modelDropdownRef}>
+                <button
+                  onClick={() => setShowModelDropdown(!showModelDropdown)}
+                  className="flex items-center gap-1 px-2 py-1 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-md transition-colors"
+                  disabled={loading}
+                  type="button"
+                >
+                  <Brain className="w-4 h-4" />
+                  <span className="font-medium">{localSelectedModel}</span>
+                  <ChevronDown className="w-3 h-3" />
+                </button>
+                
+                {showModelDropdown && Object.keys(modelOptions).length > 0 && (
+                  <div className="absolute bottom-full left-0 mb-1 bg-popover border border-border rounded-lg shadow-lg py-1 min-w-48 z-10">
+                    {Object.entries(modelOptions).map(([modelName, config]) => (
+                      <button
+                        key={modelName}
+                        onClick={() => handleModelSelect(modelName)}
+                        className={`w-full text-left px-3 py-2 hover:bg-secondary transition-colors ${
+                          localSelectedModel === modelName ? 'bg-primary/10 text-primary' : 'text-foreground'
+                        }`}
+                        type="button"
+                      >
+                        <div className="font-medium">{modelName}</div>
+                        <div className="text-xs text-muted-foreground">
+                          Max: {config.max_output_tokens} tokens • Temp: {config.temperature}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Web Search Toggle */}
+            {showWebSearch && (
+              <button
+                onClick={() => onWebSearchToggle?.(!webSearchEnabled)}
+                className={`flex items-center gap-1 px-2 py-1 rounded-md transition-colors ${
+                  webSearchEnabled 
+                    ? 'text-blue-600 bg-blue-50 hover:bg-blue-100' 
+                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+                }`}
+                title={webSearchEnabled ? 'Web search enabled' : 'Web search disabled'}
+                type="button"
+              >
+                <Search className="w-4 h-4" />
+                <span className="text-xs font-medium">Search</span>
+              </button>
+            )}
+
+            {/* Attachment placeholder */}
+            {showAttachment && (
+              <button
+                className="flex items-center gap-1 px-2 py-1 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-md transition-colors"
+                title="Attach files (coming soon)"
+                disabled
+                type="button"
+              >
+                <Paperclip className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+
+          {/* Message Input */}
+          <div className="relative">
+            <Textarea
+              ref={textareaRef}
+              value={value}
+              onChange={(e) => onChange(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder={placeholder}
+              disabled={loading}
+              className="w-full bg-background border border-border/20 rounded-xl px-4 py-3 pr-12 focus:outline-none focus:ring-1 focus:ring-ring/10 focus:border-border/30 transition-all resize-none overflow-y-auto scrollbar-safari-thin shadow-[0_2px_8px_rgba(0,0,0,0.08)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.2)]"
+              style={{ minHeight: '44px' }}
+              rows={1}
+              autoFocus
+            />
+            <Button
+              onClick={onSend}
+              disabled={loading || !value.trim()}
+              size="icon"
+              className="absolute right-2 bottom-2 h-8 w-8 rounded-full bg-primary hover:bg-primary/90 disabled:bg-muted transition-all"
+              type="button"
+            >
+              {loading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <svg 
+                  className="w-4 h-4" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth={2} 
+                    d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" 
+                  />
+                </svg>
+              )}
+            </Button>
+          </div>
         </motion.div>
       ) : (
         <div className={wrapperClass}>
           <div className="max-w-2xl mx-auto">
-            <ChatInputContent />
+            {/* Message Stats */}
+            {showStats && stats?.lastLatency && (
+              <div className="mb-3 flex items-center gap-4 text-xs text-muted-foreground">
+                <div className="flex items-center gap-1">
+                  <Clock className="w-3 h-3" />
+                  <span>{(stats.lastLatency / 1000).toFixed(1)}s</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Hash className="w-3 h-3" />
+                  <span>{stats.lastTokens} tokens</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Zap className="w-3 h-3" />
+                  <span>{stats.lastSpeed} tok/sec</span>
+                </div>
+              </div>
+            )}
+            
+            {/* Model Selector and Controls */}
+            <div className="mb-3 flex items-center gap-2 text-sm">
+              {/* Model Selector */}
+              {showModelSelector && (
+                <div className="relative" ref={modelDropdownRef}>
+                  <button
+                    onClick={() => setShowModelDropdown(!showModelDropdown)}
+                    className="flex items-center gap-1 px-2 py-1 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-md transition-colors"
+                    disabled={loading}
+                    type="button"
+                  >
+                    <Brain className="w-4 h-4" />
+                    <span className="font-medium">{localSelectedModel}</span>
+                    <ChevronDown className="w-3 h-3" />
+                  </button>
+                  
+                  {showModelDropdown && Object.keys(modelOptions).length > 0 && (
+                    <div className="absolute bottom-full left-0 mb-1 bg-popover border border-border rounded-lg shadow-lg py-1 min-w-48 z-10">
+                      {Object.entries(modelOptions).map(([modelName, config]) => (
+                        <button
+                          key={modelName}
+                          onClick={() => handleModelSelect(modelName)}
+                          className={`w-full text-left px-3 py-2 hover:bg-secondary transition-colors ${
+                            localSelectedModel === modelName ? 'bg-primary/10 text-primary' : 'text-foreground'
+                          }`}
+                          type="button"
+                        >
+                          <div className="font-medium">{modelName}</div>
+                          <div className="text-xs text-muted-foreground">
+                            Max: {config.max_output_tokens} tokens • Temp: {config.temperature}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Web Search Toggle */}
+              {showWebSearch && (
+                <button
+                  onClick={() => onWebSearchToggle?.(!webSearchEnabled)}
+                  className={`flex items-center gap-1 px-2 py-1 rounded-md transition-colors ${
+                    webSearchEnabled 
+                      ? 'text-blue-600 bg-blue-50 hover:bg-blue-100' 
+                      : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+                  }`}
+                  title={webSearchEnabled ? 'Web search enabled' : 'Web search disabled'}
+                  type="button"
+                >
+                  <Search className="w-4 h-4" />
+                  <span className="text-xs font-medium">Search</span>
+                </button>
+              )}
+
+              {/* Attachment placeholder */}
+              {showAttachment && (
+                <button
+                  className="flex items-center gap-1 px-2 py-1 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-md transition-colors"
+                  title="Attach files (coming soon)"
+                  disabled
+                  type="button"
+                >
+                  <Paperclip className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+
+            {/* Message Input */}
+            <div className="relative">
+              <Textarea
+                ref={textareaRef}
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder={placeholder}
+                disabled={loading}
+                className="w-full bg-background border border-border/20 rounded-xl px-4 py-3 pr-12 focus:outline-none focus:ring-1 focus:ring-ring/10 focus:border-border/30 transition-all resize-none overflow-y-auto scrollbar-safari-thin shadow-[0_2px_8px_rgba(0,0,0,0.08)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.2)]"
+                style={{ minHeight: '44px' }}
+                rows={1}
+                autoFocus
+              />
+              <Button
+                onClick={onSend}
+                disabled={loading || !value.trim()}
+                size="icon"
+                className="absolute right-2 bottom-2 h-8 w-8 rounded-full bg-primary hover:bg-primary/90 disabled:bg-muted transition-all"
+                type="button"
+              >
+                {loading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <svg 
+                    className="w-4 h-4" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round" 
+                      strokeWidth={2} 
+                      d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" 
+                    />
+                  </svg>
+                )}
+              </Button>
+            </div>
           </div>
         </div>
       )}
     </div>
   );
-
-  function ChatInputContent() {
-    return (
-      <>
-        {/* Message Stats */}
-        {showStats && stats?.lastLatency && (
-          <div className="mb-3 flex items-center gap-4 text-xs text-gray-500">
-            <div className="flex items-center gap-1">
-              <Clock className="w-3 h-3" />
-              <span>{(stats.lastLatency / 1000).toFixed(1)}s</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Hash className="w-3 h-3" />
-              <span>{stats.lastTokens} tokens</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Zap className="w-3 h-3" />
-              <span>{stats.lastSpeed} tok/sec</span>
-            </div>
-          </div>
-        )}
-        
-        {/* Model Selector and Controls */}
-        <div className="mb-3 flex items-center gap-2 text-sm">
-          {/* Model Selector */}
-          {showModelSelector && (
-            <div className="relative" ref={modelDropdownRef}>
-              <button
-                onClick={() => setShowModelDropdown(!showModelDropdown)}
-                className="flex items-center gap-1 px-2 py-1 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md transition-colors"
-                disabled={loading}
-              >
-                <Brain className="w-4 h-4" />
-                <span className="font-medium">{localSelectedModel}</span>
-                <ChevronDown className="w-3 h-3" />
-              </button>
-              
-              {showModelDropdown && Object.keys(modelOptions).length > 0 && (
-                <div className="absolute bottom-full left-0 mb-1 bg-white border border-gray-200 rounded-lg shadow-lg py-1 min-w-48 z-10">
-                  {Object.entries(modelOptions).map(([modelName, config]) => (
-                    <button
-                      key={modelName}
-                      onClick={() => handleModelSelect(modelName)}
-                      className={`w-full text-left px-3 py-2 hover:bg-gray-50 transition-colors ${
-                        localSelectedModel === modelName ? 'bg-blue-50 text-blue-700' : 'text-gray-700'
-                      }`}
-                    >
-                      <div className="font-medium">{modelName}</div>
-                      <div className="text-xs text-gray-500">
-                        Max: {config.max_output_tokens} tokens • Temp: {config.temperature}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Web Search Toggle */}
-          {showWebSearch && (
-            <button
-              onClick={() => onWebSearchToggle?.(!webSearchEnabled)}
-              className={`flex items-center gap-1 px-2 py-1 rounded-md transition-colors ${
-                webSearchEnabled 
-                  ? 'text-blue-600 bg-blue-50 hover:bg-blue-100' 
-                  : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
-              }`}
-              title={webSearchEnabled ? 'Web search enabled' : 'Web search disabled'}
-            >
-              <Search className="w-4 h-4" />
-              <span className="text-xs font-medium">Search</span>
-            </button>
-          )}
-
-          {/* Attachment placeholder */}
-          {showAttachment && (
-            <button
-              className="flex items-center gap-1 px-2 py-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
-              title="Attach files (coming soon)"
-              disabled
-            >
-              <Paperclip className="w-4 h-4" />
-            </button>
-          )}
-        </div>
-
-        {/* Message Input */}
-        <div className="relative">
-          <Input
-            ref={inputRef}
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder={placeholder}
-            disabled={loading}
-            className="w-full bg-white/80 border-0 rounded-xl px-4 py-3 pr-12 focus:outline-none focus:ring-0 transition-colors resize-none min-h-[44px] shadow-sm"
-          />
-          <Button
-            onClick={onSend}
-            disabled={loading || !value.trim()}
-            size="icon"
-            className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 rounded-full bg-primary hover:bg-primary/90 disabled:bg-muted transition-all"
-          >
-            {loading ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <svg 
-                className="w-4 h-4" 
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
-              >
-                <path 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round" 
-                  strokeWidth={2} 
-                  d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" 
-                />
-              </svg>
-            )}
-          </Button>
-        </div>
-      </>
-    );
-  }
 }

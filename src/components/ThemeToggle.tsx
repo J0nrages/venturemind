@@ -12,13 +12,13 @@ export const ThemeToggle: React.FC = () => {
   return (
     <button
       onClick={toggleTheme}
-      className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+      className="p-1.5 rounded-lg hover:bg-secondary transition-colors"
       aria-label="Toggle theme"
     >
       {resolvedTheme === 'dark' ? (
-        <Sun className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+        <Sun className="h-5 w-5 text-muted-foreground" />
       ) : (
-        <Moon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+        <Moon className="h-5 w-5 text-muted-foreground" />
       )}
     </button>
   );
