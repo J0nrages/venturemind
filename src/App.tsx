@@ -19,6 +19,7 @@ import { DialogProvider } from './contexts/DialogContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { ChatProvider } from './contexts/ChatContext';
 import { ContextProvider } from './contexts/ContextProvider';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 import ModernChatSidebar from './components/ModernChatSidebar';
 import { useChat } from './contexts/ChatContext';
 import Dialog from './components/Dialog';
@@ -29,6 +30,7 @@ import { cleanupInvalidSessions, migrateOldContextData } from './utils/sessionCl
 
 function AppContent() {
   const { isOpen, position, toggleChat, setPosition } = useChat();
+  const { isAuthenticated } = useAuth();
   const [synaMode, setSynaMode] = useState(true); // Default to SYNA mode
   
   // Check if user prefers SYNA mode (could be stored in localStorage)
@@ -51,31 +53,33 @@ function AppContent() {
   
   return (
     <>
-      {/* SYNA Mode Toggle */}
-      <motion.button
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.5 }}
-        onClick={toggleSynaMode}
-        className={`fixed top-4 right-4 z-50 px-4 py-2 rounded-xl shadow-lg backdrop-blur-lg transition-all duration-300 hover:scale-105 flex items-center gap-2 ${
-          synaMode 
-            ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-purple-500/20' 
-            : 'bg-white/90 text-gray-700 hover:bg-white'
-        }`}
-        title={synaMode ? 'Switch to Traditional Mode' : 'Switch to SYNA Mode'}
-      >
-        {synaMode ? (
-          <>
-            <Grid3X3 className="w-4 h-4" />
-            <span className="text-sm font-medium">Traditional</span>
-          </>
-        ) : (
-          <>
-            <Sparkles className="w-4 h-4" />
-            <span className="text-sm font-medium">SYNA</span>
-          </>
-        )}
-      </motion.button>
+      {/* SYNA Mode Toggle - Only show when authenticated */}
+      {isAuthenticated && (
+        <motion.button
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.5 }}
+          onClick={toggleSynaMode}
+          className={`fixed top-4 right-4 z-50 px-4 py-2 rounded-xl shadow-lg backdrop-blur-lg transition-all duration-300 hover:scale-105 flex items-center gap-2 ${
+            synaMode 
+              ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-purple-500/20' 
+              : 'bg-white/90 text-gray-700 hover:bg-white'
+          }`}
+          title={synaMode ? 'Switch to Traditional Mode' : 'Switch to SYNA Mode'}
+        >
+          {synaMode ? (
+            <>
+              <Grid3X3 className="w-4 h-4" />
+              <span className="text-sm font-medium">Traditional</span>
+            </>
+          ) : (
+            <>
+              <Sparkles className="w-4 h-4" />
+              <span className="text-sm font-medium">SYNA</span>
+            </>
+          )}
+        </motion.button>
+      )}
       
       <AnimatePresence mode="wait">
         {synaMode ? (
@@ -87,7 +91,13 @@ function AppContent() {
             transition={{ duration: 0.3 }}
             className="w-full h-screen"
           >
-            <ConversationMode />
+            <Routes>
+              <Route path="/auth" element={<Auth />} />
+              
+              <Route element={<AuthGuard />}>
+                <Route path="*" element={<ConversationMode />} />
+              </Route>
+            </Routes>
           </motion.div>
         ) : (
           <motion.div
@@ -247,13 +257,15 @@ function AppContent() {
           <Route path="*" element={<Navigate to="/auth" replace />} />
         </Routes>
         
-        {/* Global Chat Component */}
-        <ModernChatSidebar 
-          isOpen={isOpen}
-          onToggle={toggleChat}
-          position={position}
-          onPositionChange={setPosition}
-        />
+        {/* Global Chat Component - Only show when authenticated */}
+        {isAuthenticated && (
+          <ModernChatSidebar 
+            isOpen={isOpen}
+            onToggle={toggleChat}
+            position={position}
+            onPositionChange={setPosition}
+          />
+        )}
         
             <Dialog />
           </motion.div>
@@ -266,15 +278,17 @@ function AppContent() {
 function App() {
   return (
     <ThemeProvider>
-      <DialogProvider>
-        <ChatProvider>
-          <ContextProvider>
-            <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-              <AppContent />
-            </Router>
-          </ContextProvider>
-        </ChatProvider>
-      </DialogProvider>
+      <AuthProvider>
+        <DialogProvider>
+          <ChatProvider>
+            <ContextProvider>
+              <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+                <AppContent />
+              </Router>
+            </ContextProvider>
+          </ChatProvider>
+        </DialogProvider>
+      </AuthProvider>
     </ThemeProvider>
   );
 }

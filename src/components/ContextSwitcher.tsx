@@ -108,8 +108,8 @@ export default function ContextSwitcher({
 
     const container = containerRef.current;
     if (container) {
-      container.addEventListener('touchstart', handleTouchStart);
-      container.addEventListener('touchend', handleTouchEnd);
+      container.addEventListener('touchstart', handleTouchStart, { passive: true });
+      container.addEventListener('touchend', handleTouchEnd, { passive: true });
       
       return () => {
         container.removeEventListener('touchstart', handleTouchStart);
