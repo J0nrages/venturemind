@@ -7,7 +7,7 @@ from typing import List, Optional
 from uuid import UUID
 import uuid
 
-from app.core.auth import get_current_user
+from app.core.auth import get_current_user, get_optional_user
 from app.services.thread_summarization import ThreadSummarizationService
 from app.core.redis_manager import redis_manager
 from app.core.websocket_manager import websocket_manager
@@ -237,10 +237,14 @@ async def create_branch(
 async def get_threads(
     limit: int = 20,
     status: str = "active",
-    current_user = Depends(get_current_user)
+    current_user = Depends(get_optional_user)
 ):
     """Get conversation threads for current user"""
     try:
+        # For development - if no user, return empty list or mock data
+        if not current_user:
+            return {"threads": []}
+            
         query = supabase.table('conversation_threads').select('*').eq(
             'user_id', str(current_user.id)
         ).eq('status', status).order(

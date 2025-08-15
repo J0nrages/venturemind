@@ -190,6 +190,7 @@ export default function ContextSwitcher({
                 }
               }}
               className="absolute"
+              totalContexts={contexts.length}
             />
           );
         })}

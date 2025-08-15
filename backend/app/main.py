@@ -94,20 +94,24 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# Add middleware
+# Add ASGI middleware - now WebSocket compatible for SYNA's real-time architecture
 app.add_middleware(ErrorHandlingMiddleware)
 app.add_middleware(RequestLoggingMiddleware)
-app.add_middleware(RateLimitMiddleware)
+# app.add_middleware(RateLimitMiddleware)  # Temporarily disabled to debug WebSocket 400
 
-# CORS configuration
+# CORS configuration - automatically selects production or development origins
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.allowed_origins,
+    allow_origins=settings.cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
     expose_headers=["X-Request-ID"],
 )
+
+# Log CORS configuration for debugging
+logger.info(f"CORS origins configured: {settings.cors_origins}")
+logger.info(f"Environment: {settings.environment}")
 
 # Trusted host middleware (security)
 if settings.is_production:

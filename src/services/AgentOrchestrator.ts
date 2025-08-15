@@ -3,7 +3,7 @@ import { OrchestrationService, OrchestrationResult } from './OrchestrationServic
 import { SSEService } from './SSEService';
 import { GeminiService } from './GeminiService';
 import { DocumentService } from './DocumentService';
-import { WebSocketService } from './WebSocketService';
+import { websocketService } from './WebSocketService';
 
 export interface AgentState {
   userId: string;
@@ -51,7 +51,7 @@ export class AgentOrchestrator {
       this.events.get(event)?.forEach((handler: any) => handler(data));
     }
   } as any;
-  private static websocketService = WebSocketService;
+  private static websocketService = websocketService;
   // Background listening capability for non-intrusive prefetching
   static enableBackgroundListening(contextId: string): void {
     const agentTypes = ['planner', 'researcher', 'analyst'];

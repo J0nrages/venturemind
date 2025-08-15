@@ -66,8 +66,30 @@ class Settings(BaseSettings):
     
     # CORS
     allowed_origins: List[str] = Field(
-        default=["http://localhost:5173", "http://localhost:3000"],
-        description="Allowed CORS origins"
+        default=[
+            "https://syna.ai",
+            "https://app.syna.ai", 
+            "https://dashboard.syna.ai",
+            "wss://syna.ai",
+            "wss://app.syna.ai",
+            "wss://dashboard.syna.ai"
+        ],
+        description="Allowed CORS origins for production (WebSocket compatible)"
+    )
+    
+    # Development-only CORS origins (only used when environment=development)
+    dev_allowed_origins: List[str] = Field(
+        default=[
+            "http://localhost:5173",
+            "http://localhost:3000", 
+            "http://127.0.0.1:5173",
+            "http://127.0.0.1:3000",
+            "ws://localhost:5173",
+            "ws://localhost:3000",
+            "ws://127.0.0.1:5173", 
+            "ws://127.0.0.1:3000"
+        ],
+        description="Development-only CORS origins (includes WebSocket)"
     )
     
     @validator("allowed_origins", pre=True)
@@ -112,6 +134,13 @@ class Settings(BaseSettings):
     def is_development(self) -> bool:
         """Check if running in development."""
         return self.environment == "development"
+    
+    @property
+    def cors_origins(self) -> List[str]:
+        """Get appropriate CORS origins based on environment."""
+        if self.is_development:
+            return self.dev_allowed_origins
+        return self.allowed_origins
 
 
 # Create a singleton instance

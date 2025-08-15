@@ -92,13 +92,14 @@ export function useWebSocket(userId: string | null, sessionId?: string) {
           heartbeatIntervalRef.current = null;
         }
 
-        // Auto-reconnect unless it was a clean close
-        if (event.code !== 1000 && userId) {
-          console.log('🔄 Attempting to reconnect in 3 seconds...');
-          reconnectTimeoutRef.current = setTimeout(() => {
-            connect();
-          }, 3000);
-        }
+        // Auto-reconnect disabled for debugging
+        // if (event.code !== 1000 && userId) {
+        //   console.log('🔄 Attempting to reconnect in 3 seconds...');
+        //   reconnectTimeoutRef.current = setTimeout(() => {
+        //     connect();
+        //   }, 3000);
+        // }
+        console.log('🔄 Auto-reconnect disabled for debugging');
       };
 
       ws.onerror = (error) => {

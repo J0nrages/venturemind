@@ -22,13 +22,13 @@ import { ContextProvider } from './contexts/ContextProvider';
 import ModernChatSidebar from './components/ModernChatSidebar';
 import { useChat } from './contexts/ChatContext';
 import Dialog from './components/Dialog';
-import SynaApp from './components/SynaApp';
+import ConversationMode from './components/ConversationMode';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, Grid3X3, ArrowLeft } from 'lucide-react';
 
 function AppContent() {
   const { isOpen, position, toggleChat, setPosition } = useChat();
-  const [synaMode, setSynaMode] = useState(false);
+  const [synaMode, setSynaMode] = useState(true); // Default to SYNA mode
   
   // Check if user prefers SYNA mode (could be stored in localStorage)
   useEffect(() => {
@@ -82,7 +82,7 @@ function AppContent() {
             transition={{ duration: 0.3 }}
             className="w-full h-screen"
           >
-            <SynaApp />
+            <ConversationMode />
           </motion.div>
         ) : (
           <motion.div

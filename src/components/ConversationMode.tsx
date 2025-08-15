@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import ContextSwitcher from './ContextSwitcher';
-import { ContextProvider, useContexts } from '../contexts/ContextProvider';
+import { useContexts } from '../contexts/ContextProvider';
 import { cn } from '@/lib/utils';
 
 // Animated background component
@@ -26,7 +26,7 @@ function AnimatedBackground() {
 }
 
 // Control buttons component
-function SynaControls() {
+function ConversationControls() {
   const { 
     toggleDocumentSurface, 
     toggleAgentRail, 
@@ -106,8 +106,8 @@ function SynaControls() {
   );
 }
 
-// Main SYNA interface component
-function SynaInterface() {
+// Main conversation interface component
+function ConversationInterface() {
   const { contexts, currentContextIndex, switchContext } = useContexts();
 
   // Add keyboard shortcuts that don't interfere with the ContextSwitcher's
@@ -130,24 +130,27 @@ function SynaInterface() {
       <AnimatedBackground />
       
       {/* Main Context Switcher */}
-      <div className="relative z-10 w-full h-full flex items-center justify-center p-5">
+      <div className={cn(
+        "relative z-10 w-full h-full flex items-center justify-center",
+        contexts.length > 1 ? "p-5" : "" // Only add padding when multiple contexts (windowed mode)
+      )}>
         <ContextSwitcher
           contexts={contexts}
           currentContext={currentContextIndex}
           onContextChange={switchContext}
-          className="w-full h-full max-w-7xl max-h-[900px]"
+          className={cn(
+            "w-full h-full",
+            contexts.length > 1 ? "max-w-7xl max-h-[900px]" : "" // Remove size constraints in unbounded mode
+          )}
         />
       </div>
+      
       
     </div>
   );
 }
 
-// Main exported component with provider
-export default function SynaApp() {
-  return (
-    <ContextProvider>
-      <SynaInterface />
-    </ContextProvider>
-  );
+// Main exported component - assumes ContextProvider is already available
+export default function ConversationMode() {
+  return <ConversationInterface />;
 }

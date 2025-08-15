@@ -41,12 +41,14 @@ interface ConversationSpineProps {
   context: Context;
   isActive: boolean;
   className?: string;
+  unbounded?: boolean;
 }
 
 export default function ConversationSpine({ 
   context, 
   isActive, 
-  className 
+  className,
+  unbounded = false
 }: ConversationSpineProps) {
   const [messages, setMessages] = useState<ConversationMessage[]>([]);
   const [currentMessage, setCurrentMessage] = useState('');
@@ -375,8 +377,9 @@ export default function ConversationSpine({
 
   return (
     <div className={cn("flex flex-col h-full", className)}>
-      {/* Context Header with Management Options */}
-      <div className="p-4 border-b border-gray-200 bg-gradient-to-br from-gray-50 to-white">
+      {/* Context Header with Management Options - Hidden in unbounded mode */}
+      {!unbounded && (
+        <div className="p-4 border-b border-gray-200 bg-gradient-to-br from-gray-50 to-white">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div 
@@ -428,9 +431,13 @@ export default function ConversationSpine({
           </div>
         </div>
       </div>
+      )}
 
       {/* Messages Area with Context-Aware Styling */}
-      <div ref={messagesScrollRef} className="flex-1 overflow-y-auto p-4 space-y-3">
+      <div ref={messagesScrollRef} className={cn(
+        "flex-1 overflow-y-auto space-y-3",
+        unbounded ? "p-0" : "p-4" // No padding in unbounded mode
+      )}>
         {messages.map((message, index) => (
           <motion.div
             key={message.id}
@@ -505,8 +512,9 @@ export default function ConversationSpine({
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Enhanced ChatGPT-style Input Area */}
-      <div className="p-4 border-t border-gray-200 bg-white/50 backdrop-blur-sm">
+      {/* Enhanced ChatGPT-style Input Area - Hidden in unbounded mode */}
+      {!unbounded && (
+        <div className="p-4 border-t border-gray-200 bg-white/50 backdrop-blur-sm">
         {/* Message Stats */}
         {showStats && messageStats.lastLatency && (
           <div className="mb-3 flex items-center gap-4 text-xs text-gray-500">
@@ -574,56 +582,63 @@ export default function ConversationSpine({
             )}
           </div>
 
-          {/* Web Search Toggle */}
-          <button
-            onClick={() => setWebSearchEnabled(!webSearchEnabled)}
-            className={`flex items-center gap-1 px-2 py-1 rounded-md transition-colors ${
-              webSearchEnabled 
-                ? 'text-blue-600 bg-blue-50 hover:bg-blue-100' 
-                : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
-            }`}
-            title={webSearchEnabled ? 'Web search enabled' : 'Web search disabled'}
-          >
-            <Search className="w-4 h-4" />
-            <span className="text-xs font-medium">Search</span>
-          </button>
+          {/* Hide input controls in unbounded mode */}
+          {!unbounded && (
+            <>
+              {/* Web Search Toggle */}
+              <button
+                onClick={() => setWebSearchEnabled(!webSearchEnabled)}
+                className={`flex items-center gap-1 px-2 py-1 rounded-md transition-colors ${
+                  webSearchEnabled 
+                    ? 'text-blue-600 bg-blue-50 hover:bg-blue-100' 
+                    : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+                }`}
+                title={webSearchEnabled ? 'Web search enabled' : 'Web search disabled'}
+              >
+                <Search className="w-4 h-4" />
+                <span className="text-xs font-medium">Search</span>
+              </button>
 
-          {/* Attachment placeholder */}
-          <button
-            className="flex items-center gap-1 px-2 py-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
-            title="Attach files (coming soon)"
-            disabled
-          >
-            <Paperclip className="w-4 h-4" />
-          </button>
+              {/* Attachment placeholder */}
+              <button
+                className="flex items-center gap-1 px-2 py-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
+                title="Attach files (coming soon)"
+                disabled
+              >
+                <Paperclip className="w-4 h-4" />
+              </button>
+            </>
+          )}
         </div>
 
-        {/* Message Input */}
-        <div className="relative">
-          <Input
-            ref={inputRef}
-            value={currentMessage}
-            onChange={(e) => setCurrentMessage(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && sendMessage()}
-            placeholder="Type your message here..."
-            disabled={loading}
-            className="flex-1 bg-white border-gray-300 rounded-xl px-4 py-3 pr-12 focus:border-gray-400 focus:ring-0 transition-colors resize-none min-h-[44px]"
-          />
-          <Button
-            onClick={sendMessage}
-            disabled={loading || !currentMessage.trim()}
-            size="icon"
-            className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 rounded-lg bg-gray-800 hover:bg-gray-900 disabled:bg-gray-400"
-          >
-            {loading ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <Send className="w-4 h-4" />
-            )}
-          </Button>
-        </div>
+        {/* Message Input - Hidden in unbounded mode */}
+        {!unbounded && (
+          <div className="relative">
+            <Input
+              ref={inputRef}
+              value={currentMessage}
+              onChange={(e) => setCurrentMessage(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && sendMessage()}
+              placeholder="Type your message here..."
+              disabled={loading}
+              className="flex-1 bg-white border-gray-300 rounded-xl px-4 py-3 pr-12 focus:border-gray-400 focus:ring-0 transition-colors resize-none min-h-[44px]"
+            />
+            <Button
+              onClick={sendMessage}
+              disabled={loading || !currentMessage.trim()}
+              size="icon"
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 rounded-lg bg-gray-800 hover:bg-gray-900 disabled:bg-gray-400"
+            >
+              {loading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Send className="w-4 h-4" />
+              )}
+            </Button>
+          </div>
+        )}
         
-        {aiStatus === 'no-key' && (
+        {!unbounded && aiStatus === 'no-key' && (
           <div className="mt-2 p-2 bg-amber-50 backdrop-blur-sm border border-amber-200 rounded-lg">
             <p className="text-xs text-amber-700">
               Enhanced AI features require setup.{' '}
@@ -664,6 +679,65 @@ export default function ConversationSpine({
           </div>
         )}
       </div>
+      )}
+
+      {/* Floating Input for Unbounded Mode */}
+      {unbounded && (
+        <div className="fixed bottom-32 left-1/2 transform -translate-x-1/2 z-30 w-full max-w-2xl px-5">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="bg-white/95 backdrop-blur-lg rounded-2xl shadow-2xl p-4 border border-white/20"
+          >
+            <div className="flex items-center gap-3">
+              <button 
+                onClick={() => setShowModelDropdown(!showModelDropdown)}
+                className="flex items-center gap-2 px-3 py-2 text-sm bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors"
+                disabled={loading}
+              >
+                <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                {selectedModel}
+              </button>
+              <button 
+                onClick={() => setWebSearchEnabled(!webSearchEnabled)}
+                className={`px-3 py-2 text-sm rounded-xl transition-colors ${
+                  webSearchEnabled 
+                    ? 'bg-blue-100 text-blue-600 hover:bg-blue-200' 
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                Search
+              </button>
+              <div className="flex-1 relative">
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={currentMessage}
+                  onChange={(e) => setCurrentMessage(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && sendMessage()}
+                  placeholder="Type your message here..."
+                  disabled={loading}
+                  className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                <button 
+                  onClick={sendMessage}
+                  disabled={loading || !currentMessage.trim()}
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:bg-gray-400"
+                >
+                  {loading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                    </svg>
+                  )}
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
       
       {/* Modals */}
       <ReplyModal

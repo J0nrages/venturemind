@@ -175,7 +175,7 @@ export const createNewContext = (
   visibility: ContextVisibility = ContextVisibility.ACTIVE,
   metadata: ContextMetadata = {}
 ): Omit<Context, 'conversationHistory'> => ({
-  id: `context-${Date.now()}`,
+  id: crypto.randomUUID(),
   type,
   visibility,
   title,
@@ -224,7 +224,7 @@ export const createBranchContext = (
       origin: 'text_selection',
       selectedText,
       branchPoint: {
-        messageId: `msg_${Date.now()}`,
+        messageId: crypto.randomUUID(),
         timestamp: new Date()
       }
     }
@@ -246,7 +246,7 @@ export const createThreadContext = (
       conversationType: 'thread',
       origin: 'text_selection',
       inspirationLink: {
-        messageId: `msg_${Date.now()}`,
+        messageId: crypto.randomUUID(),
         selectedText: inspirationText,
         parentContextId: parentId
       }
