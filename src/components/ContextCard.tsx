@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Context } from '../types/context';
-import ConversationSpine from './ConversationSpine';
+import { ConversationSpine } from './ConversationSpine';
 import AgentRail from './AgentRail';
 import Surface from './Surface';
 import PageSurface from './PageSurface';

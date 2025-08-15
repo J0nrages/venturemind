@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { ConversationMessage, ConversationThread, ConversationService } from '../services/ConversationService';
 import { threadingApi } from '../lib/api';
-import { websocketService } from '../services/WebSocketService';
-import { useWebSocket } from './useWebSocket';
+import { wsManager } from '../services/UnifiedWebSocketManager';
+import { useUnifiedWebSocket } from './useUnifiedWebSocket';
 import toast from 'react-hot-toast';
 
 export interface ThreadingState {
@@ -43,7 +43,11 @@ export function useThreading(userId: string | null) {
   });
 
   // WebSocket connection for real-time updates
-  const { connected } = useWebSocket(userId);
+  const { connected } = useUnifiedWebSocket({ 
+    userId, 
+    sessionId: `threading_${Date.now()}`,
+    channel: 'conversation'
+  });
 
   // Load initial data
   useEffect(() => {
@@ -136,20 +140,31 @@ export function useThreading(userId: string | null) {
     };
 
     // Subscribe to WebSocket events
-    websocketService.on('thread:title_updated', handleThreadTitleUpdate);
-    websocketService.on('message:archived', handleMessageArchived);
-    websocketService.on('message:restored', handleMessageRestored);
-    websocketService.on('thread:branch_created', handleBranchCreated);
-    websocketService.on('message:reply_created', handleReplyCreated);
-    websocketService.on('summarization:update', handleSummarizationUpdate);
+    const unsubscribe = wsManager.subscribe('conversation', (message) => {
+      switch(message.type) {
+        case 'thread:title_updated':
+          handleThreadTitleUpdate(message.payload);
+          break;
+        case 'message:archived':
+          handleMessageArchived(message.payload);
+          break;
+        case 'message:restored':
+          handleMessageRestored(message.payload);
+          break;
+        case 'thread:branch_created':
+          handleBranchCreated(message.payload);
+          break;
+        case 'message:reply_created':
+          handleReplyCreated(message.payload);
+          break;
+        case 'summarization:update':
+          handleSummarizationUpdate(message.payload);
+          break;
+      }
+    });
 
     return () => {
-      websocketService.off('thread:title_updated', handleThreadTitleUpdate);
-      websocketService.off('message:archived', handleMessageArchived);
-      websocketService.off('message:restored', handleMessageRestored);
-      websocketService.off('thread:branch_created', handleBranchCreated);
-      websocketService.off('message:reply_created', handleReplyCreated);
-      websocketService.off('summarization:update', handleSummarizationUpdate);
+      unsubscribe();
     };
   }, [connected, state.activeThreadId]);
 

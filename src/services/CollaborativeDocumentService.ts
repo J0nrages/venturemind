@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabase';
-import { WebSocketService } from './WebSocketService';
+import { wsManager } from './UnifiedWebSocketManager';
 
 export interface DocumentOperation {
   type: 'insert' | 'delete' | 'retain' | 'format';
@@ -26,6 +26,17 @@ export interface ConflictResolution {
   conflicts_detected: DocumentOperation[];
   resolution_strategy: 'ours' | 'theirs' | 'merge' | 'manual';
   merged_content?: string;
+}
+
+export interface DocumentPresence {
+  user_id: string;
+  document_id: string;
+  user_info?: any;
+  status: 'viewing' | 'editing' | 'idle';
+  cursor_position?: any;
+  selection_range?: any;
+  session_id: string;
+  last_seen_at: string;
 }
 
 export class CollaborativeDocumentService {
@@ -344,8 +355,11 @@ export class CollaborativeDocumentService {
       })
       .eq('id', documentId);
 
-    // Broadcast sync to all users
-    await WebSocketService.syncDocumentState(documentId);
+    // Broadcast sync to all users via unified WebSocket
+    wsManager.send({
+      type: 'document_sync',
+      payload: { documentId, version, content }
+    }, 'document');
 
     return content;
   }

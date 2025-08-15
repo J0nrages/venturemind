@@ -40,7 +40,8 @@ import {
 import { supabase } from '../lib/supabase';
 import { DocumentService, UserDocument, DocumentTemplate, PersonalCategory } from '../services/DocumentService';
 import { ConversationService, ConversationMessage } from '../services/ConversationService';
-import { websocketService } from '../services/WebSocketService';
+import { useUnifiedWebSocket } from '../hooks/useUnifiedWebSocket';
+import { wsManager } from '../services/UnifiedWebSocketManager';
 import CollaborativeEditor from '../components/CollaborativeEditor';
 import PresenceIndicator from '../components/PresenceIndicator';
 import ThreadedChatMessage from '../components/ThreadedChatMessage';
@@ -126,7 +127,7 @@ export default function DocumentMemory() {
   const sidebarScroll = useScrollVisibility(sidebarScrollRef.current);
 
   // WebSocket connection state
-  const [wsConnected, setWsConnected] = useState(false);
+  const [contextId] = useState(() => crypto.randomUUID());
   const [activeUsers, setActiveUsers] = useState<any[]>([]);
   const [aiActions, setAiActions] = useState<any[]>([]);
 
@@ -138,70 +139,52 @@ export default function DocumentMemory() {
     loadData();
   }, []);
 
-  // Initialize WebSocket when user is available
-  useEffect(() => {
-    if (!user?.id) return;
-
-    const sessionId = `doc_memory_${user.id}_${Date.now()}`;
-    
-    // Set up WebSocket event listeners
-    const handleConnected = () => {
-      console.log('✅ WebSocket connected via WebSocketService');
-      setWsConnected(true);
-    };
-
-    const handleDisconnected = () => {
-      console.log('🔌 WebSocket disconnected');
-      setWsConnected(false);
-      setActiveUsers([]);
-    };
-
-    const handleError = (error: any) => {
-      console.error('❌ WebSocket error:', error);
-      setWsConnected(false);
-    };
-
-    const handleConnectionChange = (data: any) => {
-      console.log('👥 Connection change:', data);
-      // Update active users based on connection events
-      if (data.type === 'connection_joined') {
-        setActiveUsers(prev => [...prev.filter(u => u.id !== data.user_id), {
-          id: data.user_id,
-          name: `User ${data.user_id}`,
-          status: 'online'
-        }]);
-      } else if (data.type === 'connection_left') {
-        setActiveUsers(prev => prev.filter(u => u.id !== data.user_id));
+  // Use unified WebSocket
+  const { 
+    connected: wsConnected, 
+    sendMessage: sendWSMessage,
+    editDocument,
+    status: wsStatus 
+  } = useUnifiedWebSocket({
+    channel: 'conversation',
+    contextId,
+    autoConnect: !!user?.id,
+    onMessage: (message) => {
+      // Handle incoming WebSocket messages
+      switch (message.type) {
+        case 'ai_message':
+          const aiMsg: ConversationMessage = {
+            id: message.id,
+            user_id: user?.id || '',
+            content: message.payload.content,
+            sender: 'ai',
+            created_at: message.timestamp,
+            thread_id: contextId,
+            document_updates: [],
+            context_confidence: 0
+          };
+          setMessages(prev => [...prev, aiMsg]);
+          setLoading(false);
+          break;
+          
+        case 'user_joined':
+          setActiveUsers(prev => [...prev.filter(u => u.id !== message.payload.user_id), {
+            id: message.payload.user_id,
+            name: message.payload.user_info?.name || 'Anonymous',
+            status: 'online'
+          }]);
+          break;
+          
+        case 'user_left':
+          setActiveUsers(prev => prev.filter(u => u.id !== message.payload.user_id));
+          break;
+          
+        case 'agent_action':
+          setAiActions(prev => [message.payload, ...prev.slice(0, 19)]);
+          break;
       }
-    };
-
-    const handleAgentMessage = (data: any) => {
-      console.log('🤖 Agent message:', data);
-      setAiActions(prev => [data, ...prev.slice(0, 19)]);
-    };
-
-    // Register event listeners
-    websocketService.on('connected', handleConnected);
-    websocketService.on('disconnected', handleDisconnected);
-    websocketService.on('error', handleError);
-    websocketService.on('connection:change', handleConnectionChange);
-    websocketService.on('agent:message', handleAgentMessage);
-
-    // Connect to WebSocket
-    websocketService.connect(sessionId).catch(error => {
-      console.error('Failed to connect to WebSocket:', error);
-    });
-
-    // Cleanup on unmount
-    return () => {
-      websocketService.off('connected', handleConnected);
-      websocketService.off('disconnected', handleDisconnected);
-      websocketService.off('error', handleError);
-      websocketService.off('connection:change', handleConnectionChange);
-      websocketService.off('agent:message', handleAgentMessage);
-      websocketService.disconnect();
-    };
-  }, [user?.id]);
+    }
+  });
 
   useEffect(() => {
     scrollToBottom();
@@ -406,7 +389,13 @@ export default function DocumentMemory() {
       const messageContent = currentMessage;
       setCurrentMessage('');
 
-      // Process with AI and include business data for context
+      // Send message via WebSocket for real-time processing
+      sendWSMessage(messageContent, {
+        documents: documents.map(d => ({ id: d.id, name: d.name })),
+        contextType: 'document_memory'
+      });
+      
+      // Process with AI and include business data for context (fallback)
       const aiResult = await ConversationService.processUserMessage(user.id, messageContent, documents);
 
       // Update AI status based on result
@@ -616,7 +605,7 @@ export default function DocumentMemory() {
   // WebSocket document collaboration functions
   const joinDocument = (documentId: string) => {
     console.log(`📄 Joining document: ${documentId}`);
-    websocketService.sendDocumentEdit(documentId, {
+    editDocument(documentId, {
       type: 'join',
       user_id: user?.id
     });
@@ -625,7 +614,7 @@ export default function DocumentMemory() {
   const leaveDocument = () => {
     if (selectedDoc) {
       console.log(`📄 Leaving document: ${selectedDoc.id}`);
-      websocketService.sendDocumentEdit(selectedDoc.id, {
+      editDocument(selectedDoc.id, {
         type: 'leave',
         user_id: user?.id
       });

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebSocket Test</title>
+</head>
+<body>
+    <h1>WebSocket Connection Test</h1>
+    <div id="status">Not connected</div>
+    <div id="messages"></div>
+    
+    <script>
+        const sessionId = crypto.randomUUID();
+        const token = 'test-token';
+        const wsUrl = `ws://localhost:8000/ws/unified/${sessionId}?token=${token}`;
+        
+        console.log('Connecting to:', wsUrl);
+        const ws = new WebSocket(wsUrl);
+        
+        ws.onopen = (event) => {
+            console.log('Connected!', event);
+            document.getElementById('status').textContent = 'Connected';
+            
+            // Send a test message
+            ws.send(JSON.stringify({
+                id: crypto.randomUUID(),
+                channel: 'system',
+                type: 'ping',
+                payload: {},
+                timestamp: new Date().toISOString()
+            }));
+        };
+        
+        ws.onmessage = (event) => {
+            console.log('Message received:', event.data);
+            const msg = document.createElement('div');
+            msg.textContent = event.data;
+            document.getElementById('messages').appendChild(msg);
+        };
+        
+        ws.onerror = (error) => {
+            console.error('WebSocket error:', error);
+            document.getElementById('status').textContent = 'Error';
+        };
+        
+        ws.onclose = (event) => {
+            console.log('Disconnected:', event.code, event.reason);
+            document.getElementById('status').textContent = `Closed: ${event.code} - ${event.reason}`;
+        };
+    </script>
+</body>
+</html>

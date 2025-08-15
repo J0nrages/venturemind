@@ -492,16 +492,119 @@ Components:
 
 ## Real-time Architecture
 
-### WebSocket Flow
+### Unified WebSocket Architecture (v4.0)
+
+#### Design Principles
+1. **Single Connection**: One WebSocket connection per user session
+2. **Channel-Based Multiplexing**: Multiple logical channels over single connection
+3. **Context Isolation**: Messages routed to specific contexts/workspaces
+4. **Agent Coordination**: Built-in support for multi-agent orchestration
+
+#### WebSocket Channels
 ```
-Frontend ◄──► WebSocketService ◄──► Backend WebSocketManager ◄──► Agent Engine
-    │                                          │
-    └────► SSEService ◄──────────────────────┘
+┌─────────────────────────────────────────┐
+│         Unified WebSocket Manager        │
+├─────────────────────────────────────────┤
+│ Channels:                               │
+│ • conversation - User-AI messages       │
+│ • agent       - Agent coordination      │
+│ • document    - Collaborative editing   │
+│ • system      - Connection management   │
+│ • prefetch    - Agent analysis          │
+└─────────────────────────────────────────┘
+```
+
+#### Connection Flow
+```
+Frontend Component
+    │
+    ▼
+useUnifiedWebSocket Hook
+    │
+    ▼
+UnifiedWebSocketManager (Singleton)
+    │
+    ▼
+WebSocket Connection (/ws/unified/{session_id})
+    │
+    ▼
+Backend Unified Router
+    │
+    ├──► Channel Router
+    │    ├──► Conversation Handler
+    │    ├──► Agent Handler
+    │    ├──► Document Handler
+    │    └──► Prefetch Handler
+    │
+    └──► WebSocketManager (Agent Coordination)
+```
+
+#### Message Format
+```typescript
+interface WebSocketMessage {
+  id: string;           // Unique message ID (UUID)
+  channel: ChannelType; // Target channel
+  type: string;         // Message type within channel
+  payload: any;         // Message data
+  contextId?: string;   // Context/workspace ID (UUID)
+  agentId?: string;     // Agent ID for agent messages
+  userId?: string;      // User ID
+  timestamp: string;    // ISO timestamp
+}
+```
+
+#### Component Integration
+
+##### Frontend Usage
+```typescript
+// In any React component
+const { 
+  connected, 
+  sendMessage,
+  controlAgent 
+} = useUnifiedWebSocket({
+  channel: 'conversation',
+  contextId: context.id, // Must be valid UUID
+  onMessage: handleMessage
+});
+
+// Send message
+sendMessage('Hello AI', { metadata });
+
+// Control agents
+controlAgent('planner', 'pause');
+```
+
+##### Backend Handler
+```python
+@unified_router.websocket("/unified/{session_id}")
+async def unified_websocket(websocket: WebSocket, session_id: str):
+    # Single endpoint handles all channels
+    # Routes messages based on channel field
+    # Maintains context isolation
+```
+
+#### Migration Guide
+
+##### Old Pattern (Multiple Connections)
+```typescript
+// ❌ Old: Multiple hooks creating separate connections
+useWebSocket(userId, sessionId);        // Connection 1
+useWebSocketChat({ sessionId });        // Connection 2
+WebSocketService.connect(sessionId);    // Connection 3
+```
+
+##### New Pattern (Single Shared Connection)
+```typescript
+// ✅ New: Single connection, multiple subscriptions
+const ws1 = useUnifiedWebSocket({ channel: 'conversation', contextId });
+const ws2 = useUnifiedWebSocket({ channel: 'agent', contextId });
+// Both use the same underlying WebSocket connection
 ```
 
 ### Agent Communication
 ```
-User Request → Planner Agent → Task Decomposition → Multi-Agent Execution → Coordinated Response
+User Request → Unified WS → Channel Router → Agent Engine → Multi-Agent Execution → Response
 ```
 
 ## Current Threading/Context Issues

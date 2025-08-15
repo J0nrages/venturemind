@@ -25,6 +25,7 @@ import Dialog from './components/Dialog';
 import ConversationMode from './components/ConversationMode';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, Grid3X3, ArrowLeft } from 'lucide-react';
+import { cleanupInvalidSessions, migrateOldContextData } from './utils/sessionCleanup';
 
 function AppContent() {
   const { isOpen, position, toggleChat, setPosition } = useChat();
@@ -32,6 +33,10 @@ function AppContent() {
   
   // Check if user prefers SYNA mode (could be stored in localStorage)
   useEffect(() => {
+    // Clean up invalid session data on startup
+    cleanupInvalidSessions();
+    migrateOldContextData();
+    
     const savedMode = localStorage.getItem('syna-mode');
     if (savedMode === 'true') {
       setSynaMode(true);

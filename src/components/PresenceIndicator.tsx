@@ -1,7 +1,16 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Eye, Edit3, Clock, User } from 'lucide-react';
-import { DocumentPresence } from '../services/WebSocketService';
+// DocumentPresence type moved to local definition
+interface DocumentPresence {
+  user_id: string;
+  user_info?: any;
+  status: 'viewing' | 'editing' | 'idle';
+  cursor_position?: any;
+  selection_range?: any;
+  session_id: string;
+  last_seen_at: string;
+}
 
 interface PresenceIndicatorProps {
   presence: DocumentPresence[];

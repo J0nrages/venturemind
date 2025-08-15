@@ -15,9 +15,8 @@ import {
   Wifi,
   WifiOff
 } from 'lucide-react';
-import { useWebSocket } from '../hooks/useWebSocket';
+import { useUnifiedWebSocket } from '../hooks/useUnifiedWebSocket';
 import { CollaborativeDocumentService, DocumentOperation } from '../services/CollaborativeDocumentService';
-import { DocumentPresence } from '../services/WebSocketService';
 import toast from 'react-hot-toast';
 
 interface CollaborativeEditorProps {
@@ -66,7 +65,11 @@ export default function CollaborativeEditor({
     sendDocumentEdit,
     sendCursorMove,
     updatePresence
-  } = useWebSocket(document?.user_id, `editor_${Date.now()}`);
+  } = useUnifiedWebSocket({ 
+    userId: document?.user_id, 
+    sessionId: `editor_${Date.now()}`,
+    channel: 'document'
+  });
 
   useEffect(() => {
     if (document?.id) {
