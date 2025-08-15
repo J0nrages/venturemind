@@ -1,21 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Send, 
   Bot, 
   User, 
   Loader2, 
-  Brain,
   Activity,
   Sparkles,
   AlertCircle,
-  MoreHorizontal,
-  ChevronDown,
-  Search,
-  Paperclip,
-  Clock,
-  Zap,
-  Hash
+  MoreHorizontal
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { ConversationService, ConversationMessage } from '../services/ConversationService';
@@ -32,9 +24,9 @@ import ThreadedChatMessage from './ThreadedChatMessage';
 import ReplyModal from './ReplyModal';
 import BranchModal from './BranchModal';
 import ContextMenu from './ContextMenu';
+import UnifiedChatInput from './UnifiedChatInput';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import toast from 'react-hot-toast';
 
 interface ConversationSpineProps {
@@ -115,8 +107,6 @@ export function ConversationSpine({
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesScrollRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const modelDropdownRef = useRef<HTMLDivElement>(null);
   
   // SSE connection for real-time orchestration updates
   const sseState = useSSEConnection(user?.id);
@@ -142,11 +132,7 @@ export function ConversationSpine({
     scrollToBottom();
   }, [messages]);
 
-  useEffect(() => {
-    if (inputRef.current && !loading && isActive) {
-      inputRef.current.focus();
-    }
-  }, [loading, isActive]);
+  // Note: Input focus is now handled within UnifiedChatInput component
 
   // Click outside handler for model dropdown
   useEffect(() => {
@@ -428,13 +414,13 @@ export function ConversationSpine({
       {/* Messages Area with Context-Aware Styling */}
       <div ref={messagesScrollRef} className={cn(
         "flex-1 overflow-y-auto",
-        unbounded ? "p-0" : "px-4 pt-4 pb-4"
+        unbounded ? "pb-20" : "px-4 pt-4 pb-6"
       )}>
         <div className={cn(
           "mx-auto w-full h-full",
           unbounded ? "max-w-4xl px-4 sm:px-6" : "max-w-5xl px-2 sm:px-4"
         )}>
-          <div className="min-h-full flex flex-col justify-end gap-6">
+          <div className="min-h-full flex flex-col justify-end gap-3">
             {messages.map((message, index) => (
               <motion.div
                 key={message.id}
@@ -611,32 +597,6 @@ export function ConversationSpine({
           )}
         </div>
 
-        {/* Message Input - Hidden in unbounded mode */}
-        {!unbounded && (
-          <div className="relative">
-            <Input
-              ref={inputRef}
-              value={currentMessage}
-              onChange={(e) => setCurrentMessage(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && sendMessage()}
-              placeholder="Type your message here..."
-              disabled={loading}
-              className="flex-1 bg-white/80 border-0 rounded-xl px-4 py-3 pr-12 focus:outline-none focus:ring-0 transition-colors resize-none min-h-[44px] shadow-sm"
-            />
-            <Button
-              onClick={sendMessage}
-              disabled={loading || !currentMessage.trim()}
-              size="icon"
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 rounded-lg bg-gray-800 hover:bg-gray-900 disabled:bg-gray-400"
-            >
-              {loading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Send className="w-4 h-4" />
-              )}
-            </Button>
-          </div>
-        )}
         
         {!unbounded && aiStatus === 'no-key' && (
           <div className="mt-2 p-2 bg-amber-50 backdrop-blur-sm border border-amber-200 rounded-lg">
@@ -684,60 +644,22 @@ export function ConversationSpine({
 
       {/* Floating Input for Unbounded Mode */}
       {unbounded && (
-        <div className="fixed bottom-24 left-1/2 transform -translate-x-1/2 z-30 w-full max-w-2xl px-5">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="bg-background/95 backdrop-blur-lg rounded-2xl shadow-2xl p-4 border border-border"
-          >
-            <div className="flex items-center gap-3">
-              <button 
-                onClick={() => setShowModelDropdown(!showModelDropdown)}
-                className="flex items-center gap-2 px-3 py-2 text-sm bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors"
-                disabled={loading}
-              >
-                <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                {selectedModel}
-              </button>
-              <button 
-                onClick={() => setWebSearchEnabled(!webSearchEnabled)}
-                className={`px-3 py-2 text-sm rounded-xl transition-colors ${
-                  webSearchEnabled 
-                    ? 'bg-blue-100 text-blue-600 hover:bg-blue-200' 
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-              >
-                Search
-              </button>
-              <div className="flex-1 relative">
-                <input
-                  ref={inputRef}
-                  type="text"
-                  value={currentMessage}
-                  onChange={(e) => setCurrentMessage(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && sendMessage()}
-                  placeholder="Type your message here..."
-                  disabled={loading}
-                  className="w-full px-4 py-2 bg-card border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                />
-                <button 
-                  onClick={sendMessage}
-                  disabled={loading || !currentMessage.trim()}
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1.5 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-colors disabled:bg-muted"
-                >
-                  {loading ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                    </svg>
-                  )}
-                </button>
-              </div>
-            </div>
-          </motion.div>
-        </div>
+        <UnifiedChatInput
+          value={currentMessage}
+          onChange={setCurrentMessage}
+          onSend={sendMessage}
+          loading={loading}
+          placeholder="Type your message here..."
+          floating={true}
+          showStats={showStats}
+          stats={messageStats}
+          modelOptions={availableModels}
+          selectedModel={selectedModel}
+          onModelChange={setSelectedModel}
+          webSearchEnabled={webSearchEnabled}
+          onWebSearchToggle={setWebSearchEnabled}
+          userId={user?.id}
+        />
       )}
       
       {/* Modals */}

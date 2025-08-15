@@ -47,6 +47,7 @@ import PresenceIndicator from '../components/PresenceIndicator';
 import ThreadedChatMessage from '../components/ThreadedChatMessage';
 import ReplyModal from '../components/ReplyModal';
 import BranchModal from '../components/BranchModal';
+import UnifiedChatInput from '../components/UnifiedChatInput';
 import { useThreading } from '../hooks/useThreading';
 import { useScrollVisibility } from '../hooks/useScrollVisibility';
 import toast from 'react-hot-toast';
@@ -1150,9 +1151,9 @@ export default function DocumentMemory() {
           </div>
 
           {/* Messages - Updated to match ConversationSpine style */}
-          <div ref={messagesScrollRef} className="flex-1 overflow-y-auto px-4 pt-4 pb-4">
+          <div ref={messagesScrollRef} className="flex-1 overflow-y-auto px-4 pt-4 pb-6">
             <div className="mx-auto w-full h-full max-w-5xl px-2 sm:px-4">
-              <div className="min-h-full flex flex-col justify-end gap-6">
+              <div className="min-h-full flex flex-col justify-end gap-3">
                 {messages.map(message => (
                   <motion.div
                     key={message.id}
@@ -1208,39 +1209,22 @@ export default function DocumentMemory() {
             </div>
           </div>
 
-          {/* Chat Input - Updated to match ConversationSpine style */}
-          <div className="relative p-4 border-t border-gray-200 bg-white/50 backdrop-blur-sm">
-            <div className="max-w-2xl mx-auto">
-              <div className="relative">
-                <input
-                ref={chatInputRef}
-                type="text"
-                value={currentMessage}
-                onChange={(e) => setCurrentMessage(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder={
-                  aiStatus === 'working' 
-                    ? "Tell me about your business or share information to save..." 
-                    : "Share information to organize in your documents..."
-                }
-                  className="w-full bg-white/80 border-0 rounded-xl px-4 py-3 pr-12 focus:outline-none focus:ring-0 transition-colors resize-none min-h-[44px] shadow-sm"
-                disabled={loading}
-                />
-                <Button
-                  onClick={handleSendMessage}
-                  disabled={!currentMessage.trim() || loading}
-                  size="icon"
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 rounded-lg bg-gray-800 hover:bg-gray-900 disabled:bg-gray-400"
-                >
-                  {loading ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Send className="w-4 h-4" />
-                  )}
-                </Button>
-              </div>
-            </div>
-          </div>
+          {/* Unified Chat Input */}
+          <UnifiedChatInput
+            value={currentMessage}
+            onChange={setCurrentMessage}
+            onSend={handleSendMessage}
+            loading={loading}
+            placeholder={
+              aiStatus === 'working' 
+                ? "Tell me about your business or share information to save..." 
+                : "Share information to organize in your documents..."
+            }
+            showModelSelector={false}
+            showWebSearch={false}
+            showAttachment={false}
+            userId={user?.id}
+          />
         </motion.div>
 
         {/* Document Viewer */}
