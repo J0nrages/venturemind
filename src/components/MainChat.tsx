@@ -10,17 +10,17 @@ import {
   MoreHorizontal
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-import { ConversationService, ConversationMessage } from '../services/ConversationService';
+import { ConversationService, ConversationMessage } from '../services/ChatService';
 import { DocumentService, UserDocument } from '../services/DocumentService';
 import { useSSEConnection } from '../hooks/useSSEConnection';
-import { useThreading } from '../hooks/useThreading';
-import { useContexts } from '../contexts/ContextProvider';
+import { useThreading } from '../hooks/useMessageReplies';
+import { useContexts } from '../contexts/WorkspaceProvider';
 import { AgentOrchestrator, PrefetchData } from '../services/AgentOrchestrator';
 import { Context } from '../types/context';
 import { AgentOrchestrationService } from '../services/AgentOrchestrationService';
 import { UserSettingsService, type ModelConfiguration, type UserModelPreferences } from '../services/UserSettingsService';
 import { GeminiService } from '../services/GeminiService';
-import ThreadedChatMessage from './ThreadedChatMessage';
+import MessageWithReplies from './MessageWithReplies';
 import ReplyModal from './ReplyModal';
 import BranchModal from './BranchModal';
 import ContextMenu from './ContextMenu';
@@ -36,7 +36,7 @@ interface ConversationSpineProps {
   unbounded?: boolean;
 }
 
-export function ConversationSpine({ 
+export function MainChat({ 
   context, 
   isActive, 
   className,
@@ -428,7 +428,7 @@ export function ConversationSpine({
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
               >
-                <ThreadedChatMessage
+                <MessageWithReplies
                   message={message}
                   onArchive={(messageId) => threading.archiveMessage(messageId)}
                   onRestore={(messageId) => threading.restoreMessage(messageId)}
@@ -706,4 +706,4 @@ export function ConversationSpine({
   );
 }
 
-export default ConversationSpine;
+export default MainChat;

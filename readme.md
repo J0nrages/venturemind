@@ -1,8 +1,8 @@
 # SYNA: Executive Product Requirements & Vision Document
 
-**Version:** 2.0\
-**Status:** Implementation Ready\
-**Purpose:** Unified product specification for SYNA AI Operating System\
+**Version:** 3.0
+**Status:** Implementation Ready - Terminology Aligned
+**Purpose:** Unified product specification for SYNA AI Operating System
 **Audience:** Product Managers, Designers, Software Engineers, QA Engineers
 
 ---
@@ -19,7 +19,7 @@ SYNA is an **AI Operating System for conversation-native work** where natural la
 
 ### North Star Metric
 
-**Tasks successfully completed by agents per active user per week, used 4+ days a week by active users**, with sub-second context switches and average satisfaction ≥4/5.
+**Tasks successfully completed by agents per active user per week, used 4+ days a week by active users**, with sub-second workspace switches and average satisfaction ≥4/5.
 
 ### Strategic Pillars
 
@@ -34,7 +34,7 @@ SYNA is an **AI Operating System for conversation-native work** where natural la
 | Priority | User Type             | Primary Jobs-to-be-Done                                           |
 | -------- | --------------------- | ----------------------------------------------------------------- |
 | P1       | Solo Founder/Operator | Orchestrate fundraising, product, recruiting without context loss |
-| P2       | Team Lead/PM          | Coordinate docs, tickets, research with instant context switching |
+| P2       | Team Lead/PM          | Coordinate docs, tickets, research with instant workspace switching |
 | P3       | Engineer/Builder      | Generate code, tests, PRs through conversational agents           |
 | P4       | Ops/Analyst           | Research, outreach, scheduling at scale with full automation      |
 
@@ -42,34 +42,58 @@ SYNA is an **AI Operating System for conversation-native work** where natural la
 
 ## Core Concepts & Mental Model
 
-### Fundamental Distinctions
-
-**Clean model**
+### Fundamental Architecture
 
 ```
-SYNA Workspace
-├─ Branches (chats) — parallel paths from the same origin
-├─ Threads (chats)  — fresh conversations inspired by a selection
-└─ Surfaces (interactive docs/dashboards) — live artifacts alongside chat
+SYNA Platform
+├─ Projects (organizational folders like "Acme Corp" or "Q1 Planning")
+│  └─ Workspaces (focused work containers you switch between)
+│     ├─ MainChat (primary conversation with AI)
+│     ├─ Surfaces (interactive documents/dashboards)
+│     └─ Agents (AI workers visible via colored cursors)
+└─ ContextObjects (versioned concepts tracked everywhere)
 ```
 
-**Differences at a glance**
+### Terminology Definitions
 
-| Concept      | Type                           | Purpose                                           | Context to Parent                                     | Problem Relation    | Collaboration Mode                        | Merge/Link                                   | Common Triggers      |
-| ------------ | ------------------------------ | ------------------------------------------------- | ----------------------------------------------------- | ------------------- | ----------------------------------------- | -------------------------------------------- | -------------------- |
-| **Branches** | Chat                           | Explore alternatives without losing history       | **Shares full context** (messages + memory)           | **Same problem**    | Conversation-first; agents can listen/act | **Can merge** back into parent               | 🌿 *Branch here*     |
-| **Threads**  | Chat                           | Start a new line of thought inspired by a snippet | **No inherited context** (keeps only an origin link)  | **New problem**     | Conversation-first; agents can listen/act | **Independent** (can reference parent)       | 🧵 *Create thread*   |
-| **Surfaces** | Interactive document/dashboard | Manipulate data, text, boards, charts directly    | **Bidirectional with chat** (updates reflect in both) | Artifact of problem | **User + Agent direct edit**; live sync   | Lives **alongside** chats; linkable/pinnable | 📄 *Open as surface* |
+| Term | Definition | Example | Creates New Workspace? |
+|------|------------|---------|------------------------|
+| **Project** | Organizational folder for related work | "Acme Corp", "Fundraising 2025" | No |
+| **Workspace** | Focused work container with chat + surfaces | Active fundraising conversation with pitch deck | N/A |
+| **MainChat** | Primary conversation within a workspace | The main AI conversation in current workspace | No |
+| **Surface** | Interactive document/dashboard attached to workspace | Financial model, PRD, code editor | No |
+| **ContextObject** | Versioned concept tracked across all content | "product color", "pricing model", "Syna" | No |
+| **Branch** | Parallel exploration WITH parent context | "Let me try another approach..." | Yes |
+| **Thread** | Fresh conversation WITHOUT parent context | "New topic: let's discuss marketing" | Yes |
+| **Message Reply** | Slack-style reply to specific message | Reply within same conversation | No |
+| **Ledger** | Universal activity stream showing all actions | Running log of user, agent, and system actions | No |
 
-### Key Terminology
+### Key Interactions
 
-- **Branch** - Parallel exploration sharing complete parent history
-- **Thread** - New conversation with inspiration link but no shared context
-- **Surface** - Living document/dashboard that responds to chat and direct manipulation
-- **Context Object** - A reusable memory bundle and an anchoring surface. Attach it to any chat or surface to preload relevant memory, or open it as a surface to explore insights, trigger actions, and manage versions.
-- **Agent** - Specialized AI capability (Planner, Writer, Engineer, etc.)
-- **Workstream** - Background agent task execution with minimal UI presence
-- **Autonomy Level** - Task execution strictness/mode - may depend on agent
+**Workspace Switching**
+```
+Alt+Tab or Cmd+K → WorkspaceSwitcher
+├── Workspace: "Fundraising" (active)
+├── Workspace: "Product Planning"
+└── Workspace: "Code Review"
+```
+
+**Creating New Workspaces**
+```
+Select text → Context Menu
+├── 🌿 Branch Here → New workspace WITH context
+├── 🧵 Create Thread → New workspace WITHOUT context
+└── 💬 Reply → Message reply in same chat
+```
+
+**ContextObject Evolution**
+```
+"Change product color to red" → ContextObject "product-color" v2
+├── Updates PRD Surface
+├── Updates code files
+├── Links to this conversation
+└── Can rollback to v1 (blue)
+```
 
 ---
 
@@ -78,77 +102,61 @@ SYNA Workspace
 ### Initialization Philosophy
 
 ```
-New Session Start:
-┌────────────────────────────────────┐
-│  Single Clean Conversation Area    │
-│  • No auto-loading past chats      │
-│  • History accessible but hidden   │
+New Project Start:
+┌─────────────────────────────────────┐
+│  Single Clean Workspace             │
+│  • One MainChat ready              │
+│  • No auto-loading past work       │
+│  • History accessible via search   │
 │  • Fresh workspace, clear focus    │
-└────────────────────────────────────┘
+└─────────────────────────────────────┘
            ↓
-    [Standard Session Management]
+    [User Begins Work]
            ↓
-┌────────────────────────────────────┐
-│  If session persists (browser/app  │
-│  open), resume where you left off  │
-│  (chats, surfaces, context).       │
-│  If logout or full app quit        │
-│  start fresh on next sign-in.      │
-└────────────────────────────────────┘
+┌─────────────────────────────────────┐
+│  Surfaces attach as needed         │
+│  Agents appear as colored cursors  │
+│  ContextObjects track concepts     │
+└─────────────────────────────────────┘
 ```
 
 ### Navigation Architecture
 
-#### Command-Chat Bar (Primary Interface)
+#### Command Bar (Primary Interface)
 
 The main input intelligently recognizes multiple intents:
 
-| Pattern              | Function          | Example                                   |
-| -------------------- | ----------------- | ----------------------------------------- |
-| Natural conversation | Continue chat     | "How should we structure authentication?" |
-| Navigation request   | Find content      | "Pull up our chat about database design"  |
-| Command prefix       | Execute action    | "/search revenue discussions"             |
-| Agent mention        | Invoke capability | "@planner analyze this requirement"       |
+| Pattern | Function | Example |
+|---------|----------|---------|
+| Natural conversation | Continue MainChat | "How should we structure authentication?" |
+| Project switch | Change project | "/project acme-corp" |
+| Workspace switch | Quick switch | "Cmd+K" or "/workspace fundraising" |
+| Agent mention | Invoke capability | "@planner analyze this requirement" |
+| Surface attach | Open document | "/attach financial-model" |
 
 #### Quick Switcher (⌘K) Commands
 
 ```
-> Execute command     (>show revenue metrics)
-@ Mention agent, person, file       (@analyst help with model)
-# Switch project      (#fundraising)
-// Search surfaces     (/proforma)
-? Get help           (?how to create tasks)
-! Quick action       (!create task from selection)
-~ Switch thread      (~previous conversation)
-^ Open document      (^Q3 planning doc)
+> Execute command        (>show revenue metrics)
+@ Mention agent/person   (@analyst help with model)
+# Switch project         (#fundraising)
+/ Switch workspace       (/product-planning)
++ Create workspace       (+new conversation)
+~ Recent workspaces      (~show recent)
+? Get help              (?how to create branch)
 ```
 
-### Creation Patterns
-
-#### Text Selection → Context Menu Flow
+### Workspace Lifecycle
 
 ```
-User selects text
-        ↓
-┌─────────────────────────────┐
-│  🔍 Search Web              │
-│  🧠 Save to Memory          |
-│  🌿 Branch Here (parallel)  │ ← Parent stays open
-│  🧵 Create Thread (fresh)   │ ← Parent minimizes
-│  📄 Open as Surface         │ ← Expands to doc/dashboard
-└─────────────────────────────┘
-```
-
-### Workspace State Management
-
-```
-Active Workspace Contains:
-┌──────────────────────────────────────────┐
-│ • 1 Main Focus Window (active work)      │
-│ • 2-3 Adjacent Cards (branches/threads)  │
-│ • Minimized Indicators (inactive items)  │
-│ • Hidden but Searchable (all history)    │
-└──────────────────────────────────────────┘
+User Action                    Result
+─────────────────────────────────────────
+Start typing          →  Creates first workspace
+Select text + Branch  →  New workspace WITH context  
+Select text + Thread  →  New workspace WITHOUT context
+Close workspace       →  Saves to project history
+Switch workspace      →  Instant context switch
+Share workspace       →  Read-only or collaborative link
 ```
 
 ---
@@ -159,96 +167,94 @@ Active Workspace Contains:
 
 Every surface must implement:
 
-- **Trigger phrases** for natural language activation
+- **Attachment logic** - How it connects to workspace
 - **Live editing** capability with bidirectional data flow
-- **Agent binding** for observation and manipulation
-- **State serialization** for interruptions and persistence
-- **Lifecycle rules** for appear/dismiss/persist behavior
+- **Agent access** for observation and manipulation
+- **State serialization** for workspace switching
+- **ContextObject tracking** for concept versioning
 
-### Surface Transformation Map
+### Core Surface Types
 
-| Current Component | Target Surface  | Capabilities                                                                               | Agent Integration                                           |
-| ----------------- | --------------- | ------------------------------------------------------------------------------------------ | ----------------------------------------------------------- |
-| ProformaPage      | sheetsSurface   | Cell editing, formulas, charts                                                             | @Analyst observes/modifies                                  |
-| MetricsDashboard  | MetricsSurface  | Filters, drill-down, real-time                                                             | @Analyst queries/updates                                    |
-| Strategy          | StrategySurface | Canvas manipulation, SWOT                                                                  | @Planner arranges/connects                                  |
-| DocumentMemory    | DocumentSurface | Rich text, collaboration                                                                   | @Writer drafts/edits                                        |
-| TaskBoard         | ProjectSurface  | Card movement, dependencies, all projects tracking                                         | @Planner creates/assigns                                    |
-| AutomationBuilder | WorkflowSurface | Node editor (triggers, actions, conditions, branching, loops), test runs, logs, versioning | @Ops orchestrates; @Planner schedules; @Engineer integrates |
+| Surface Type | Capabilities | Agent Integration |
+|--------------|-------------|-------------------|
+| DocumentSurface | Rich text editing, collaboration | @Writer drafts/edits |
+| SpreadsheetSurface | Cells, formulas, charts | @Analyst modifies data |
+| CanvasSurface | Visual diagrams, SWOT | @Planner arranges elements |
+| CodeSurface | Syntax highlighting, testing | @Engineer writes/debugs |
+| DashboardSurface | Metrics, real-time data | @Analyst queries/updates |
+| WorkflowSurface | Automation builder, nodes | @Ops orchestrates flows |
 
-### Surface Lifecycle Rules
+### Surface Sharing Rules
 
 ```
-Appear When:
-• Agent needs visual content
-• User requests specific view
-• Task requires visual manipulation
-• Context naturally leads to visualization
-
-Auto-Dismiss After 5 Minutes (editable) Unless:
-• User is actively editing
-• User has pinned surface
-• Agent is monitoring changes
-• Surface has unsaved changes
-
-Handle Interruptions By:
-• Freezing current state
-• Serializing to context pack
-• Queuing new context
-• Offering merge/switch/dismiss options
+Surface can be:
+• Attached to multiple workspaces simultaneously
+• Each workspace has independent agent cursors
+• Changes sync across all attached workspaces
+• ContextObjects track all modifications
+• Version history maintained globally
 ```
 
 ---
 
 ## Agent System Architecture
 
-### Core Agent Capabilities
+### Visual Agent Representation
+
+```
+┌────────────────────────────────────────┐
+│           Active Workspace             │
+├────────────────────────────────────────┤
+│ Surface: PRD.doc                       │
+│                                        │
+│ [🔵 Planner]──"Analyzing requirements" │
+│      ↓                                 │
+│ Requirements section...                │
+│                                        │
+│ [🟢 Writer]──"Adding details"         │
+│      ↓                                 │
+│ Implementation notes...                │
+└────────────────────────────────────────┘
+```
+
+### Agent Catalog
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│                  Agent Catalog                      │
-├──────────┬────────────────────────────────────────┤
-│ Planner  │ Decomposes intents into task graphs    │
-│ Writer   │ Creates and edits documents            │
-│ Engineer │ Generates code, tests, PRs             │
-│ Analyst  │ Processes data, creates visualizations │
-│ Researcher│ Gathers and synthesizes information   │
-│ Scheduler│ Manages time-based activities         │
-│ Critic   │ Reviews and validates outputs         │
-│ Ops      │ Handles automation and workflows      │
-└──────────┴────────────────────────────────────────┘
+│                  Agent Registry                     │
+├──────────┬──────────────────────────────────────────┤
+│ Planner  │ Decomposes tasks, creates workflows     │
+│ Writer   │ Creates and edits documents             │
+│ Engineer │ Generates code, tests, PRs              │
+│ Analyst  │ Processes data, creates visualizations  │
+│ Researcher│ Gathers and synthesizes information    │
+│ Scheduler│ Manages time-based activities          │
+│ Critic   │ Reviews and validates outputs          │
+│ Ops      │ Handles automation and workflows       │
+└──────────┴──────────────────────────────────────────┘
 ```
 
-### Agent Listener System
+### Agent Coordination
 
-Agents continuously monitor conversations in real-time:
+Agents appear as **colored cursors with chat bubbles** showing their current action:
 
-```
-Main Conversation
-       ↓
-[Agent Listeners Active]
-       ↓
-┌────────────────────┐
-│ Keyword Detection  │ → Prefetch relevant data
-│ Context Analysis   │ → Prepare suggestions
-│ Pattern Recognition│ → Queue workstreams
-└────────────────────┘
-       ↓
-[Subtle UI Indicators]
-• Pulsing orbs for activity
-• Suggestion chips above input
-• Never modal or blocking
+```typescript
+AgentCursor Components:
+├── Color (agent-specific: Planner=blue, Writer=green)
+├── Position (tracks location on surface)
+├── Bubble (shows current thought/action)
+└── Trail (visualizes path taken)
 ```
 
 ### Autonomy & Control Framework
 
 ```
 Task Autonomy Levels:
-┌─────────────┬──────────────────────────────────┐
+┌─────────────┬───────────────────────────────────┐
 │  Suggest    │ Highlight changes, propose actions│
 │  Draft      │ Create content, require approval  │
 │  Execute    │ Perform directly, allow rollback  │
-└─────────────┴──────────────────────────────────┘
+└─────────────┴───────────────────────────────────┘
 
 Approval Gates (Always Required):
 • External communications >10 recipients
@@ -259,81 +265,56 @@ Approval Gates (Always Required):
 
 ---
 
-## Context & Memory Management
+## ContextObject System
 
-### Infinite Conversation Model
+### Versioned Concept Tracking
 
-```
-Message Range     | Storage Strategy        | Access Speed
------------------|------------------------|-------------
-0-10 messages    | Full fidelity          | Instant
-11-50 messages   | Smart summaries        | <500ms
-51-500 messages  | Topic metadata         | <1s
-500+ messages    | Searchable index only  | <2s
-```
-
-### Context Pack Architecture
-
-Context Packs enable sub-second switching through:
-
-- Pre-computed embeddings for semantic search
-- Memory caching for instant access
-- Background enrichment without blocking
-- Composable bundles sharable across threads
-- Version control with rollback capability
-
-### Interruption Model
+ContextObjects are the **semantic layer** that tracks concepts across all content:
 
 ```
-Context Switch Detected
-         ↓
-┌──────────────────┐
-│ 1. Freeze state  │
-│ 2. Serialize     │
-│ 3. Present options│
-└──────────────────┘
-         ↓
-┌─────────────────────────────┐
-│ • Dismiss current & switch  │
-│ • Keep both in split view   │
-│ • Queue for later           │
-│ • Cancel interruption       │
-└─────────────────────────────┘
+ContextObject: "product-color"
+├── Version 1: "blue" (2024-01-15)
+│   ├── Referenced in: PRD v1, Design Doc v1
+│   └── Conversations: Workspace #1, #2
+├── Version 2: "red" (2024-02-01)
+│   ├── Referenced in: PRD v2, Design Doc v2, code/theme.ts
+│   ├── Conversations: Workspace #5
+│   └── Changed by: @Designer agent
+└── Current: v2 (can rollback to any version)
 ```
+
+### ContextObject Propagation
+
+When a ContextObject updates:
+1. All surfaces referencing it get notified
+2. Agents can auto-update dependent items
+3. User can preview changes before applying
+4. Full rollback capability maintained
 
 ---
 
-## Right Rail System
+## Ledger System
 
-Four essential tabs providing workspace awareness:
+### Universal Activity Stream
 
-### Now Tab
+The Ledger provides complete observability:
 
-- Real-time agent activity stream
-- Progress indicators with time/token usage
-- Running tasks with pause/cancel controls
-- Resource consumption meters
-
-### Clips Tab
-
-- Retrieved context snippets with sources
-- Citation provenance tracking
-- Relevance scoring
-- One-click expansion to full source
-
-### Tasks Tab
-
-- Active task graph visualization
-- Dependency tracking
-- Status indicators (Backlog, In Progress, Blocked, Done)
-- Owner assignments (human or agent)
-
-### Docs Tab
-
-- Linked documents with live status chips
-- Version history
-- Collaborative presence indicators
-- Quick preview on hover
+```
+┌─────────────────────────────────────────┐
+│            Ledger View                  │
+├─────────────────────────────────────────┤
+│ 10:32 👤 User: Edited PRD line 42      │
+│ 10:33 🔵 Planner: Created 3 subtasks   │
+│ 10:33 🟢 Writer: Updated requirements  │
+│ 10:34 📄 Surface: PRD.doc modified     │
+│ 10:34 🔄 ContextObject: "api-design" v3│
+│ 10:35 👤 User: Approved changes        │
+└─────────────────────────────────────────┘
+         ↓ Click any entry to:
+    • View details
+    • See diff
+    • Rollback change
+```
 
 ---
 
@@ -341,44 +322,13 @@ Four essential tabs providing workspace awareness:
 
 ### Critical Performance Targets
 
-| Operation         | Target        | Impact                  |
-| ----------------- | ------------- | ----------------------- |
-| Context Switch    | <2s perceived | Defines "instant" feel  |
-| Surface Render    | <500ms        | Maintains flow state    |
-| First Token       | <800ms P95    | Conversational pace     |
-| Quick Switcher    | <50ms         | Feels immediate         |
-| Surface Sync      | <100ms        | Real-time collaboration |
-| Context Pack Load | <1s           | Enables fast switching  |
-
-### Optimization Requirements
-
-- Preload adjacent contexts (anticipatory loading)
-- Virtualize large surfaces (viewport + buffer)
-- Use differential updates (send only changes)
-- Implement tiered caching (memory → IndexedDB → server)
-- Stream responses progressively
-
----
-
-## Integration Requirements
-
-### Day-1 Connectors
-
-| Integration      | Scope                   | Safety                                       |
-| ---------------- | ----------------------- | -------------------------------------------- |
-| Google Workspace | Drive, Docs, Calendar   | Preview all write-backs                      |
-| GitHub           | Issues, PRs, Code       | PR creation allowed, merge needs approval    |
-| Notion           | Pages, Databases        | Bi-directional sync with conflict resolution |
-| Slack            | Messages, Channels      | Rate limits for bulk operations              |
-| Email            | Send, Receive, Schedule | Approval for >10 recipients                  |
-
-### Integration Principles
-
-- Least-privilege scope requests
-- Preview all write-backs before execution
-- Degrade to comments when conflicts occur
-- Maintain bi-directional sync where possible
-- Never lose user work during conflicts
+| Operation | Target | Impact |
+|-----------|--------|--------|
+| Workspace Switch | <500ms | Instant feel |
+| Surface Sync | <100ms | Real-time collaboration |
+| Agent Response | <800ms first token | Natural conversation |
+| ContextObject Update | <200ms | Seamless propagation |
+| Ledger Query | <1s for any timeframe | Quick investigation |
 
 ---
 
@@ -386,66 +336,25 @@ Four essential tabs providing workspace awareness:
 
 ### User Experience Metrics
 
-- **Activation:** % completing end-to-end flow within 24h
-- **Engagement:** WAU performing ≥3 agent tasks
-- **Throughput:** Median time from intent → deliverable
-- **Context Continuity:** % switches with no re-explanation
+- **Activation:** % completing first multi-agent task within 24h
+- **Engagement:** WAU with ≥3 workspace switches
+- **Throughput:** Median time from intent → completed work
+- **Context Continuity:** % of branches/threads needing no re-explanation
 - **Trust:** % of agent actions accepted without revision
 
 ### System Performance Metrics
 
-- Context switch latency P95 <2s
-- Agent response first token P95 <800ms
-- Surface sync latency P95 <100ms
-- System availability ≥99.9% monthly
-- Zero data loss during interruptions
-
----
-
-## Governance & Observability
-
-### Complete Provenance System
-
-```
-Every Action Must Have:
-┌──────────────────────────┐
-│ • Full trace with steps  │
-│ • Preview before apply   │
-│ • One-click rollback     │
-│ • Audit log entry        │
-│ • Cost/resource tracking │
-└──────────────────────────┘
-```
-
-### Default Policies
-
-- **Autonomy:** Draft mode (requires approval for external actions)
-- **Communications:** Approval required for >10 recipients
-- **Repository:** PRs allowed, merges require approval
-- **Budgets:** 5-minute wall-time default, escalate at 80%
-- **Data Retention:** 12 months default (admin configurable)
-- **Privacy:** PII/secrets masked in traces by default
-
----
-
-## Risk Mitigation
-
-### Technical Risks
-
-- **Context Pack Scale:** Mitigate with aggressive caching and pagination
-- **Surface Conflicts:** Use CRDT with clear conflict resolution UI
-- **Agent Coordination:** Clear ownership model and locking mechanisms
-
-### User Experience Risks
-
-- **Cognitive Overload:** Progressive disclosure and smart defaults
-- **Trust in Automation:** Always preview, explain, and allow rollback
+- Workspace switch latency P95 <500ms
+- Agent coordination overhead <10% of task time
+- ContextObject sync <200ms globally
+- Zero data loss during workspace switches
+- Ledger completeness = 100% of actions logged
 
 ---
 
 ## Document Status
 
-**Status:** Implementation Ready\
-**Critical Path:** Context System → Surface Protocol → Agent Binding → Integration Layer\
-**Key Risk:** Context Pack performance at scale\
-**Success Measure:** Users complete complex workflows through natural conversation while maintaining full control
+**Status:** Implementation Ready with Terminology Aligned
+**Critical Path:** Workspace System → Surface Protocol → Agent Visualization → ContextObject Tracking
+**Key Risk:** Performance at scale with many workspaces/surfaces
+**Success Measure:** Users complete complex workflows through natural conversation while maintaining full control and visibility

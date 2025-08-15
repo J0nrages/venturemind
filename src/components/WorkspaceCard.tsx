@@ -2,11 +2,11 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Context } from '../types/context';
-import { ConversationSpine } from './ConversationSpine';
+import MainChat from './MainChat';
 import AgentRail from './AgentRail';
 import Surface from './Surface';
 import PageSurface from './PageSurface';
-import { useContexts } from '../contexts/ContextProvider';
+import { useContexts } from '../contexts/WorkspaceProvider';
 import { PrefetchData } from '../services/AgentOrchestrator';
 import toast from 'react-hot-toast';
 
@@ -204,7 +204,7 @@ export default function ContextCard({
               "absolute inset-0 overflow-y-auto scrollbar-hide",
               isUnbounded ? "pt-10 pb-40 bg-transparent" : "pt-20 pb-32", // More space at bottom for floating input, transparent background
             )}>
-              <ConversationSpine 
+              <MainChat 
                 context={context}
                 isActive={position === 'active'}
                 unbounded={isUnbounded}

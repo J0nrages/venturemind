@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import ContextCard from './ContextCard';
+import WorkspaceCard from './WorkspaceCard';
 import { Context, ContextType } from '../types/context';
 
 interface ContextSwitcherProps {
@@ -180,7 +180,7 @@ export default function ContextSwitcher({
           if (position === 'hidden') return null;
 
           return (
-            <ContextCard
+            <WorkspaceCard
               key={context.id}
               context={context}
               position={position}

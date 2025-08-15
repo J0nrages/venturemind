@@ -25,7 +25,7 @@ import {
   Settings
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-import { ConversationService, ConversationMessage } from '../services/ConversationService';
+import { ConversationService, ConversationMessage } from '../services/ChatService';
 import { DocumentService, UserDocument } from '../services/DocumentService';
 import { useSSEConnection } from '../hooks/useSSEConnection';
 import toast from 'react-hot-toast';

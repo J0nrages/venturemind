@@ -17,10 +17,10 @@ import {
   Zap,
   MessageSquare
 } from 'lucide-react';
-import { ConversationMessage } from '../services/ConversationService';
+import { ConversationMessage } from '../services/ChatService';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
-import { useThreading, SelectionAnalysis } from '../hooks/useThreading';
+import { useThreading, SelectionAnalysis } from '../hooks/useMessageReplies';
 
 interface ThreadedChatMessageProps {
   message: ConversationMessage;

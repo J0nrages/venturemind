@@ -1,0 +1,103 @@
+{
+  "tools": [
+    {
+      "functionDeclarations": [
+        {
+          "name": "attach_surface",
+          "description": "Opens a document, dashboard, or other surface in the current workspace when user asks to see, show, open, or display something",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "surfaceType": {
+                "type": "string",
+                "description": "The type of surface to attach",
+                "enum": ["document", "dashboard", "metrics", "spreadsheet"]
+              },
+              "surfaceId": {
+                "type": "string", 
+                "description": "The specific page to open: business-plan, proforma, metrics, revenue, strategy, swot-analysis, customers, documents, ai-processing, integrations, settings"
+              },
+              "reason": {
+                "type": "string",
+                "description": "Brief explanation of why this surface is being opened"
+              }
+            },
+            "required": ["surfaceType", "surfaceId"]
+          }
+        },
+        {
+          "name": "detach_surface",
+          "description": "Closes or hides a surface from the current workspace",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "surfaceType": {
+                "type": "string",
+                "enum": ["document", "dashboard", "metrics", "spreadsheet"]
+              }
+            },
+            "required": ["surfaceType"]
+          }
+        },
+        {
+          "name": "create_document",
+          "description": "Creates a new document in the workspace",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "title": {
+                "type": "string",
+                "description": "The title of the new document"
+              },
+              "category": {
+                "type": "string",
+                "enum": ["strategic", "technical", "financial", "marketing", "operational"]
+              },
+              "content": {
+                "type": "string",
+                "description": "Initial content for the document"
+              }
+            },
+            "required": ["title", "category"]
+          }
+        },
+        {
+          "name": "summon_agent",
+          "description": "Brings a specialized agent into the conversation",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "agentType": {
+                "type": "string",
+                "enum": ["planner", "writer", "engineer", "analyst", "researcher"]
+              },
+              "task": {
+                "type": "string",
+                "description": "The specific task for the agent"
+              }
+            },
+            "required": ["agentType", "task"]
+          }
+        },
+        {
+          "name": "analyze_metrics",
+          "description": "Analyzes business metrics and provides insights",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "metricType": {
+                "type": "string",
+                "enum": ["revenue", "customers", "growth", "efficiency"]
+              },
+              "timeframe": {
+                "type": "string",
+                "enum": ["daily", "weekly", "monthly", "quarterly", "yearly"]
+              }
+            },
+            "required": ["metricType"]
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -4,9 +4,9 @@ import React, { useState, useEffect } from 'react';
 import { PageLayout } from '../components/PageLayout';
 import { motion } from 'framer-motion';
 import { supabase } from '../lib/supabase';
-import { ConversationService } from '../services/ConversationService';
+import { ConversationService } from '../services/ChatService';
 import { GeminiService } from '../services/GeminiService';
-import { useContexts } from '../contexts/ContextProvider';
+import { useContexts } from '../contexts/WorkspaceProvider';
 import { UserSettingsService, type ModelConfiguration, type UserModelPreferences } from '../services/UserSettingsService';
 import toast from 'react-hot-toast';
 import { 

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { ConversationMessage, ConversationThread, ConversationService } from '../services/ConversationService';
+import { ConversationMessage, ConversationThread, ConversationService } from '../services/ChatService';
 import { threadingApi } from '../lib/api';
 import { wsManager } from '../services/UnifiedWebSocketManager';
 import { useUnifiedWebSocket } from './useUnifiedWebSocket';

@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
-import ContextSwitcher from './ContextSwitcher';
-import { useContexts } from '../contexts/ContextProvider';
+import ContextSwitcher from '../components/WorkspaceSwitcher';
+import { useContexts } from '../contexts/WorkspaceProvider';
 import { cn } from '@/lib/utils';
 
 // Static gradient background (no animation for better performance)

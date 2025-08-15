@@ -18,12 +18,12 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-import { ConversationService, ConversationMessage } from '../services/ConversationService';
+import { ConversationService, ConversationMessage } from '../services/ChatService';
 import { DocumentService, UserDocument } from '../services/DocumentService';
 import { useSSEConnection } from '../hooks/useSSEConnection';
-import { useThreading } from '../hooks/useThreading';
+import { useThreading } from '../hooks/useMessageReplies';
 import { useScrollVisibility } from '../hooks/useScrollVisibility';
-import ThreadedChatMessage from './ThreadedChatMessage';
+import ThreadedChatMessage from '../components/MessageWithReplies';
 import ReplyModal from './ReplyModal';
 import BranchModal from './BranchModal';
 import { cn } from '@/lib/utils';
