@@ -140,7 +140,7 @@ export function useThreading(userId: string | null) {
     };
 
     // Subscribe to WebSocket events
-    const unsubscribe = wsManager.subscribe('conversation', (message) => {
+    const subscriptionId = wsManager.subscribe('conversation', (message) => {
       switch(message.type) {
         case 'thread:title_updated':
           handleThreadTitleUpdate(message.payload);
@@ -164,7 +164,7 @@ export function useThreading(userId: string | null) {
     });
 
     return () => {
-      unsubscribe();
+      wsManager.unsubscribe(subscriptionId);
     };
   }, [connected, state.activeThreadId]);
 
