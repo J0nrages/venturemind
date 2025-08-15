@@ -23,7 +23,24 @@ export interface UserUIPreferences {
   expanded_mode: 'compact' | 'expanded' | 'full';
   show_agent_badges: boolean;
   show_confidence_scores: boolean;
+  show_message_stats: boolean;
   theme: 'light' | 'dark' | 'system';
+}
+
+export interface ModelConfiguration {
+  model_name: string;
+  temperature: number;
+  top_k: number;
+  top_p: number;
+  max_output_tokens: number;
+  presence_penalty?: number;
+  frequency_penalty?: number;
+}
+
+export interface UserModelPreferences {
+  default_model: string;
+  models: Record<string, ModelConfiguration>;
+  agent_specific_models: Record<string, string>; // agent_id -> model_name
 }
 
 export interface UserSettings {
@@ -32,6 +49,7 @@ export interface UserSettings {
   context_preferences: UserContextPreferences;
   agent_preferences: UserAgentPreferences;
   ui_preferences: UserUIPreferences;
+  model_preferences: UserModelPreferences;
 }
 
 export interface SavedContext {
@@ -79,7 +97,36 @@ export class UserSettingsService {
     expanded_mode: 'compact',
     show_agent_badges: true,
     show_confidence_scores: true,
+    show_message_stats: false,
     theme: 'system',
+  };
+
+  static readonly DEFAULT_MODEL_PREFERENCES: UserModelPreferences = {
+    default_model: 'gemini-2.5-flash',
+    models: {
+      'gemini-2.5-flash': {
+        model_name: 'gemini-2.5-flash',
+        temperature: 0.7,
+        top_k: 40,
+        top_p: 0.95,
+        max_output_tokens: 2048,
+      },
+      'gemini-1.5-pro': {
+        model_name: 'gemini-1.5-pro',
+        temperature: 0.7,
+        top_k: 40,
+        top_p: 0.95,
+        max_output_tokens: 8192,
+      },
+      'gemini-1.5-flash': {
+        model_name: 'gemini-1.5-flash',
+        temperature: 0.7,
+        top_k: 40,
+        top_p: 0.95,
+        max_output_tokens: 2048,
+      },
+    },
+    agent_specific_models: {},
   };
 
   // Load user settings from database
@@ -101,6 +148,7 @@ export class UserSettingsService {
         context_preferences: data?.context_preferences || this.DEFAULT_CONTEXT_PREFERENCES,
         agent_preferences: data?.agent_preferences || this.DEFAULT_AGENT_PREFERENCES,
         ui_preferences: data?.ui_preferences || this.DEFAULT_UI_PREFERENCES,
+        model_preferences: data?.model_preferences || this.DEFAULT_MODEL_PREFERENCES,
       };
     } catch (error) {
       console.error('Error loading user settings:', error);
@@ -108,6 +156,7 @@ export class UserSettingsService {
         context_preferences: this.DEFAULT_CONTEXT_PREFERENCES,
         agent_preferences: this.DEFAULT_AGENT_PREFERENCES,
         ui_preferences: this.DEFAULT_UI_PREFERENCES,
+        model_preferences: this.DEFAULT_MODEL_PREFERENCES,
       };
     }
   }
@@ -124,6 +173,7 @@ export class UserSettingsService {
           context_preferences: settings.context_preferences,
           agent_preferences: settings.agent_preferences,
           ui_preferences: settings.ui_preferences,
+          model_preferences: settings.model_preferences,
           updated_at: new Date().toISOString(),
         });
 

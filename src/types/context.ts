@@ -17,6 +17,24 @@ export interface ContextMetadata {
   agentId?: string;
   selectedText?: string;
   prefetchData?: any;
+  conversationType: 'main' | 'branch' | 'thread' | 'agent_workstream';
+  
+  // Branch-specific metadata
+  branchPoint?: {
+    messageId: string;
+    timestamp: Date;
+  };
+  
+  // Thread-specific metadata  
+  inspirationLink?: {
+    messageId: string;
+    selectedText: string;
+    parentContextId: string;
+  };
+  
+  // Agent workstream metadata
+  suggestedBy?: string;
+  workstreamStatus?: 'initializing' | 'running' | 'complete' | 'error';
 }
 
 export interface Agent {
@@ -187,10 +205,11 @@ export const createNewContext = (
 // Helper to create main context
 export const createMainContext = (): Omit<Context, 'conversationHistory'> => 
   createNewContext('Main Conversation', ContextType.MAIN, ContextVisibility.ACTIVE, {
+    conversationType: 'main',
     origin: 'user_created'
   });
 
-// Helper to create branch context
+// Helper to create branch context (parallel exploration with shared context)
 export const createBranchContext = (
   title: string, 
   parentId: string, 
@@ -198,11 +217,39 @@ export const createBranchContext = (
 ): Omit<Context, 'conversationHistory'> => ({
   ...createNewContext(
     title, 
-    selectedText ? ContextType.THREAD : ContextType.BRANCH, 
+    ContextType.BRANCH, 
     ContextVisibility.ACTIVE,
     {
-      origin: selectedText ? 'text_selection' : 'branch_action',
-      selectedText
+      conversationType: 'branch',
+      origin: 'text_selection',
+      selectedText,
+      branchPoint: {
+        messageId: `msg_${Date.now()}`,
+        timestamp: new Date()
+      }
+    }
+  ),
+  parentContextId: parentId,
+});
+
+// Helper to create thread context (fresh conversation inspired by selection)
+export const createThreadContext = (
+  title: string, 
+  parentId: string, 
+  inspirationText: string
+): Omit<Context, 'conversationHistory'> => ({
+  ...createNewContext(
+    title, 
+    ContextType.THREAD, 
+    ContextVisibility.ACTIVE,
+    {
+      conversationType: 'thread',
+      origin: 'text_selection',
+      inspirationLink: {
+        messageId: `msg_${Date.now()}`,
+        selectedText: inspirationText,
+        parentContextId: parentId
+      }
     }
   ),
   parentContextId: parentId,
@@ -215,12 +262,15 @@ export const createAgentWorkstream = (
   title?: string
 ): Omit<Context, 'conversationHistory'> => ({
   ...createNewContext(
-    title || `Agent ${agentId} Workstream`,
+    title || `${agentId} Workstream`,
     ContextType.AGENT_WORKSTREAM,
     ContextVisibility.BACKGROUND,
     {
+      conversationType: 'agent_workstream',
       origin: 'agent_spawn',
-      agentId
+      agentId,
+      suggestedBy: agentId,
+      workstreamStatus: 'initializing'
     }
   ),
   parentContextId: parentId,
@@ -236,9 +286,17 @@ export const createListenerContext = (
     ContextType.LISTENER,
     ContextVisibility.HIDDEN,
     {
+      conversationType: 'agent_workstream',
       origin: 'agent_spawn',
       agentId
     }
   ),
   parentContextId: parentId,
 });
+
+// Helper to create main context with proper metadata
+export const createMainContextWithMetadata = (): Omit<Context, 'conversationHistory'> => 
+  createNewContext('Main Conversation', ContextType.MAIN, ContextVisibility.ACTIVE, {
+    conversationType: 'main',
+    origin: 'user_created'
+  });

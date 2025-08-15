@@ -375,7 +375,7 @@ Focus on actionable, specific suggestions. If the message relates to existing co
 `;
 
         try {
-          const response = await GeminiService.generateContent(planningPrompt);
+          const response = await GeminiService.generateContent(planningPrompt, undefined, userId);
           plannedActions = JSON.parse(response.content);
         } catch (planError) {
           console.error('Error parsing planned actions:', planError);
@@ -513,7 +513,7 @@ Generate a conversational response that:
 Keep it concise (2-3 sentences).
 `;
 
-        const geminiResponse = await GeminiService.generateContent(responsePrompt);
+        const geminiResponse = await GeminiService.generateContent(responsePrompt, undefined, userId);
         response = geminiResponse.content;
       } else {
         const completedActions = executionResults.filter(r => r.status === 'completed').length;

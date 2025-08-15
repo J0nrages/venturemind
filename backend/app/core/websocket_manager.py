@@ -5,9 +5,12 @@ from typing import Dict, Set, Optional, Any
 from fastapi import WebSocket, WebSocketDisconnect
 import json
 import asyncio
-from datetime import datetime
+from datetime import datetime, timedelta
 import uuid
 from enum import Enum
+import logging
+
+logger = logging.getLogger(__name__)
 
 class ConnectionType(Enum):
     USER = "user"
@@ -58,6 +61,9 @@ class WebSocketManager:
         
         # Background tasks
         self._background_tasks: Set[asyncio.Task] = set()
+        
+        # Prefetch analysis cache
+        self.prefetch_cache: Dict[str, Dict[str, Any]] = {}
 
     async def connect(
         self,
@@ -358,6 +364,161 @@ class WebSocketManager:
                 )
             }
         }
+    
+    async def handle_message(self, connection_id: str, message: Dict[str, Any]):
+        """
+        Handle incoming WebSocket messages with prefetch analysis support.
+        """
+        message_type = message.get('type')
+        
+        if message_type == 'analyze_for_prefetch':
+            await self.handle_analyze_for_prefetch(connection_id, message)
+        elif message_type == 'conversation_message':
+            await self.handle_conversation_message(connection_id, message)
+        # Add other message type handlers as needed
+    
+    async def handle_analyze_for_prefetch(self, connection_id: str, message_data: Dict[str, Any]):
+        """
+        Handle prefetch analysis requests from frontend listeners.
+        """
+        try:
+            agent_id = message_data.get('agent_id')
+            content = message_data.get('content', {})
+            message_text = content.get('message', '')
+            context_id = content.get('context_id')
+            
+            if not agent_id or not message_text:
+                return
+            
+            # Get agent from existing registry (placeholder - would use actual agent registry)
+            # agent = get_registry().get_agent_instance(agent_id)
+            
+            # For now, simulate agent analysis
+            await self._run_prefetch_analysis_simulation(connection_id, agent_id, message_text, context_id)
+            
+        except Exception as e:
+            logger.error(f"Prefetch analysis failed: {e}")
+    
+    async def _run_prefetch_analysis_simulation(self, connection_id: str, agent_id: str, message_text: str, context_id: str):
+        """
+        Simulate agent analysis and trigger prefetch if needed.
+        In production, this would execute actual agent analysis.
+        """
+        try:
+            # Simulate analysis based on message content
+            confidence = 0.0
+            actions = []
+            
+            # Simple keyword-based analysis for different agent types
+            message_lower = message_text.lower()
+            
+            if agent_id == 'planner':
+                if any(word in message_lower for word in ['plan', 'timeline', 'roadmap', 'schedule', 'milestone']):
+                    confidence = 0.8
+                    actions = ['fetch_project_templates', 'fetch_planning_tools']
+            elif agent_id == 'researcher':
+                if any(word in message_lower for word in ['research', 'market', 'competitor', 'analyze', 'study']):
+                    confidence = 0.75
+                    actions = ['fetch_market_data', 'fetch_research_templates']
+            elif agent_id == 'analyst':
+                if any(word in message_lower for word in ['metrics', 'performance', 'data', 'analytics', 'dashboard']):
+                    confidence = 0.7
+                    actions = ['fetch_metrics', 'fetch_analysis_tools']
+            
+            # Only proceed if confidence is high enough
+            if confidence > 0.6:
+                prefetch_data = await self._execute_prefetch_actions(agent_id, actions, context_id)
+                
+                # Send results back to frontend
+                await self.send_to_connection(connection_id, {
+                    "type": "agent:prefetch_complete",
+                    "agent_id": agent_id,
+                    "context_id": context_id,
+                    "confidence": confidence,
+                    "actions": actions,
+                    "data": prefetch_data,
+                    "timestamp": datetime.utcnow().isoformat()
+                })
+                
+        except Exception as e:
+            logger.error(f"Prefetch analysis failed for {agent_id}: {e}")
+    
+    async def _execute_prefetch_actions(self, agent_id: str, actions: list, context_id: str) -> Dict[str, Any]:
+        """
+        Execute specific prefetch actions based on agent type.
+        """
+        prefetch_data = {}
+        
+        for action in actions:
+            if action == 'fetch_project_templates' and agent_id == 'planner':
+                # Simulate fetching planning templates
+                prefetch_data['templates'] = [
+                    {'name': 'Sprint Planning', 'type': 'agile'},
+                    {'name': 'Product Roadmap', 'type': 'strategic'},
+                    {'name': 'Feature Planning', 'type': 'development'}
+                ]
+            elif action == 'fetch_market_data' and agent_id == 'researcher':
+                # Simulate fetching market research data
+                prefetch_data['market_data'] = {
+                    'trends': ['AI adoption increasing', 'Remote work stabilizing'],
+                    'competitors': ['Company A', 'Company B'],
+                    'opportunities': ['Market gap in mobile solutions']
+                }
+            elif action == 'fetch_metrics' and agent_id == 'analyst':
+                # Simulate fetching analytics data
+                prefetch_data['metrics'] = {
+                    'performance': {'cpu': '45%', 'memory': '67%'},
+                    'business': {'revenue': '$125k', 'growth': '12%'},
+                    'user': {'active_users': 1250, 'retention': '85%'}
+                }
+        
+        # Cache prefetched data
+        cache_key = f"{agent_id}_{context_id}"
+        self.prefetch_cache[cache_key] = {
+            'data': prefetch_data,
+            'timestamp': datetime.utcnow(),
+            'expires_at': datetime.utcnow() + timedelta(minutes=30)
+        }
+        
+        return prefetch_data
+    
+    def get_prefetch_data(self, agent_id: str, context_id: str) -> Optional[Dict[str, Any]]:
+        """
+        Retrieve cached prefetch data for agent workstream spawning.
+        """
+        cache_key = f"{agent_id}_{context_id}"
+        cached = self.prefetch_cache.get(cache_key)
+        
+        if cached and cached['expires_at'] > datetime.utcnow():
+            return cached['data']
+        elif cached:
+            # Remove expired cache
+            del self.prefetch_cache[cache_key]
+        
+        return None
+    
+    async def handle_conversation_message(self, connection_id: str, message: Dict[str, Any]):
+        """
+        Handle conversation messages and route to appropriate handlers.
+        """
+        # Broadcast to session participants
+        connection = self._connections.get(connection_id)
+        if connection:
+            await self.broadcast_to_session(
+                connection.session_id,
+                {
+                    "type": "conversation_message",
+                    "content": message.get('content'),
+                    "contextId": message.get('contextId'),
+                    "sender": connection.user_id,
+                    "timestamp": datetime.utcnow().isoformat()
+                },
+                exclude_connection=connection_id
+            )
 
 # Global instance
 websocket_manager = WebSocketManager()
+
+def get_websocket_manager() -> WebSocketManager:
+    """Get the global WebSocket manager instance."""
+    return websocket_manager

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Brain, 
@@ -11,15 +11,20 @@ import {
   Sparkles,
   Settings,
   Target,
-  Search
+  Search,
+  Lightbulb,
+  Play
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Agent, Context } from '../types/context';
+import { AgentOrchestrator, PrefetchData } from '../services/AgentOrchestrator';
+import { Badge } from './ui/badge';
 
 interface AgentRailProps {
   context: Context;
   agents: Agent[];
   className?: string;
+  onSpawnAgentWorkstream?: (agentId: string, prefetchData?: PrefetchData) => void;
 }
 
 const AGENT_ICONS = {
@@ -50,7 +55,47 @@ const STATUS_INDICATORS = {
   error: { icon: AlertCircle, color: 'text-red-600', bg: 'bg-red-100' },
 } as const;
 
-export default function AgentRail({ context, agents, className }: AgentRailProps) {
+export default function AgentRail({ context, agents, className, onSpawnAgentWorkstream }: AgentRailProps) {
+  const [prefetchStatus, setPrefetchStatus] = useState<Record<string, PrefetchData>>({});
+  // Listen for prefetch events
+  useEffect(() => {
+    const handlePrefetchReady = (data: PrefetchData) => {
+      setPrefetchStatus(prev => ({
+        ...prev,
+        [data.agentId]: {
+          ...data,
+          timestamp: data.timestamp
+        }
+      }));
+      
+      // Auto-expire prefetch data after 5 minutes
+      setTimeout(() => {
+        setPrefetchStatus(prev => {
+          const updated = { ...prev };
+          delete updated[data.agentId];
+          return updated;
+        });
+      }, 5 * 60 * 1000);
+    };
+    
+    AgentOrchestrator.on('prefetch:ready', handlePrefetchReady);
+    return () => AgentOrchestrator.off('prefetch:ready', handlePrefetchReady);
+  }, []);
+  
+  // Handle agent workstream spawning
+  const handleSpawnWorkstream = (agentId: string, prefetchData?: PrefetchData) => {
+    if (onSpawnAgentWorkstream) {
+      onSpawnAgentWorkstream(agentId, prefetchData);
+    }
+    
+    // Clear prefetch status after spawning
+    setPrefetchStatus(prev => {
+      const updated = { ...prev };
+      delete updated[agentId];
+      return updated;
+    });
+  };
+
   const railVariants = {
     hidden: {
       width: 0,
@@ -190,6 +235,25 @@ export default function AgentRail({ context, agents, className }: AgentRailProps
                         </div>
                       )}
                     </div>
+
+                    {/* Prefetch Status Indicator */}
+                    {prefetchStatus[agent.type] && (
+                      <div className="mt-2">
+                        <Badge 
+                          variant="secondary" 
+                          className="animate-pulse cursor-pointer hover:animate-none transition-all duration-200 flex items-center gap-1 text-xs"
+                          onClick={() => handleSpawnWorkstream(agent.type, prefetchStatus[agent.type])}
+                        >
+                          <Lightbulb className="w-3 h-3" />
+                          Ready ({Math.round(prefetchStatus[agent.type].confidence * 100)}%)
+                          <Play className="w-2 h-2 ml-1" />
+                        </Badge>
+                        <p className="text-xs text-gray-500 mt-1 leading-tight">
+                          {prefetchStatus[agent.type].actions.slice(0, 2).join(', ')}
+                          {prefetchStatus[agent.type].actions.length > 2 && '...'}
+                        </p>
+                      </div>
+                    )}
 
                     {/* Working Animation */}
                     {agent.status === 'working' && (

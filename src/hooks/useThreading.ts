@@ -14,6 +14,24 @@ export interface ThreadingState {
   error: string | null;
 }
 
+export interface SelectionAnalysis {
+  suggestsBranch: boolean;
+  branchConfidence: number;
+  branchReason: string;
+  suggestsThread: boolean;
+  threadConfidence: number;
+  threadReason: string;
+  agentSuggestions: AgentSuggestion[];
+}
+
+export interface AgentSuggestion {
+  agentId: string;
+  icon: string;
+  text: string;
+  confidence: number;
+  description: string;
+}
+
 export function useThreading(userId: string | null) {
   const [state, setState] = useState<ThreadingState>({
     messages: [],
@@ -262,6 +280,157 @@ export function useThreading(userId: string | null) {
     }));
   }, []);
 
+  // Analyze selection for branch vs thread suitability
+  const analyzeSelection = useCallback(async (
+    selectedText: string,
+    context: {
+      conversationContext: string;
+      messageHistory: ConversationMessage[];
+      currentTopic?: string;
+    }
+  ): Promise<SelectionAnalysis> => {
+    // Branch detection keywords and patterns
+    const branchIndicators = [
+      'approach', 'strategy', 'implementation', 'method', 'solution',
+      'alternative', 'option', 'way to', 'what if', 'let\'s explore',
+      'instead of', 'rather than', 'different approach'
+    ];
+    
+    // Thread detection keywords and patterns  
+    const threadIndicators = [
+      'speaking of', 'that reminds me', 'by the way', 'separately',
+      'different topic', 'another question', 'off topic', 'unrelated',
+      'on a different note', 'changing topics'
+    ];
+    
+    // Calculate keyword scores
+    const selectedLower = selectedText.toLowerCase();
+    const branchScore = branchIndicators.reduce((score, keyword) => 
+      selectedLower.includes(keyword) ? score + 0.2 : score, 0
+    );
+    
+    const threadScore = threadIndicators.reduce((score, keyword) =>
+      selectedLower.includes(keyword) ? score + 0.3 : score, 0  
+    );
+    
+    // Context analysis for parallel exploration vs topic shift
+    const isParallelExploration = branchScore > 0.4 || 
+      /\b(versus|vs|compared to|instead of|alternative)\b/i.test(selectedText);
+    
+    const isTopicShift = threadScore > 0.4 ||
+      (context.currentTopic && !selectedLower.includes(context.currentTopic.toLowerCase()));
+    
+    // Agent relevance analysis
+    const agentSuggestions = await analyzeAgentRelevance(selectedText, context);
+    
+    return {
+      suggestsBranch: isParallelExploration,
+      branchConfidence: Math.min(branchScore + (isParallelExploration ? 0.3 : 0), 1),
+      branchReason: isParallelExploration ? 'Parallel exploration detected' : 'Multiple approaches possible',
+      
+      suggestsThread: isTopicShift,
+      threadConfidence: Math.min(threadScore + (isTopicShift ? 0.4 : 0), 1),
+      threadReason: isTopicShift ? 'Topic shift detected' : 'Related but separate discussion',
+      
+      agentSuggestions
+    };
+  }, []);
+  
+  // Analyze agent relevance for selected text
+  const analyzeAgentRelevance = useCallback(async (selectedText: string, context: any): Promise<AgentSuggestion[]> => {
+    const suggestions: AgentSuggestion[] = [];
+    const selectedLower = selectedText.toLowerCase();
+    
+    // Planner relevance
+    if (/\b(plan|timeline|roadmap|milestone|schedule|deadline|project|task)\b/i.test(selectedText)) {
+      suggestions.push({
+        agentId: 'planner',
+        icon: '📋',
+        text: 'Create project plan',
+        confidence: 0.8,
+        description: 'Generate timeline and milestones'
+      });
+    }
+    
+    // Researcher relevance  
+    if (/\b(research|competitor|market|analyze|data|study|investigate)\b/i.test(selectedText)) {
+      suggestions.push({
+        agentId: 'researcher', 
+        icon: '🔍',
+        text: 'Research this topic',
+        confidence: 0.75,
+        description: 'Gather relevant information and insights'
+      });
+    }
+    
+    // Analyst relevance
+    if (/\b(metrics|performance|trend|analysis|dashboard|data|statistics)\b/i.test(selectedText)) {
+      suggestions.push({
+        agentId: 'analyst',
+        icon: '📊', 
+        text: 'Analyze metrics',
+        confidence: 0.7,
+        description: 'Create analysis and visualizations'
+      });
+    }
+    
+    // Writer relevance
+    if (/\b(write|document|draft|content|article|blog|email)\b/i.test(selectedText)) {
+      suggestions.push({
+        agentId: 'writer',
+        icon: '✍️',
+        text: 'Create document',
+        confidence: 0.7,
+        description: 'Draft content and documentation'
+      });
+    }
+    
+    // Engineer relevance
+    if (/\b(code|develop|build|implement|api|system|architecture)\b/i.test(selectedText)) {
+      suggestions.push({
+        agentId: 'engineer',
+        icon: '💻',
+        text: 'Implement solution',
+        confidence: 0.75,
+        description: 'Generate code and technical solutions'
+      });
+    }
+    
+    return suggestions.sort((a, b) => b.confidence - a.confidence);
+  }, []);
+  
+  // Extract current topic from recent messages
+  const extractCurrentTopic = useCallback((): string | undefined => {
+    if (state.messages.length === 0) return undefined;
+    
+    // Get recent messages (last 3)
+    const recentMessages = state.messages.slice(-3);
+    const combinedText = recentMessages.map(m => m.content).join(' ');
+    
+    // Simple keyword extraction - could be enhanced with NLP
+    const words = combinedText.toLowerCase().split(/\s+/);
+    const topicWords = words.filter(word => 
+      word.length > 4 && 
+      !['this', 'that', 'with', 'from', 'they', 'have', 'been', 'were', 'will', 'would', 'could', 'should'].includes(word)
+    );
+    
+    // Return most frequent meaningful word
+    const wordCount = topicWords.reduce((acc, word) => {
+      acc[word] = (acc[word] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+    
+    const mostFrequent = Object.entries(wordCount)
+      .sort(([,a], [,b]) => b - a)[0];
+      
+    return mostFrequent?.[0];
+  }, [state.messages]);
+  
+  // Get recent messages for context
+  const getRecentMessages = useCallback((count: number = 5): ConversationMessage[] => {
+    return state.messages.slice(-count);
+  }, [state.messages]);
+
   return {
     ...state,
     // Actions
@@ -274,6 +443,10 @@ export function useThreading(userId: string | null) {
     toggleShowArchived,
     selectThread,
     newThread,
+    // Analysis capabilities
+    analyzeSelection,
+    extractCurrentTopic,
+    getRecentMessages,
     // WebSocket status
     connected
   };

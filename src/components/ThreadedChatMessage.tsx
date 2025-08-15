@@ -13,11 +13,14 @@ import {
   XCircle,
   Clock,
   Trash2,
-  RefreshCw
+  RefreshCw,
+  Zap,
+  MessageSquare
 } from 'lucide-react';
 import { ConversationMessage } from '../services/ConversationService';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
+import { useThreading, SelectionAnalysis } from '../hooks/useThreading';
 
 interface ThreadedChatMessageProps {
   message: ConversationMessage;
@@ -25,12 +28,16 @@ interface ThreadedChatMessageProps {
   onRestore: (messageId: string) => void;
   onReply: (messageId: string, quotedText?: string) => void;
   onBranch: (messageId: string, selectedText: string) => void;
+  onThread?: (messageId: string, selectedText: string) => void;
+  onSpawnAgent?: (agentId: string, selectedText: string) => void;
   onRetry?: (messageId: string) => void;
   onHardDelete?: (messageId: string) => void;
   showArchived: boolean;
   isRoot?: boolean;
   depth?: number;
   children?: React.ReactNode;
+  contextId?: string;
+  userId?: string | null;
 }
 
 export default function ThreadedChatMessage({
@@ -39,17 +46,25 @@ export default function ThreadedChatMessage({
   onRestore,
   onReply,
   onBranch,
+  onThread,
+  onSpawnAgent,
   onRetry,
   showArchived,
   isRoot = false,
   depth = 0,
-  children
+  children,
+  contextId,
+  userId
 }: ThreadedChatMessageProps) {
   const [showActions, setShowActions] = useState(false);
   const [selectedText, setSelectedText] = useState('');
   const [showTextMenu, setShowTextMenu] = useState(false);
   const [textMenuPosition, setTextMenuPosition] = useState({ x: 0, y: 0 });
+  const [selectionAnalysis, setSelectionAnalysis] = useState<SelectionAnalysis | null>(null);
+  const [analyzingSelection, setAnalyzingSelection] = useState(false);
   const messageRef = useRef<HTMLDivElement>(null);
+  
+  const { analyzeSelection, extractCurrentTopic, getRecentMessages } = useThreading(userId);
 
   const isArchived = !!message.archived_at;
   const isReply = !!message.reply_to_message_id;
@@ -73,9 +88,9 @@ export default function ThreadedChatMessage({
     return false;
   };
 
-  // Handle text selection for branching
+  // Enhanced text selection with intelligent analysis
   useEffect(() => {
-    const handleSelection = () => {
+    const handleSelection = async () => {
       const selection = window.getSelection();
       if (selection && selection.toString().trim().length > 0) {
         const range = selection.getRangeAt(0);
@@ -83,39 +98,76 @@ export default function ThreadedChatMessage({
         
         // Check if selection is within this message
         if (messageRef.current?.contains(range.commonAncestorContainer)) {
-          setSelectedText(selection.toString().trim());
+          const text = selection.toString().trim();
+          setSelectedText(text);
           setTextMenuPosition({
             x: rect.left + rect.width / 2,
-            y: rect.top - 40
+            y: rect.top - 80 // More space for intelligent menu
           });
           setShowTextMenu(true);
+          
+          // Analyze selection for intelligent suggestions
+          if (text.length > 10) { // Only analyze meaningful selections
+            setAnalyzingSelection(true);
+            try {
+              const analysis = await analyzeSelection(text, {
+                conversationContext: message.content,
+                messageHistory: getRecentMessages(5),
+                currentTopic: extractCurrentTopic()
+              });
+              setSelectionAnalysis(analysis);
+            } catch (error) {
+              console.error('Selection analysis failed:', error);
+              setSelectionAnalysis(null);
+            } finally {
+              setAnalyzingSelection(false);
+            }
+          }
         }
       } else {
         setShowTextMenu(false);
         setSelectedText('');
+        setSelectionAnalysis(null);
       }
     };
 
     document.addEventListener('selectionchange', handleSelection);
     return () => document.removeEventListener('selectionchange', handleSelection);
-  }, []);
+  }, [analyzeSelection, extractCurrentTopic, getRecentMessages, message.content]);
 
   const handleBranchFromSelection = () => {
     if (selectedText) {
       onBranch(message.id, selectedText);
-      setShowTextMenu(false);
-      setSelectedText('');
-      window.getSelection()?.removeAllRanges();
+      clearSelection();
+    }
+  };
+
+  const handleThreadFromSelection = () => {
+    if (selectedText && onThread) {
+      onThread(message.id, selectedText);
+      clearSelection();
     }
   };
 
   const handleQuoteReply = () => {
     if (selectedText) {
       onReply(message.id, selectedText);
-      setShowTextMenu(false);
-      setSelectedText('');
-      window.getSelection()?.removeAllRanges();
+      clearSelection();
     }
+  };
+  
+  const handleSpawnAgent = (agentId: string) => {
+    if (selectedText && onSpawnAgent) {
+      onSpawnAgent(agentId, selectedText);
+      clearSelection();
+    }
+  };
+  
+  const clearSelection = () => {
+    setShowTextMenu(false);
+    setSelectedText('');
+    setSelectionAnalysis(null);
+    window.getSelection()?.removeAllRanges();
   };
 
   const getStatusIcon = () => {
@@ -172,27 +224,93 @@ export default function ThreadedChatMessage({
         </div>
       )}
 
-      {/* Text selection context menu */}
+      {/* Enhanced text selection context menu */}
       <AnimatePresence>
         {showTextMenu && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8 }}
-            className="fixed z-50 bg-popover border border-border rounded-md shadow-lg p-1"
+            initial={{ opacity: 0, scale: 0.8, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.8, y: 10 }}
+            className="fixed z-50 bg-popover border border-border rounded-lg shadow-xl p-2 min-w-[200px]"
             style={{
               left: textMenuPosition.x,
               top: textMenuPosition.y,
               transform: 'translateX(-50%)'
             }}
           >
-            <button
-              onClick={handleBranchFromSelection}
-              className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-accent rounded-sm w-full text-left"
-            >
-              <GitBranch className="w-3 h-3" />
-              Branch Discussion
-            </button>
+            {analyzingSelection && (
+              <div className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground">
+                <Loader2 className="w-3 h-3 animate-spin" />
+                Analyzing selection...
+              </div>
+            )}
+            
+            {!analyzingSelection && selectionAnalysis && (
+              <>
+                {/* Branch option with intelligence */}
+                <button
+                  onClick={handleBranchFromSelection}
+                  className={`flex items-center justify-between px-3 py-2 text-sm hover:bg-accent rounded-sm w-full text-left ${
+                    selectionAnalysis.suggestsBranch ? 'bg-blue-50 border border-blue-200' : ''
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <GitBranch className="w-3 h-3" />
+                    <span>🌿 {selectionAnalysis.suggestsBranch ? selectionAnalysis.branchReason : 'Branch Here'}</span>
+                  </div>
+                  {selectionAnalysis.branchConfidence > 0.7 && (
+                    <span className="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">
+                      {Math.round(selectionAnalysis.branchConfidence * 100)}%
+                    </span>
+                  )}
+                </button>
+                
+                {/* Thread option with intelligence */}
+                {onThread && (
+                  <button
+                    onClick={handleThreadFromSelection}
+                    className={`flex items-center justify-between px-3 py-2 text-sm hover:bg-accent rounded-sm w-full text-left ${
+                      selectionAnalysis.suggestsThread ? 'bg-purple-50 border border-purple-200' : ''
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <MessageSquare className="w-3 h-3" />
+                      <span>🧵 {selectionAnalysis.suggestsThread ? selectionAnalysis.threadReason : 'Create Thread'}</span>
+                    </div>
+                    {selectionAnalysis.threadConfidence > 0.7 && (
+                      <span className="text-xs bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded">
+                        {Math.round(selectionAnalysis.threadConfidence * 100)}%
+                      </span>
+                    )}
+                  </button>
+                )}
+                
+                {/* Agent suggestions */}
+                {selectionAnalysis.agentSuggestions.map((suggestion, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => handleSpawnAgent(suggestion.agentId)}
+                    className={`flex items-center justify-between px-3 py-2 text-sm hover:bg-accent rounded-sm w-full text-left ${
+                      suggestion.confidence > 0.8 ? 'bg-green-50 border border-green-200' : ''
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Zap className="w-3 h-3" />
+                      <span>{suggestion.icon} {suggestion.text}</span>
+                    </div>
+                    {suggestion.confidence > 0.7 && (
+                      <span className="text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded">
+                        {Math.round(suggestion.confidence * 100)}%
+                      </span>
+                    )}
+                  </button>
+                ))}
+                
+                <div className="border-t border-border my-1"></div>
+              </>
+            )}
+            
+            {/* Standard options */}
             <button
               onClick={handleQuoteReply}
               className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-accent rounded-sm w-full text-left"

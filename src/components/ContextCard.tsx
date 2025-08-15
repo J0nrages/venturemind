@@ -6,6 +6,9 @@ import ConversationSpine from './ConversationSpine';
 import AgentRail from './AgentRail';
 import Surface from './Surface';
 import PageSurface from './PageSurface';
+import { useContexts } from '../contexts/ContextProvider';
+import { PrefetchData } from '../services/AgentOrchestrator';
+import toast from 'react-hot-toast';
 
 interface ContextCardProps {
   context: Context;
@@ -20,6 +23,12 @@ export default function ContextCard({
   onClick,
   className
 }: ContextCardProps) {
+  const { spawnAgentWorkstream } = useContexts();
+  
+  const handleSpawnAgentWorkstream = (agentId: string, prefetchData?: PrefetchData) => {
+    const newContextId = spawnAgentWorkstream(agentId, context.id, prefetchData);
+    toast.success(`Spawned ${agentId} workstream`);
+  };
   const getCardStyles = () => {
     const baseStyles = {
       width: 'min(600px, 80vw)',
@@ -176,6 +185,7 @@ export default function ContextCard({
           <AgentRail
             context={context}
             agents={context.activeAgents}
+            onSpawnAgentWorkstream={handleSpawnAgentWorkstream}
             className="w-48 border-l border-black/10 flex-shrink-0"
           />
         )}

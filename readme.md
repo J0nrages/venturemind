@@ -1,336 +1,451 @@
-# SYNA MASTER SPEC v1.0 — Executive Product Doc
+# SYNA: Executive Product Requirements & Vision Document
 
-**AI Operating System for Conversation‑Native Work**
-**Status:** Draft for Executive Review
-**Last Updated:** 2025‑08‑12
-**Owner:** Product & Platform
-
----
-
-## 0) What This Document Is (and Isn’t)
-
-This is the **product‑level specification** for Syna. It explains **how the product should work** for users and admins, what behaviors we guarantee, and how we’ll measure success. It intentionally **avoids low‑level implementation** details (stacks, libraries, schemas). Those live in engineering specs.
+**Version:** 2.0\
+**Status:** Implementation Ready\
+**Purpose:** Unified product specification for SYNA AI Operating System\
+**Audience:** Product Managers, Designers, Software Engineers, QA Engineers
 
 ---
 
-## 1) Vision & Strategy
+## Executive Summary
 
-**Product promise:** Syna is an **AI Operating System for work** where **conversation is the primary interface** and agents complete multi‑step work across tools **without breaking user flow**.
+SYNA is an **AI Operating System for conversation-native work** where natural language orchestrates all business operations through intelligent, living surfaces. Unlike traditional software where users navigate between apps, SYNA brings work artifacts directly into conversation as interactive, editable surfaces that both users and AI agents can manipulate in real-time.
 
-**North Star Metric (NSM):** **Tasks successfully completed by agents per active user per week**, with **sub‑second context switches** and average satisfaction ≥ **4/5**.
-
-**Strategic pillars**
-
-1. **Conversation‑native:** Chat is the spine; HUDs and dashboards appear only when they add speed/clarity.
-2. **Continuity by default:** Users don’t re‑explain. Context follows across threads, projects, and surfaces.
-3. **Composable autonomy:** Adjustable from **Suggest → Draft → Execute** with approvals when needed.
-4. **Observable & reversible:** Every action has a trace and can be rolled back.
-5. **Fast time‑to‑value:** Useful on Day 1; improves continuously from feedback.
+**Core Innovation:** Work surfaces (dashboards, documents, models) exist as first-class citizens alongside conversation, appearing contextually and responding to both direct manipulation and natural language commands. This eliminates the app-switching paradigm in favor of continuous, contextual work.
 
 ---
 
-## 2) Who We’re Building For
+## Product Vision & Strategy
 
-**P1 Solo Founder/Operator (primary)** – orchestrates fundraising, product, recruiting.
-**P2 Team Lead / Product Manager** – coordinates docs, tickets, research, releases.
-**P3 Engineer/Builder** – wants code agents to scaffold features/tests and open PRs.
-**P4 Ops/Recruiter/Analyst** – research, outreach, scheduling, reporting at scale.
+### North Star Metric
 
-**Top jobs‑to‑be‑done**
+**Tasks successfully completed by agents per active user per week, used 4+ days a week by active users**, with sub-second context switches and average satisfaction ≥4/5.
 
-* “Switch focus quickly without losing context.”
-* “Have agents draft, refine, and ship real artifacts (docs, tickets, PRs, emails).”
-* “See what’s happening and approve changes safely.”
+### Strategic Pillars
 
----
+1. **Conversation-Native Interface** - Chat as the spine with surfaces appearing only when they add value
+2. **Continuous Context** - No re-explanation needed; context follows across all interactions
+3. **Configurable Autonomy** - Adjustable from Suggest → Draft → Execute with approval gates
+4. **Complete Observability** - Every action traceable with one-click rollback capability
+5. **Instant Value** - Useful from day one with continuous improvement through interaction
 
-## 3) Mental Model & Core Concepts
+### Target Users
 
-* **Workspace** – org or team boundary with members, agents, data, policies.
-* **Project** – named container for outcomes; has tasks, docs, and threads.
-* **Thread** – conversation unit; can be linked to multiple projects.
-* **Context Pack** – reusable bundle of memory (docs, threads, datasets) attachable to any thread.
-* **Agent** – capability profile (Planner, Researcher, Writer, Engineer, Ops, Analyst, Scheduler, Critic). Each task sets an **autonomy level** and **budget**.
-* **Task** – atomic unit of work with owner (agent or human), acceptance criteria, due date, dependencies.
-* **Run** – a single execution by an agent with steps, traces, artifacts, and cost.
-* **Doc** – native PRDs/specs/briefs; sections link to tasks & runs.
-* **Clips** – retrieved snippets with provenance that power context and citations.
-
-**Guiding behaviors**
-
-* Threads can **branch**; branches keep links to origin and may carry context.
-* Switching topics/projects is **instant**; relevant context is already warmed.
-* Users can **@mention agents** and **reference objects** (e.g., #Project, ^Doc).
+| Priority | User Type             | Primary Jobs-to-be-Done                                           |
+| -------- | --------------------- | ----------------------------------------------------------------- |
+| P1       | Solo Founder/Operator | Orchestrate fundraising, product, recruiting without context loss |
+| P2       | Team Lead/PM          | Coordinate docs, tickets, research with instant context switching |
+| P3       | Engineer/Builder      | Generate code, tests, PRs through conversational agents           |
+| P4       | Ops/Analyst           | Research, outreach, scheduling at scale with full automation      |
 
 ---
 
-## 4) End‑to‑End Experience (Canonical Flows)
+## Core Concepts & Mental Model
 
-### 4.1 Planning → Execution (PM/Lead)
+### Fundamental Distinctions
 
-1. User: “Pause growth plan; switch to Fundraising. Summarize deck feedback and draft v2 outline.”
-2. **Planner** proposes a mini plan (sections, owners, due dates) with **Suggested Action Chips** (e.g., “Create tasks,” “Draft outline”).
-3. User accepts; **Writer** drafts the outline in a doc.
-4. **Ops** schedules reviewer pings; **Critic** flags risks and missing inputs.
-5. User approves; **Tasks** update to **In Progress**; status chips appear in the doc.
+**Clean model**
 
-**Success state:** Deliverable link + 3–5 tasks created with owners and due dates; all changes have provenance and are visible in the right rail (**Now/Clips/Tasks/Docs** tabs).
+```
+SYNA Workspace
+├─ Branches (chats) — parallel paths from the same origin
+├─ Threads (chats)  — fresh conversations inspired by a selection
+└─ Surfaces (interactive docs/dashboards) — live artifacts alongside chat
+```
 
-### 4.2 Research → Brief → Outreach (Ops/Analyst)
+**Differences at a glance**
 
-1. User: “Compile 50 target accounts matching our ICP; draft a first‑touch email; schedule follow‑ups.”
-2. **Researcher** produces a list with sources.
-3. **Writer** drafts email variants; **Critic** checks for tone/compliance.
-4. **Scheduler** proposes a send/schedule plan; approvals gate large sends.
-5. User approves; system queues outreach and tracks replies in the thread.
+| Concept      | Type                           | Purpose                                           | Context to Parent                                     | Problem Relation    | Collaboration Mode                        | Merge/Link                                   | Common Triggers      |
+| ------------ | ------------------------------ | ------------------------------------------------- | ----------------------------------------------------- | ------------------- | ----------------------------------------- | -------------------------------------------- | -------------------- |
+| **Branches** | Chat                           | Explore alternatives without losing history       | **Shares full context** (messages + memory)           | **Same problem**    | Conversation-first; agents can listen/act | **Can merge** back into parent               | 🌿 *Branch here*     |
+| **Threads**  | Chat                           | Start a new line of thought inspired by a snippet | **No inherited context** (keeps only an origin link)  | **New problem**     | Conversation-first; agents can listen/act | **Independent** (can reference parent)       | 🧵 *Create thread*   |
+| **Surfaces** | Interactive document/dashboard | Manipulate data, text, boards, charts directly    | **Bidirectional with chat** (updates reflect in both) | Artifact of problem | **User + Agent direct edit**; live sync   | Lives **alongside** chats; linkable/pinnable | 📄 *Open as surface* |
 
-### 4.3 Engineering Spike → Issue → PR (Engineer/PM)
+### Key Terminology
 
-1. User: “Add retry logic to payment processor if API supports exponential backoff.”
-2. **Engineer** verifies capability, creates issue(s), scaffolds tests, and opens a PR draft.
-3. **Critic** validates acceptance criteria; **User** approves merge when checks pass.
-
-**Interruption model (applies to all):** If the user changes course mid‑run, Syna **preserves current thought**, processes the interruption, then merges or queues the contexts. The user can resume either at any time.
-
----
-
-## 5) Capabilities (How It Should Work)
-
-### 5.1 Conversation OS
-
-* **Start & link:** Create a thread in a workspace; optionally link projects and attach context packs.
-* **Agent mentions:** `@Planner`, `@Engineer`, etc. trigger the appropriate agent with the current thread context.
-* **Quick Switcher (⌘K):** Jump threads/projects, attach/detach context, add/assign tasks, toggle flows.
-* **Suggested Action Chips:** 3–7 context‑appropriate actions (e.g., “Create tasks,” “Draft summary,” “Open issue”).
-* **Inline approvals:** Accept/reject diffs, request edits, escalate to human review; always preview changes before write‑backs.
-* **Branching:** Fork a message or selection into a new thread; choose whether to carry context.
-
-**Acceptance (Conversation OS)**
-
-* From a new workspace, a user can create a thread, attach a project and one context pack, and complete a multi‑step flow with approvals in under **10 minutes**.
-
-### 5.2 Tasks & Projects
-
-* **Task graph:** Tasks are hierarchical or DAG with dependencies and standard states: **Backlog, In Progress, Awaiting Approval, Done, Blocked**.
-* **Auto‑tasking:** Planner decomposes intents into subtasks with owners (agents/humans), due dates, and acceptance criteria; user reviews before creation.
-* **Project views:** Kanban and Timeline views; filters by owner, priority, status, area.
-* **Status surfaces:** Docs show **live chips** (e.g., “API ready,” “Tests failing”).
-
-**Acceptance (Tasks & Projects)**
-
-* Given an intent containing at least two steps, the Planner proposes ≥ **3** tasks with owners and dependencies; users can edit and confirm in‑flow.
-
-### 5.3 Agents & Autonomy
-
-* **Catalog:** Core agents ship day one – **Planner, Researcher, Writer, Engineer, Ops, Analyst, Scheduler, Critic**.
-* **Autonomy slider per task:** **Suggest → Draft → Execute**, with optional approval gates for destructive or external actions.
-* **Budgets:** Per‑task ceilings for time, tokens, and cost; escalate at 80%.
-* **Observability:** Runs stream progress, sources, and timing in the **Now** tab.
-
-**Acceptance (Agents)**
-
-* Users can set autonomy and budgets at task creation and modify mid‑run without losing state.
-
-### 5.4 Memory & Context
-
-* **Unified memory:** Short‑term (thread), long‑term (workspace/project), and semantic (searchable) memory presented as **Context Packs**.
-* **Snapshots:** Rolling summaries with citations; refresh on major changes.
-* **Cross‑thread reuse:** Bring past research into new threads via attachable context packs.
-
-**Acceptance (Memory)**
-
-* When switching topics, visible results appear immediately (warmed context); additional improvements stream in within seconds.
-
-### 5.5 Docs & Artifacts
-
-* **Native docs:** PRDs, specs, briefs with version history and review flow.
-* **Section links:** Sections can link to tasks, runs, and acceptance criteria; status chips display live state.
-* **Annotation & selection:** On selection, bubble shows **Annotate / Expand Topic / Quote→Ask / Branch**.
-* **Exports:** Markdown/PDF; share read‑only links.
-
-**Acceptance (Docs)**
-
-* From a thread, user can create a doc, accept tracked changes from an agent, and export a reviewable version with provenance in **< 3 minutes**.
-
-### 5.6 Integrations (Product‑Level)
-
-* **Day‑1 connectors:** Google (Drive/Docs/Calendar), GitHub, Notion, Slack/Email, Calendar.
-* **Consent & scopes:** Clear scope picker during connect; “least privilege” by default; write‑backs require explicit confirmation.
-* **Write‑back safety:** Always show a preview; if conflicts occur, degrade to comment with a link to resolve.
-
-**Acceptance (Integrations)**
-
-* A first‑time user connects one provider and completes a round‑trip (ingest → draft → preview → approved write‑back or comment) without leaving Syna.
-
-### 5.7 Observability, Governance & Approvals
-
-* **Run Log:** Steps, tool calls, prompts, timing, artifacts, and diffs (readable by humans).
-* **Audit Log:** Who did what, when; approver trail visible per object.
-* **Approvals:** Outbound comms above a threshold and repo writes require explicit approval.
-
-**Acceptance (Observability)**
-
-* For any deliverable, a user can view the complete provenance within **two clicks** from the thread.
-
-### 5.8 Automation & Scheduling
-
-* **Recurring checks:** e.g., “Search for funding news weekly and brief me.”
-* **Event triggers:** e.g., on PR opened, on doc updated, on new meeting notes.
-* **Quiet hours:** Batch non‑urgent updates by default; urgent events can break through with a reason.
-
-**Acceptance (Automation)**
-
-* Users can create, pause, and resume automations from the thread or a simple **Automations** panel.
+- **Branch** - Parallel exploration sharing complete parent history
+- **Thread** - New conversation with inspiration link but no shared context
+- **Surface** - Living document/dashboard that responds to chat and direct manipulation
+- **Context Object** - A reusable memory bundle and an anchoring surface. Attach it to any chat or surface to preload relevant memory, or open it as a surface to explore insights, trigger actions, and manage versions.
+- **Agent** - Specialized AI capability (Planner, Writer, Engineer, etc.)
+- **Workstream** - Background agent task execution with minimal UI presence
+- **Autonomy Level** - Task execution strictness/mode - may depend on agent
 
 ---
 
-## 6) Default Policies & Settings (Initial Defaults)
+## System Behavior & User Experience
 
-* **Autonomy default:** Draft (requires approval for destructive or external actions).
-* **Outbound comms:** Approval required if recipients > **10** or external domains are included.
-* **Repo writes:** PRs allowed; merges require human approval.
-* **Budgets:** Task default cap: **5 minutes** wall‑time, **low cost** (workspace default); escalate at **80%** with a confirmation chip.
-* **Data retention:** Workspace default **12 months**; admins can shorten/extend or exclude sources.
-* **Redaction:** Secrets and PII are masked in traces/logs by default.
+### Initialization Philosophy
 
----
+```
+New Session Start:
+┌────────────────────────────────────┐
+│  Single Clean Conversation Area    │
+│  • No auto-loading past chats      │
+│  • History accessible but hidden   │
+│  • Fresh workspace, clear focus    │
+└────────────────────────────────────┘
+           ↓
+    [Standard Session Management]
+           ↓
+┌────────────────────────────────────┐
+│  If session persists (browser/app  │
+│  open), resume where you left off  │
+│  (chats, surfaces, context).       │
+│  If logout or full app quit        │
+│  start fresh on next sign-in.      │
+└────────────────────────────────────┘
+```
 
-## 7) Performance & Experience Targets (User‑Facing)
+### Navigation Architecture
 
-* **Context switch:** Feels instant; visible results appear immediately with richer context within **≤ 2 s**.
-* **First token for agent replies:** **< 800 ms** P95 when no external tools are needed.
-* **Tool‑assisted actions:** **< 10 s** P95 for common flows (search, file fetch, issue create).
-* **Doc save & state updates:** **< 1 s** P95.
-* **Availability:** Core chat & task features ≥ **99.9%** monthly.
+#### Command-Chat Bar (Primary Interface)
 
----
+The main input intelligently recognizes multiple intents:
 
-## 8) Security & Privacy (Product Posture)
+| Pattern              | Function          | Example                                   |
+| -------------------- | ----------------- | ----------------------------------------- |
+| Natural conversation | Continue chat     | "How should we structure authentication?" |
+| Navigation request   | Find content      | "Pull up our chat about database design"  |
+| Command prefix       | Execute action    | "/search revenue discussions"             |
+| Agent mention        | Invoke capability | "@planner analyze this requirement"       |
 
-* **Access:** SSO (OAuth/OIDC), optional MFA.
-* **Permissions:** Workspace roles (Owner, Admin, Member, Viewer) and doc/task‑level sharing.
-* **Secrets:** Per‑workspace vault with rotation; least‑privilege scopes.
-* **Compliance:** SOC2 readiness roadmap; audit exports on request.
-* **Customer data:** Isolation by workspace; data residency options in enterprise tier.
+#### Quick Switcher (⌘K) Commands
 
----
+```
+> Execute command     (>show revenue metrics)
+@ Mention agent, person, file       (@analyst help with model)
+# Switch project      (#fundraising)
+// Search surfaces     (/proforma)
+? Get help           (?how to create tasks)
+! Quick action       (!create task from selection)
+~ Switch thread      (~previous conversation)
+^ Open document      (^Q3 planning doc)
+```
 
-## 9) Packaging & Pricing (Draft)
+### Creation Patterns
 
-* **Solo (Free/Starter):** 1 workspace, limited automations, community support.
-* **Team (Paid):** Multiple projects, all core agents, approvals, integrations, exports, analytics.
-* **Enterprise:** SSO/SAML, RBAC, data residency, advanced audit, custom retention, premium support, SLAs.
+#### Text Selection → Context Menu Flow
 
-> Final pricing TBD after Private Beta. Metering is based on agent task runs + storage.
+```
+User selects text
+        ↓
+┌─────────────────────────────┐
+│  🔍 Search Web              │
+│  🧠 Save to Memory          |
+│  🌿 Branch Here (parallel)  │ ← Parent stays open
+│  🧵 Create Thread (fresh)   │ ← Parent minimizes
+│  📄 Open as Surface         │ ← Expands to doc/dashboard
+└─────────────────────────────┘
+```
 
----
+### Workspace State Management
 
-## 10) Rollout Plan
-
-* **v0 Internal Alpha:** Core chat, Planner+Writer+Researcher, context packs, tasks, base docs.
-* **v1 Private Beta:** Add Google+GitHub+Notion, approvals, run logs, exports, Quick Switcher.
-* **v1.1:** Scheduler, Slack/Email, better snapshots, marketplace v0.
-* **v1.2:** Org workspaces, RBAC, analytics console, cost controls.
-
-**Exit criteria for Private Beta → GA**
-
-* ≥ 70% of pilot users complete one end‑to‑end flow within 24 hours of onboarding.
-* P95 experience targets met for context switches and common actions.
-* ≤ 5% of runs require manual recovery due to conflicts or policy blocks.
-
----
-
-## 11) Metrics & Instrumentation (Product)
-
-* **Activation:** % of new users completing 1 end‑to‑end flow in 24h.
-* **Engagement:** WAU performing ≥ 3 agent tasks.
-* **Throughput:** Median time from intent → accepted deliverable.
-* **Quality:** Avg deliverable rating; revision count to acceptance.
-* **Retention:** D30 user retention; project recurrence.
-* **Continuity:** % context switches with no manual re‑explanation.
-* **Attention stewardship:** % updates delivered in quiet mode vs. interrupts.
-* **Observability:** % of agent actions with visible trace + provenance.
-
----
-
-## 12) Admin & Governance
-
-* **Org settings:** Invite users, manage roles, set defaults for autonomy, budgets, and retention.
-* **Audit exports:** Time‑bounded export of audit/run logs.
-* **Data controls:** Right to be forgotten; object deletion; export workspace data.
-* **Policy templates:** Starter presets (Conservative, Balanced, Autonomous) for quick setup.
-
----
-
-## 13) Product Content & UX Guidelines
-
-* **Tone:** Direct, professional, optimistic. Avoid jargon in user‑facing surfaces.
-* **Diffs & previews:** Always provide a human‑readable summary plus a link to the full diff.
-* **Empty states:** Offer one‑click starter actions and sample prompts relevant to the surface (Thread, Tasks, Docs).
-* **Errors:** Explain cause + next best action; never dead‑end. Prefer “Retry,” “View Trace,” “Contact Owner.”
-* **Keyboard‑first:** Document common shortcuts; show hints contextually (e.g., ⌘K for switcher).
+```
+Active Workspace Contains:
+┌──────────────────────────────────────────┐
+│ • 1 Main Focus Window (active work)      │
+│ • 2-3 Adjacent Cards (branches/threads)  │
+│ • Minimized Indicators (inactive items)  │
+│ • Hidden but Searchable (all history)    │
+└──────────────────────────────────────────┘
+```
 
 ---
 
-## 14) Open Questions (Product)
+## Surface System Specification
 
-1. Minimum viable marketplace scope for v1 (templates vs. hosted agents)?
-2. Default autonomy policies per persona (e.g., Engineer default to Draft)?
-3. Approval thresholds for outbound comms (10 recipients vs. domain‑based)?
-4. What telemetry is user‑visible vs. admin‑only by default?
+### Surface Protocol Requirements
 
----
+Every surface must implement:
 
-## Appendix A — Capability Acceptance Criteria (Condensed)
+- **Trigger phrases** for natural language activation
+- **Live editing** capability with bidirectional data flow
+- **Agent binding** for observation and manipulation
+- **State serialization** for interruptions and persistence
+- **Lifecycle rules** for appear/dismiss/persist behavior
 
-**Conversation OS**
+### Surface Transformation Map
 
-* From a blank workspace, user completes a 3‑step outcome with approvals in < 10 minutes.
+| Current Component | Target Surface  | Capabilities                                                                               | Agent Integration                                           |
+| ----------------- | --------------- | ------------------------------------------------------------------------------------------ | ----------------------------------------------------------- |
+| ProformaPage      | sheetsSurface   | Cell editing, formulas, charts                                                             | @Analyst observes/modifies                                  |
+| MetricsDashboard  | MetricsSurface  | Filters, drill-down, real-time                                                             | @Analyst queries/updates                                    |
+| Strategy          | StrategySurface | Canvas manipulation, SWOT                                                                  | @Planner arranges/connects                                  |
+| DocumentMemory    | DocumentSurface | Rich text, collaboration                                                                   | @Writer drafts/edits                                        |
+| TaskBoard         | ProjectSurface  | Card movement, dependencies, all projects tracking                                         | @Planner creates/assigns                                    |
+| AutomationBuilder | WorkflowSurface | Node editor (triggers, actions, conditions, branching, loops), test runs, logs, versioning | @Ops orchestrates; @Planner schedules; @Engineer integrates |
 
-**Tasks & Projects**
+### Surface Lifecycle Rules
 
-* Planner proposes ≥ 3 tasks with owners and dependencies for a multi‑step intent.
+```
+Appear When:
+• Agent needs visual content
+• User requests specific view
+• Task requires visual manipulation
+• Context naturally leads to visualization
 
-**Agents & Autonomy**
+Auto-Dismiss After 5 Minutes (editable) Unless:
+• User is actively editing
+• User has pinned surface
+• Agent is monitoring changes
+• Surface has unsaved changes
 
-* User adjusts autonomy/budgets mid‑run without losing state; changes are logged.
-
-**Memory & Context**
-
-* Switching topics surfaces warmed context instantly; citations appear for all claims.
-
-**Docs & Artifacts**
-
-* User accepts tracked changes and exports a reviewable doc with provenance in < 3 minutes.
-
-**Integrations**
-
-* First‑time connect completes an ingest→draft→preview→approved write‑back or comment loop.
-
-**Observability**
-
-* Any deliverable’s full provenance accessible within two clicks from the thread.
-
-**Automation**
-
-* User creates a recurring check and receives a summary at the scheduled time with opt‑out controls.
-
----
-
-## Appendix B — Glossary
-
-* **Action Chip:** One‑click affordance to trigger a suggested next step.
-* **Autonomy Level:** Execution strictness for agents (Suggest/Draft/Execute).
-* **Budget:** Guardrail for time/cost/tokens; escalates at 80%.
-* **Clip:** Retrieved, cited snippet used for grounding or display.
-* **Context Pack:** Reusable memory bundle attached to a thread.
-* **Run:** Single execution by an agent with observable steps.
-* **Snapshot:** Rolling summary of a thread/project with citations.
+Handle Interruptions By:
+• Freezing current state
+• Serializing to context pack
+• Queuing new context
+• Offering merge/switch/dismiss options
+```
 
 ---
 
-## Appendix C — Example UI Copy (Reference)
+## Agent System Architecture
 
-* **Approval:** “Ready to apply these changes? You can review the full diff before confirming.”
-* **Conflict:** “The source changed since draft. We’ll add a comment with your edits and link the revision.”
-* **Budget Escalation:** “This task is nearing its limit. Increase budget or pause to review.”
+### Core Agent Capabilities
+
+```
+┌─────────────────────────────────────────────────────┐
+│                  Agent Catalog                      │
+├──────────┬────────────────────────────────────────┤
+│ Planner  │ Decomposes intents into task graphs    │
+│ Writer   │ Creates and edits documents            │
+│ Engineer │ Generates code, tests, PRs             │
+│ Analyst  │ Processes data, creates visualizations │
+│ Researcher│ Gathers and synthesizes information   │
+│ Scheduler│ Manages time-based activities         │
+│ Critic   │ Reviews and validates outputs         │
+│ Ops      │ Handles automation and workflows      │
+└──────────┴────────────────────────────────────────┘
+```
+
+### Agent Listener System
+
+Agents continuously monitor conversations in real-time:
+
+```
+Main Conversation
+       ↓
+[Agent Listeners Active]
+       ↓
+┌────────────────────┐
+│ Keyword Detection  │ → Prefetch relevant data
+│ Context Analysis   │ → Prepare suggestions
+│ Pattern Recognition│ → Queue workstreams
+└────────────────────┘
+       ↓
+[Subtle UI Indicators]
+• Pulsing orbs for activity
+• Suggestion chips above input
+• Never modal or blocking
+```
+
+### Autonomy & Control Framework
+
+```
+Task Autonomy Levels:
+┌─────────────┬──────────────────────────────────┐
+│  Suggest    │ Highlight changes, propose actions│
+│  Draft      │ Create content, require approval  │
+│  Execute    │ Perform directly, allow rollback  │
+└─────────────┴──────────────────────────────────┘
+
+Approval Gates (Always Required):
+• External communications >10 recipients
+• Repository merges (PRs ok, merge needs approval)
+• Data modifications above threshold
+• Budget exceedances (time/tokens/cost)
+```
+
+---
+
+## Context & Memory Management
+
+### Infinite Conversation Model
+
+```
+Message Range     | Storage Strategy        | Access Speed
+-----------------|------------------------|-------------
+0-10 messages    | Full fidelity          | Instant
+11-50 messages   | Smart summaries        | <500ms
+51-500 messages  | Topic metadata         | <1s
+500+ messages    | Searchable index only  | <2s
+```
+
+### Context Pack Architecture
+
+Context Packs enable sub-second switching through:
+
+- Pre-computed embeddings for semantic search
+- Memory caching for instant access
+- Background enrichment without blocking
+- Composable bundles sharable across threads
+- Version control with rollback capability
+
+### Interruption Model
+
+```
+Context Switch Detected
+         ↓
+┌──────────────────┐
+│ 1. Freeze state  │
+│ 2. Serialize     │
+│ 3. Present options│
+└──────────────────┘
+         ↓
+┌─────────────────────────────┐
+│ • Dismiss current & switch  │
+│ • Keep both in split view   │
+│ • Queue for later           │
+│ • Cancel interruption       │
+└─────────────────────────────┘
+```
+
+---
+
+## Right Rail System
+
+Four essential tabs providing workspace awareness:
+
+### Now Tab
+
+- Real-time agent activity stream
+- Progress indicators with time/token usage
+- Running tasks with pause/cancel controls
+- Resource consumption meters
+
+### Clips Tab
+
+- Retrieved context snippets with sources
+- Citation provenance tracking
+- Relevance scoring
+- One-click expansion to full source
+
+### Tasks Tab
+
+- Active task graph visualization
+- Dependency tracking
+- Status indicators (Backlog, In Progress, Blocked, Done)
+- Owner assignments (human or agent)
+
+### Docs Tab
+
+- Linked documents with live status chips
+- Version history
+- Collaborative presence indicators
+- Quick preview on hover
+
+---
+
+## Performance Requirements
+
+### Critical Performance Targets
+
+| Operation         | Target        | Impact                  |
+| ----------------- | ------------- | ----------------------- |
+| Context Switch    | <2s perceived | Defines "instant" feel  |
+| Surface Render    | <500ms        | Maintains flow state    |
+| First Token       | <800ms P95    | Conversational pace     |
+| Quick Switcher    | <50ms         | Feels immediate         |
+| Surface Sync      | <100ms        | Real-time collaboration |
+| Context Pack Load | <1s           | Enables fast switching  |
+
+### Optimization Requirements
+
+- Preload adjacent contexts (anticipatory loading)
+- Virtualize large surfaces (viewport + buffer)
+- Use differential updates (send only changes)
+- Implement tiered caching (memory → IndexedDB → server)
+- Stream responses progressively
+
+---
+
+## Integration Requirements
+
+### Day-1 Connectors
+
+| Integration      | Scope                   | Safety                                       |
+| ---------------- | ----------------------- | -------------------------------------------- |
+| Google Workspace | Drive, Docs, Calendar   | Preview all write-backs                      |
+| GitHub           | Issues, PRs, Code       | PR creation allowed, merge needs approval    |
+| Notion           | Pages, Databases        | Bi-directional sync with conflict resolution |
+| Slack            | Messages, Channels      | Rate limits for bulk operations              |
+| Email            | Send, Receive, Schedule | Approval for >10 recipients                  |
+
+### Integration Principles
+
+- Least-privilege scope requests
+- Preview all write-backs before execution
+- Degrade to comments when conflicts occur
+- Maintain bi-directional sync where possible
+- Never lose user work during conflicts
+
+---
+
+## Success Metrics
+
+### User Experience Metrics
+
+- **Activation:** % completing end-to-end flow within 24h
+- **Engagement:** WAU performing ≥3 agent tasks
+- **Throughput:** Median time from intent → deliverable
+- **Context Continuity:** % switches with no re-explanation
+- **Trust:** % of agent actions accepted without revision
+
+### System Performance Metrics
+
+- Context switch latency P95 <2s
+- Agent response first token P95 <800ms
+- Surface sync latency P95 <100ms
+- System availability ≥99.9% monthly
+- Zero data loss during interruptions
+
+---
+
+## Governance & Observability
+
+### Complete Provenance System
+
+```
+Every Action Must Have:
+┌──────────────────────────┐
+│ • Full trace with steps  │
+│ • Preview before apply   │
+│ • One-click rollback     │
+│ • Audit log entry        │
+│ • Cost/resource tracking │
+└──────────────────────────┘
+```
+
+### Default Policies
+
+- **Autonomy:** Draft mode (requires approval for external actions)
+- **Communications:** Approval required for >10 recipients
+- **Repository:** PRs allowed, merges require approval
+- **Budgets:** 5-minute wall-time default, escalate at 80%
+- **Data Retention:** 12 months default (admin configurable)
+- **Privacy:** PII/secrets masked in traces by default
+
+---
+
+## Risk Mitigation
+
+### Technical Risks
+
+- **Context Pack Scale:** Mitigate with aggressive caching and pagination
+- **Surface Conflicts:** Use CRDT with clear conflict resolution UI
+- **Agent Coordination:** Clear ownership model and locking mechanisms
+
+### User Experience Risks
+
+- **Cognitive Overload:** Progressive disclosure and smart defaults
+- **Trust in Automation:** Always preview, explain, and allow rollback
+
+---
+
+## Document Status
+
+**Status:** Implementation Ready\
+**Critical Path:** Context System → Surface Protocol → Agent Binding → Integration Layer\
+**Key Risk:** Context Pack performance at scale\
+**Success Measure:** Users complete complex workflows through natural conversation while maintaining full control

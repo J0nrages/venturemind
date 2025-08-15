@@ -9,7 +9,13 @@ import {
   Activity,
   Sparkles,
   AlertCircle,
-  MoreHorizontal
+  MoreHorizontal,
+  ChevronDown,
+  Search,
+  Paperclip,
+  Clock,
+  Zap,
+  Hash
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { ConversationService, ConversationMessage } from '../services/ConversationService';
@@ -17,8 +23,11 @@ import { DocumentService, UserDocument } from '../services/DocumentService';
 import { useSSEConnection } from '../hooks/useSSEConnection';
 import { useThreading } from '../hooks/useThreading';
 import { useContexts } from '../contexts/ContextProvider';
+import { AgentOrchestrator, PrefetchData } from '../services/AgentOrchestrator';
 import { Context } from '../types/context';
 import { AgentOrchestrationService } from '../services/AgentOrchestrationService';
+import { UserSettingsService, type ModelConfiguration, type UserModelPreferences } from '../services/UserSettingsService';
+import { GeminiService } from '../services/GeminiService';
 import ThreadedChatMessage from './ThreadedChatMessage';
 import ReplyModal from './ReplyModal';
 import BranchModal from './BranchModal';
@@ -48,7 +57,22 @@ export default function ConversationSpine({
   const [showContextMenu, setShowContextMenu] = useState(false);
   const [agentSuggestions, setAgentSuggestions] = useState<any[]>([]);
   
-  const { addAgentToContext } = useContexts();
+  // Model selector and chat features state
+  const [selectedModel, setSelectedModel] = useState('gemini-2.5-flash');
+  const [availableModels, setAvailableModels] = useState<Record<string, ModelConfiguration>>({});
+  const [webSearchEnabled, setWebSearchEnabled] = useState(true);
+  const [showModelDropdown, setShowModelDropdown] = useState(false);
+  const [messageStats, setMessageStats] = useState<{
+    lastLatency?: number;
+    lastTokens?: number;
+    lastSpeed?: number;
+  }>({});
+  
+  // Settings for stats display
+  const { userSettings } = useContexts();
+  const showStats = userSettings?.ui_preferences?.show_message_stats ?? false;
+  
+  const { addAgentToContext, threadContext, spawnAgentWorkstream } = useContexts();
   
   // Modal states for threading
   const [replyModal, setReplyModal] = useState<{
@@ -75,9 +99,22 @@ export default function ConversationSpine({
     parentMessage: undefined
   });
   
+  const [threadModal, setThreadModal] = useState<{
+    isOpen: boolean;
+    messageId: string;
+    selectedText?: string;
+    parentMessage?: string;
+  }>({
+    isOpen: false,
+    messageId: '',
+    selectedText: undefined,
+    parentMessage: undefined
+  });
+  
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesScrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const modelDropdownRef = useRef<HTMLDivElement>(null);
   
   // SSE connection for real-time orchestration updates
   const sseState = useSSEConnection(user?.id);
@@ -92,6 +129,13 @@ export default function ConversationSpine({
     }
   }, [isActive, context.id]);
 
+  // Load user model preferences
+  useEffect(() => {
+    if (user?.id) {
+      loadUserModelPreferences();
+    }
+  }, [user?.id]);
+
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
@@ -101,6 +145,20 @@ export default function ConversationSpine({
       inputRef.current.focus();
     }
   }, [loading, isActive]);
+
+  // Click outside handler for model dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (modelDropdownRef.current && !modelDropdownRef.current.contains(event.target as Node)) {
+        setShowModelDropdown(false);
+      }
+    };
+
+    if (showModelDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showModelDropdown]);
 
   // Load context-specific conversation history
   useEffect(() => {
@@ -172,6 +230,20 @@ export default function ConversationSpine({
     }
   };
 
+  const loadUserModelPreferences = async () => {
+    if (!user?.id) return;
+    
+    try {
+      const settings = await UserSettingsService.loadUserSettings(user.id);
+      setAvailableModels(settings.model_preferences.models);
+      setSelectedModel(settings.model_preferences.default_model);
+    } catch (error) {
+      console.error('Error loading model preferences:', error);
+      setAvailableModels(UserSettingsService.DEFAULT_MODEL_PREFERENCES.models);
+      setSelectedModel('gemini-2.5-flash');
+    }
+  };
+
   const getContextWelcomeMessage = (userId: string): Omit<ConversationMessage, 'id' | 'created_at'> => {
     return {
       user_id: userId,
@@ -196,8 +268,11 @@ export default function ConversationSpine({
     setLoading(true);
     const userMessage = currentMessage;
     setCurrentMessage('');
+    const startTime = Date.now();
     
     try {
+      // Clear model config cache to ensure we use latest settings
+      GeminiService.clearModelConfigCache(user.id);
       // Check for agent suggestions before sending
       const suggestions = AgentOrchestrationService.suggestAgents(userMessage, context.activeAgents);
       if (suggestions.length > 0) {
@@ -245,6 +320,18 @@ export default function ConversationSpine({
       
       await ConversationService.saveMessage(aiMsg);
       setMessages(prev => [...prev, { ...aiMsg, id: (Date.now() + 1).toString(), created_at: new Date().toISOString() } as ConversationMessage]);
+      
+      // Calculate message stats
+      const endTime = Date.now();
+      const latency = endTime - startTime;
+      const estimatedTokens = Math.ceil((userMessage.length + response.response.length) / 4); // Rough estimate
+      const tokensPerSecond = Math.round((estimatedTokens / latency) * 1000);
+      
+      setMessageStats({
+        lastLatency: latency,
+        lastTokens: estimatedTokens,
+        lastSpeed: tokensPerSecond
+      });
       
       // Reload documents if any were updated
       if (response.updatedDocuments?.length > 0) {
@@ -373,10 +460,25 @@ export default function ConversationSpine({
                   parentMessage: parentMessage?.content
                 });
               }}
+              onThread={(messageId, selectedText) => {
+                const parentMessage = messages.find(m => m.id === messageId);
+                setThreadModal({
+                  isOpen: true,
+                  messageId,
+                  selectedText,
+                  parentMessage: parentMessage?.content
+                });
+              }}
+              onSpawnAgent={(agentId, selectedText) => {
+                const prefetchData = AgentOrchestrator.getPrefetchedData(agentId, context.id);
+                const newContextId = spawnAgentWorkstream(agentId, context.id, prefetchData, `${agentId} - ${selectedText.substring(0, 30)}...`);
+                toast.success(`Spawned ${agentId} workstream`);
+              }}
               showArchived={threading.showArchived}
               isRoot={!message.parent_message_id}
               depth={0}
-              contextColor={context.color.primary}
+              contextId={context.id}
+              userId={user?.id}
               className="mb-2"
             />
           </motion.div>
@@ -403,27 +505,115 @@ export default function ConversationSpine({
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Context-Aware Input Area */}
+      {/* Enhanced ChatGPT-style Input Area */}
       <div className="p-4 border-t border-gray-200 bg-white/50 backdrop-blur-sm">
-        <div className="flex items-center gap-2">
+        {/* Message Stats */}
+        {showStats && messageStats.lastLatency && (
+          <div className="mb-3 flex items-center gap-4 text-xs text-gray-500">
+            <div className="flex items-center gap-1">
+              <Clock className="w-3 h-3" />
+              <span>{(messageStats.lastLatency / 1000).toFixed(1)}s</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Hash className="w-3 h-3" />
+              <span>{messageStats.lastTokens} tokens</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Zap className="w-3 h-3" />
+              <span>{messageStats.lastSpeed} tok/sec</span>
+            </div>
+          </div>
+        )}
+        
+        {/* Model Selector and Controls */}
+        <div className="mb-3 flex items-center gap-2 text-sm">
+          {/* Model Selector */}
+          <div className="relative" ref={modelDropdownRef}>
+            <button
+              onClick={() => setShowModelDropdown(!showModelDropdown)}
+              className="flex items-center gap-1 px-2 py-1 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md transition-colors"
+              disabled={loading}
+            >
+              <Brain className="w-4 h-4" />
+              <span className="font-medium">{selectedModel}</span>
+              <ChevronDown className="w-3 h-3" />
+            </button>
+            
+            {showModelDropdown && (
+              <div className="absolute bottom-full left-0 mb-1 bg-white border border-gray-200 rounded-lg shadow-lg py-1 min-w-48 z-10">
+                {Object.entries(availableModels).map(([modelName, config]) => (
+                  <button
+                    key={modelName}
+                    onClick={() => {
+                      setSelectedModel(modelName);
+                      setShowModelDropdown(false);
+                      // Update user preference immediately
+                      if (user?.id) {
+                        UserSettingsService.loadUserSettings(user.id).then(settings => {
+                          UserSettingsService.saveUserSettings(user.id, {
+                            ...settings,
+                            model_preferences: {
+                              ...settings.model_preferences,
+                              default_model: modelName
+                            }
+                          });
+                        });
+                      }
+                    }}
+                    className={`w-full text-left px-3 py-2 hover:bg-gray-50 transition-colors ${
+                      selectedModel === modelName ? 'bg-blue-50 text-blue-700' : 'text-gray-700'
+                    }`}
+                  >
+                    <div className="font-medium">{modelName}</div>
+                    <div className="text-xs text-gray-500">
+                      Max: {config.max_output_tokens} tokens • Temp: {config.temperature}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Web Search Toggle */}
+          <button
+            onClick={() => setWebSearchEnabled(!webSearchEnabled)}
+            className={`flex items-center gap-1 px-2 py-1 rounded-md transition-colors ${
+              webSearchEnabled 
+                ? 'text-blue-600 bg-blue-50 hover:bg-blue-100' 
+                : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+            }`}
+            title={webSearchEnabled ? 'Web search enabled' : 'Web search disabled'}
+          >
+            <Search className="w-4 h-4" />
+            <span className="text-xs font-medium">Search</span>
+          </button>
+
+          {/* Attachment placeholder */}
+          <button
+            className="flex items-center gap-1 px-2 py-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
+            title="Attach files (coming soon)"
+            disabled
+          >
+            <Paperclip className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Message Input */}
+        <div className="relative">
           <Input
             ref={inputRef}
             value={currentMessage}
             onChange={(e) => setCurrentMessage(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && sendMessage()}
-            placeholder={`Ask ${context.title} AI anything...`}
+            placeholder="Type your message here..."
             disabled={loading}
-            className="flex-1 bg-white/80 border-gray-200 backdrop-blur-sm focus:bg-white transition-colors"
+            className="flex-1 bg-white border-gray-300 rounded-xl px-4 py-3 pr-12 focus:border-gray-400 focus:ring-0 transition-colors resize-none min-h-[44px]"
           />
           <Button
             onClick={sendMessage}
             disabled={loading || !currentMessage.trim()}
             size="icon"
-            className="rounded-lg backdrop-blur-sm"
-            style={{ 
-              backgroundColor: context.color.primary,
-              color: 'white'
-            }}
+            className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 rounded-lg bg-gray-800 hover:bg-gray-900 disabled:bg-gray-400"
           >
             {loading ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -494,6 +684,19 @@ export default function ConversationSpine({
         }}
         selectedText={branchModal.selectedText}
         parentMessage={branchModal.parentMessage}
+      />
+      
+      {/* Thread Modal - using BranchModal as placeholder until dedicated component is created */}
+      <BranchModal
+        isOpen={threadModal.isOpen}
+        onClose={() => setThreadModal(prev => ({ ...prev, isOpen: false }))}
+        onSubmit={(content) => {
+          // Create a thread context instead of a branch
+          const newThreadId = threadContext(context.id, `Thread: ${threadModal.selectedText?.substring(0, 30)}...`, threadModal.selectedText || '');
+          toast.success('New thread created');
+        }}
+        selectedText={threadModal.selectedText}
+        parentMessage={threadModal.parentMessage}
       />
 
       {/* Context Menu */}

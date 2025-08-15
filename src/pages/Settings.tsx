@@ -5,8 +5,9 @@ import { PageLayout } from '../components/PageLayout';
 import { motion } from 'framer-motion';
 import { supabase } from '../lib/supabase';
 import { ConversationService } from '../services/ConversationService';
+import { GeminiService } from '../services/GeminiService';
 import { useContexts } from '../contexts/ContextProvider';
-import { UserSettingsService } from '../services/UserSettingsService';
+import { UserSettingsService, type ModelConfiguration, type UserModelPreferences } from '../services/UserSettingsService';
 import toast from 'react-hot-toast';
 import { 
   Key, 
@@ -22,7 +23,10 @@ import {
   Sliders,
   Archive,
   Eye,
-  EyeOff
+  EyeOff,
+  Cpu,
+  Zap,
+  Gauge
 } from 'lucide-react';
 import { usePageTitle } from '../hooks/usePageTitle';
 
@@ -54,7 +58,16 @@ export default function Settings() {
     sidebar_position: 'right' as 'left' | 'right',
     show_agent_badges: true,
     show_confidence_scores: true,
+    show_message_stats: false,
   });
+
+  // Model preferences state
+  const [modelPrefs, setModelPrefs] = useState<UserModelPreferences>(
+    UserSettingsService.DEFAULT_MODEL_PREFERENCES
+  );
+  const [selectedModel, setSelectedModel] = useState('gemini-2.5-flash');
+  const [isEditingModel, setIsEditingModel] = useState<string | null>(null);
+  const [tempModelConfig, setTempModelConfig] = useState<ModelConfiguration | null>(null);
 
   useEffect(() => {
     const getUser = async () => {
@@ -87,7 +100,10 @@ export default function Settings() {
         sidebar_position: userSettings.ui_preferences.sidebar_position,
         show_agent_badges: userSettings.ui_preferences.show_agent_badges,
         show_confidence_scores: userSettings.ui_preferences.show_confidence_scores,
+        show_message_stats: userSettings.ui_preferences.show_message_stats,
       });
+      setModelPrefs(userSettings.model_preferences);
+      setSelectedModel(userSettings.model_preferences.default_model);
     }
   }, [userSettings]);
 
@@ -118,9 +134,13 @@ export default function Settings() {
           ...userSettings?.ui_preferences!,
           ...uiPrefs,
         },
+        model_preferences: modelPrefs,
       });
       
-      toast.success('Settings saved successfully');
+      // Clear model configuration cache to ensure immediate application
+      GeminiService.clearModelConfigCache(user?.id);
+      
+      toast.success('Settings saved and applied successfully!');
       setTestResult(null);
     } catch (error: any) {
       console.error('Settings save error:', error);
@@ -169,6 +189,96 @@ export default function Settings() {
       setTesting(false);
     }
   };
+
+  // Model configuration handlers
+  const handleModelChange = (modelName: string) => {
+    setSelectedModel(modelName);
+    setModelPrefs(prev => ({
+      ...prev,
+      default_model: modelName
+    }));
+  };
+
+  const startEditingModel = (modelName: string) => {
+    setIsEditingModel(modelName);
+    setTempModelConfig({ ...modelPrefs.models[modelName] });
+  };
+
+  const saveModelConfig = () => {
+    if (isEditingModel && tempModelConfig) {
+      setModelPrefs(prev => ({
+        ...prev,
+        models: {
+          ...prev.models,
+          [isEditingModel]: tempModelConfig
+        }
+      }));
+      setIsEditingModel(null);
+      setTempModelConfig(null);
+    }
+  };
+
+  const cancelEditingModel = () => {
+    setIsEditingModel(null);
+    setTempModelConfig(null);
+  };
+
+  const updateTempModelConfig = (field: keyof ModelConfiguration, value: number | string) => {
+    if (tempModelConfig) {
+      setTempModelConfig(prev => prev ? {
+        ...prev,
+        [field]: value
+      } : null);
+    }
+  };
+
+  const setAgentSpecificModel = (agentId: string, modelName: string | null) => {
+    setModelPrefs(prev => ({
+      ...prev,
+      agent_specific_models: {
+        ...prev.agent_specific_models,
+        ...(modelName ? { [agentId]: modelName } : { [agentId]: undefined })
+      }
+    }));
+  };
+
+  const handleTestModelConfig = async (modelName: string) => {
+    if (!geminiApiKey.trim()) {
+      toast.error('Please enter a Gemini API key first');
+      return;
+    }
+
+    setTesting(true);
+    try {
+      // Test the specific model configuration
+      const testPrompt = `Test message using ${modelName}. Please respond with: "Model ${modelName} is working correctly."`;
+      const response = await ConversationService.processWithContextualAI(
+        testPrompt,
+        user?.id,
+        [],
+        { type: 'general', agents: [], surfaces: {} }
+      );
+      
+      if (response.response) {
+        toast.success(`Model ${modelName} test successful!`);
+      } else {
+        toast.error(`Model ${modelName} test failed`);
+      }
+    } catch (error) {
+      console.error('Model test error:', error);
+      toast.error(`Model ${modelName} test failed`);
+    } finally {
+      setTesting(false);
+    }
+  };
+
+  const availableAgents = [
+    { id: 'engineer', name: 'Engineering Agent', icon: '⚙️' },
+    { id: 'writer', name: 'Content Writer', icon: '✍️' },
+    { id: 'analyst', name: 'Data Analyst', icon: '📊' },
+    { id: 'strategist', name: 'Business Strategist', icon: '🎯' },
+    { id: 'researcher', name: 'Research Assistant', icon: '🔍' },
+  ];
 
   const handleSignOut = async () => {
     try {
@@ -311,6 +421,231 @@ export default function Settings() {
                   className="w-full px-4 py-2 border border-border/50 rounded-lg bg-card/60 backdrop-blur-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Enter your Google Docs token (optional)"
                 />
+              </div>
+            </div>
+          </div>
+
+          {/* Model Configuration */}
+          <div>
+            <h2 className="text-lg font-medium text-foreground mb-4 flex items-center gap-2">
+              <Cpu className="w-5 h-5 text-purple-600" />
+              AI Model Configuration
+            </h2>
+            
+            <div className="space-y-6 border border-border/50 rounded-lg p-4 bg-card/70 backdrop-blur-xl">
+              {/* Default Model Selection */}
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  Default Model
+                </label>
+                <select
+                  value={selectedModel}
+                  onChange={(e) => handleModelChange(e.target.value)}
+                  className="w-full px-3 py-2 border border-border/50 rounded-lg bg-card/60 backdrop-blur-md focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                >
+                  {Object.keys(modelPrefs.models).map(modelName => (
+                    <option key={modelName} value={modelName}>
+                      {modelName}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-muted-foreground mt-1">
+                  This model will be used for all AI operations unless overridden by agent-specific settings
+                </p>
+              </div>
+
+              {/* Model Configuration Details */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-medium text-foreground flex items-center gap-2">
+                  <Gauge className="w-4 h-4" />
+                  Model Parameters
+                </h3>
+                
+                {Object.entries(modelPrefs.models).map(([modelName, config]) => (
+                  <div key={modelName} className="border border-border/30 rounded-lg p-4 bg-card/50">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-medium text-foreground">{modelName}</h4>
+                        {modelName === selectedModel && (
+                          <span className="px-2 py-1 text-xs bg-purple-500/20 text-purple-700 dark:text-purple-300 rounded-full">
+                            Default
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleTestModelConfig(modelName)}
+                          disabled={testing || !geminiApiKey.trim()}
+                        >
+                          {testing ? <Loader2 className="w-3 h-3 animate-spin" /> : <TestTube className="w-3 h-3" />}
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => startEditingModel(modelName)}
+                          disabled={isEditingModel === modelName}
+                        >
+                          {isEditingModel === modelName ? 'Editing...' : 'Configure'}
+                        </Button>
+                      </div>
+                    </div>
+
+                    {isEditingModel === modelName && tempModelConfig ? (
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-xs font-medium text-muted-foreground mb-1">
+                              Temperature: {tempModelConfig.temperature}
+                            </label>
+                            <input
+                              type="range"
+                              min="0"
+                              max="2"
+                              step="0.1"
+                              value={tempModelConfig.temperature}
+                              onChange={(e) => updateTempModelConfig('temperature', parseFloat(e.target.value))}
+                              className="w-full"
+                            />
+                            <p className="text-xs text-muted-foreground">Controls randomness in responses</p>
+                          </div>
+                          
+                          <div>
+                            <label className="block text-xs font-medium text-muted-foreground mb-1">
+                              Top P: {tempModelConfig.top_p}
+                            </label>
+                            <input
+                              type="range"
+                              min="0"
+                              max="1"
+                              step="0.05"
+                              value={tempModelConfig.top_p}
+                              onChange={(e) => updateTempModelConfig('top_p', parseFloat(e.target.value))}
+                              className="w-full"
+                            />
+                            <p className="text-xs text-muted-foreground">Controls diversity via nucleus sampling</p>
+                          </div>
+                          
+                          <div>
+                            <label className="block text-xs font-medium text-muted-foreground mb-1">
+                              Top K: {tempModelConfig.top_k}
+                            </label>
+                            <input
+                              type="range"
+                              min="1"
+                              max="100"
+                              step="1"
+                              value={tempModelConfig.top_k}
+                              onChange={(e) => updateTempModelConfig('top_k', parseInt(e.target.value))}
+                              className="w-full"
+                            />
+                            <p className="text-xs text-muted-foreground">Limits token choices to top K options</p>
+                          </div>
+                          
+                          <div>
+                            <label className="block text-xs font-medium text-muted-foreground mb-1">
+                              Max Output Tokens
+                            </label>
+                            <input
+                              type="number"
+                              min="100"
+                              max="32768"
+                              step="100"
+                              value={tempModelConfig.max_output_tokens}
+                              onChange={(e) => updateTempModelConfig('max_output_tokens', parseInt(e.target.value))}
+                              className="w-full px-2 py-1 border border-border/50 rounded text-sm bg-card/60"
+                            />
+                            <p className="text-xs text-muted-foreground">Maximum response length</p>
+                          </div>
+                        </div>
+                        
+                        <div className="flex justify-end gap-2 pt-2">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={cancelEditingModel}
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            type="button"
+                            size="sm"
+                            onClick={saveModelConfig}
+                          >
+                            Save Configuration
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs text-muted-foreground">
+                        <div>Temp: {config.temperature}</div>
+                        <div>Top P: {config.top_p}</div>
+                        <div>Top K: {config.top_k}</div>
+                        <div>Max Tokens: {config.max_output_tokens}</div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* Agent-Specific Models */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-medium text-foreground flex items-center gap-2">
+                  <Users className="w-4 h-4" />
+                  Agent-Specific Models
+                </h3>
+                
+                <div className="space-y-3">
+                  {availableAgents.map(agent => (
+                    <div key={agent.id} className="flex items-center justify-between p-3 border border-border/30 rounded-lg bg-card/50">
+                      <div className="flex items-center gap-3">
+                        <span className="text-lg">{agent.icon}</span>
+                        <div>
+                          <div className="font-medium text-foreground">{agent.name}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {modelPrefs.agent_specific_models[agent.id] 
+                              ? `Using: ${modelPrefs.agent_specific_models[agent.id]}`
+                              : `Using default: ${modelPrefs.default_model}`
+                            }
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <select
+                        value={modelPrefs.agent_specific_models[agent.id] || ''}
+                        onChange={(e) => setAgentSpecificModel(agent.id, e.target.value || null)}
+                        className="px-2 py-1 border border-border/50 rounded text-sm bg-card/60"
+                      >
+                        <option value="">Use Default</option>
+                        {Object.keys(modelPrefs.models).map(modelName => (
+                          <option key={modelName} value={modelName}>
+                            {modelName}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  ))}
+                </div>
+                
+                <div className="space-y-2">
+                  <div className="bg-card/60 border border-blue-500/20 rounded-lg p-3 backdrop-blur-xl">
+                    <p className="text-xs text-muted-foreground">
+                      <strong>Note:</strong> Agent-specific models override the default model for that agent's operations. 
+                      This allows you to optimize different agents for their specific tasks.
+                    </p>
+                  </div>
+                  
+                  <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-3 backdrop-blur-xl">
+                    <p className="text-xs text-green-700 dark:text-green-300">
+                      <strong>✓ Immediate Application:</strong> Model configuration changes take effect immediately upon saving. 
+                      No restart required.
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -495,6 +830,19 @@ export default function Settings() {
                   type="checkbox"
                   checked={uiPrefs.show_confidence_scores}
                   onChange={(e) => setUIPrefs(prev => ({ ...prev, show_confidence_scores: e.target.checked }))}
+                  className="rounded"
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <label className="text-sm font-medium text-foreground">Show message statistics</label>
+                  <p className="text-xs text-muted-foreground">Display latency, token count, and speed for each response</p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={uiPrefs.show_message_stats}
+                  onChange={(e) => setUIPrefs(prev => ({ ...prev, show_message_stats: e.target.checked }))}
                   className="rounded"
                 />
               </div>

@@ -3,6 +3,7 @@ import { OrchestrationService, OrchestrationResult } from './OrchestrationServic
 import { SSEService } from './SSEService';
 import { GeminiService } from './GeminiService';
 import { DocumentService } from './DocumentService';
+import { WebSocketService } from './WebSocketService';
 
 export interface AgentState {
   userId: string;
@@ -17,7 +18,118 @@ export interface AgentState {
   step: 'initializing' | 'retrieving' | 'planning' | 'executing' | 'responding' | 'complete';
 }
 
+export interface PrefetchData {
+  agentId: string;
+  contextId: string;
+  confidence: number;
+  actions: string[];
+  data?: any;
+  timestamp: string;
+}
+
+type EventEmitter = {
+  on: (event: string, handler: (data: any) => void) => void;
+  off: (event: string, handler: (data: any) => void) => void;
+  emit: (event: string, data: any) => void;
+};
+
 export class AgentOrchestrator {
+  private static activeListeners: Map<string, boolean> = new Map();
+  private static prefetchCache: Map<string, PrefetchData> = new Map();
+  private static eventEmitter: EventEmitter = {
+    events: new Map(),
+    on(event: string, handler: (data: any) => void) {
+      if (!this.events.has(event)) {
+        this.events.set(event, new Set());
+      }
+      this.events.get(event)?.add(handler);
+    },
+    off(event: string, handler: (data: any) => void) {
+      this.events.get(event)?.delete(handler);
+    },
+    emit(event: string, data: any) {
+      this.events.get(event)?.forEach((handler: any) => handler(data));
+    }
+  } as any;
+  private static websocketService = WebSocketService;
+  // Background listening capability for non-intrusive prefetching
+  static enableBackgroundListening(contextId: string): void {
+    const agentTypes = ['planner', 'researcher', 'analyst'];
+    
+    agentTypes.forEach(agentType => {
+      this.activeListeners.set(`${agentType}_${contextId}`, true);
+      
+      // Monitor conversation messages via existing WebSocket
+      this.websocketService.on('message', (data: any) => {
+        if (data.type === 'conversation_message' && 
+            data.contextId === contextId && 
+            this.activeListeners.get(`${agentType}_${contextId}`)) {
+          this.analyzeForPrefetch(agentType, data, contextId);
+        }
+      });
+    });
+  }
+  
+  // Disable background listening for a context
+  static disableBackgroundListening(contextId: string): void {
+    const agentTypes = ['planner', 'researcher', 'analyst'];
+    agentTypes.forEach(agentType => {
+      this.activeListeners.delete(`${agentType}_${contextId}`);
+    });
+  }
+  
+  // Analyze messages for prefetch opportunities
+  private static async analyzeForPrefetch(agentType: string, messageData: any, contextId: string): Promise<void> {
+    try {
+      // Send to backend for LLM analysis
+      this.websocketService.send({
+        type: 'analyze_for_prefetch',
+        agent_id: agentType,
+        content: {
+          message: messageData.content || messageData.message,
+          context_id: contextId,
+          timestamp: messageData.timestamp || new Date().toISOString()
+        }
+      });
+    } catch (error) {
+      console.error('Failed to analyze for prefetch:', error);
+    }
+  }
+  
+  // Handle prefetch results from backend
+  static onPrefetchComplete(data: PrefetchData): void {
+    const cacheKey = `${data.agentId}_${data.contextId}`;
+    this.prefetchCache.set(cacheKey, data);
+    this.eventEmitter.emit('prefetch:ready', data);
+  }
+  
+  // Get prefetched data for agent workstream spawning
+  static getPrefetchedData(agentId: string, contextId: string): PrefetchData | undefined {
+    const cacheKey = `${agentId}_${contextId}`;
+    const cached = this.prefetchCache.get(cacheKey);
+    
+    // Check if data is still fresh (30 minutes)
+    if (cached) {
+      const age = Date.now() - new Date(cached.timestamp).getTime();
+      if (age < 30 * 60 * 1000) { // 30 minutes
+        return cached;
+      } else {
+        this.prefetchCache.delete(cacheKey);
+      }
+    }
+    
+    return undefined;
+  }
+  
+  // Event emitter access for components
+  static on(event: string, handler: (data: any) => void): void {
+    this.eventEmitter.on(event, handler);
+  }
+  
+  static off(event: string, handler: (data: any) => void): void {
+    this.eventEmitter.off(event, handler);
+  }
+  
   // Main orchestration entry point with real-time streaming
   static async processMessage(
     userId: string,
@@ -179,7 +291,7 @@ Plan actions as JSON array:
 `;
 
         try {
-          const response = await GeminiService.generateContent(planningPrompt);
+          const response = await GeminiService.generateContent(planningPrompt, undefined, state.userId);
           plannedActions = JSON.parse(response.content);
         } catch (planError) {
           console.error('Error parsing planned actions:', planError);
@@ -259,7 +371,7 @@ Generate a concise, helpful response (2-3 sentences) that:
 3. Suggests next steps if appropriate
 `;
 
-        const geminiResponse = await GeminiService.generateContent(responsePrompt);
+        const geminiResponse = await GeminiService.generateContent(responsePrompt, undefined, state.userId);
         response = geminiResponse.content;
       } else {
         const actionsCount = state.executedActions.length;
@@ -537,5 +649,18 @@ Generate a concise, helpful response (2-3 sentences) that:
     }
 
     return actions;
+  }
+  
+  // Initialize WebSocket event handlers for prefetch
+  static initializePrefetchHandlers(): void {
+    this.websocketService.on('agent:prefetch_complete', (data: any) => {
+      this.onPrefetchComplete(data);
+    });
+  }
+  
+  // Cleanup method for component unmounting
+  static cleanup(): void {
+    this.activeListeners.clear();
+    this.prefetchCache.clear();
   }
 }

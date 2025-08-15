@@ -1024,7 +1024,7 @@ export class ConversationService {
       }
 
       // Test with a simple message
-      const testResponse = await GeminiService.generateContent("Hello, this is a test message. Please respond briefly with 'API test successful'.");
+      const testResponse = await GeminiService.generateContent("Hello, this is a test message. Please respond briefly with 'API test successful'.", undefined, userId);
       
       return {
         success: true,

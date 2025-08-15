@@ -5,6 +5,7 @@ import {
   createNewContext, 
   createMainContext,
   createBranchContext,
+  createThreadContext,
   createAgentWorkstream,
   createListenerContext,
   AVAILABLE_AGENTS,
@@ -13,6 +14,7 @@ import {
 } from '../types/context';
 import { UserSettingsService, UserSettings } from '../services/UserSettingsService';
 import { supabase } from '../lib/supabase';
+import { AgentOrchestrator, PrefetchData } from '../services/AgentOrchestrator';
 import toast from 'react-hot-toast';
 
 interface ContextState {
@@ -30,8 +32,9 @@ interface ContextContextType extends ContextState {
   switchContext: (index: number) => void;
   createNewContext: (title: string) => string; // Returns new context ID
   archiveContext: (contextId: string) => void;
-  branchContext: (contextId: string, title: string, selectedText?: string) => string; // Returns new context ID
-  spawnAgentWorkstream: (agentId: string, parentContextId: string, title?: string) => string; // Returns new context ID
+  branchContext: (contextId: string, title: string, selectedText?: string, branchPoint?: any) => string; // Returns new context ID
+  threadContext: (contextId: string, title: string, selectedText: string) => string; // Returns new context ID
+  spawnAgentWorkstream: (agentId: string, parentContextId: string, prefetchData?: PrefetchData, title?: string) => string; // Returns new context ID
   createListenerContext: (agentId: string, parentContextId: string) => string; // Returns new context ID
   renameContext: (contextId: string, title: string) => void;
   addAgentToContext: (contextId: string, agentId: string) => void;
@@ -57,22 +60,33 @@ interface ContextProviderProps {
 
 export function ContextProvider({ children }: ContextProviderProps) {
   const [state, setState] = useState<ContextState>(() => {
-    // Initialize with only a main context
-    const mainContext = {
-      ...createMainContext(),
-      conversationHistory: []
-    };
-
-    return {
-      contexts: [mainContext],
-      currentContextIndex: 0,
-      currentContext: mainContext,
-      expandedMode: 'compact',
-      documentSurfaceVisible: false,
-      agentRailVisible: false,
-      userSettings: null,
-      isLoading: true,
-    };
+    // Natural session management - check for existing session state
+    const sessionState = getSessionState();
+    
+    if (sessionState && !hasExplicitLogout()) {
+      // Natural resume - restore previous state
+      return {
+        ...sessionState,
+        isLoading: true,
+      };
+    } else {
+      // Clean start - single main context
+      const mainContext = {
+        ...createMainContext(),
+        conversationHistory: []
+      };
+      
+      return {
+        contexts: [mainContext],
+        currentContextIndex: 0,
+        currentContext: mainContext,
+        expandedMode: 'compact',
+        documentSurfaceVisible: false,
+        agentRailVisible: false,
+        userSettings: null,
+        isLoading: true,
+      };
+    }
   });
 
   // Load user settings only (not all contexts)
@@ -81,7 +95,6 @@ export function ContextProvider({ children }: ContextProviderProps) {
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
-          // Load user settings only
           const settings = await UserSettingsService.loadUserSettings(user.id);
           
           setState(prev => ({
@@ -91,8 +104,8 @@ export function ContextProvider({ children }: ContextProviderProps) {
             isLoading: false,
           }));
           
-          // Initialize agent listeners for the main context
-          initializeAgentListeners(prev.currentContext.id);
+          // Initialize agent listeners for main context
+          initializeAgentListeners(state.currentContext.id);
         } else {
           setState(prev => ({ ...prev, isLoading: false }));
         }
@@ -101,25 +114,27 @@ export function ContextProvider({ children }: ContextProviderProps) {
         setState(prev => ({ ...prev, isLoading: false }));
       }
     };
-
+    
     loadUserData();
   }, []);
+  
+  // Session state persistence
+  useEffect(() => {
+    // Save session state on changes (debounced)
+    const timeoutId = setTimeout(() => {
+      saveSessionState(state);
+    }, 1000);
+    
+    return () => clearTimeout(timeoutId);
+  }, [state]);
 
   // Initialize agent listeners for background prefetching
   const initializeAgentListeners = (mainContextId: string) => {
-    const agentIds = ['planner', 'analyst', 'engineer'];
+    // Use existing AgentOrchestrator instead of creating listener contexts
+    AgentOrchestrator.enableBackgroundListening(mainContextId);
     
-    agentIds.forEach(agentId => {
-      const listenerContext = {
-        ...createListenerContext(agentId, mainContextId),
-        conversationHistory: []
-      };
-      
-      setState(prev => ({
-        ...prev,
-        contexts: [...prev.contexts, listenerContext]
-      }));
-    });
+    // Initialize prefetch handlers
+    AgentOrchestrator.initializePrefetchHandlers();
   };
 
   // Update current context when index changes
@@ -300,30 +315,85 @@ export function ContextProvider({ children }: ContextProviderProps) {
     archiveInDB();
   };
 
-  const branchContext = (contextId: string, title: string, selectedText?: string): string => {
+  // Enhanced branch creation with shared context
+  const branchContext = (contextId: string, title: string, selectedText?: string, branchPoint?: any): string => {
     const sourceContext = state.contexts.find(ctx => ctx.id === contextId);
     if (!sourceContext) return '';
-
+    
     const branchedContext = {
       ...createBranchContext(title, contextId, selectedText),
       conversationHistory: [...sourceContext.conversationHistory],
-      activeAgents: [...sourceContext.activeAgents]
+      activeAgents: [...sourceContext.activeAgents],
+      metadata: {
+        ...createBranchContext(title, contextId, selectedText).metadata,
+        branchPoint: branchPoint || {
+          messageId: `msg_${Date.now()}`,
+          timestamp: new Date()
+        },
+        selectedText
+      }
     };
     
     setState(prev => ({
       ...prev,
       contexts: [...prev.contexts, branchedContext],
+      // Keep parent active for branches
       currentContextIndex: prev.contexts.length,
       currentContext: branchedContext
     }));
     
     return branchedContext.id;
   };
+  
+  // Thread creation (fresh conversation)
+  const threadContext = (contextId: string, title: string, selectedText: string): string => {
+    const sourceContext = state.contexts.find(ctx => ctx.id === contextId);
+    if (!sourceContext) return '';
+    
+    const threadedContext = {
+      ...createThreadContext(title, contextId, selectedText),
+      conversationHistory: [], // Fresh start - no inherited history
+      activeAgents: [], // Fresh agent state
+      metadata: {
+        conversationType: 'thread',
+        inspirationLink: {
+          messageId: `msg_${Date.now()}`,
+          selectedText,
+          parentContextId: contextId
+        }
+      }
+    };
+    
+    setState(prev => {
+      // Auto-minimize parent for threads
+      const updatedContexts = prev.contexts.map(ctx =>
+        ctx.id === contextId 
+          ? { ...ctx, visibility: ContextVisibility.BACKGROUND }
+          : ctx
+      );
+      
+      return {
+        ...prev,
+        contexts: [...updatedContexts, threadedContext],
+        currentContextIndex: updatedContexts.length,
+        currentContext: threadedContext
+      };
+    });
+    
+    return threadedContext.id;
+  };
 
-  const spawnAgentWorkstream = (agentId: string, parentContextId: string, title?: string): string => {
+  // Enhanced agent workstream with prefetched data
+  const spawnAgentWorkstream = (agentId: string, parentContextId: string, prefetchData?: PrefetchData, title?: string): string => {
     const agentContext = {
       ...createAgentWorkstream(agentId, parentContextId, title),
-      conversationHistory: []
+      conversationHistory: [],
+      metadata: {
+        conversationType: 'agent_workstream',
+        prefetchData: prefetchData || AgentOrchestrator.getPrefetchedData(agentId, parentContextId),
+        suggestedBy: agentId,
+        workstreamStatus: 'initializing'
+      }
     };
     
     setState(prev => ({
@@ -490,6 +560,7 @@ export function ContextProvider({ children }: ContextProviderProps) {
     createNewContext: createNewContextFunc,
     archiveContext,
     branchContext,
+    threadContext,
     spawnAgentWorkstream,
     createListenerContext: createListenerContextFunc,
     renameContext,
@@ -550,4 +621,45 @@ export function useContextSwitching() {
     currentContextIndex,
     totalContexts: contexts.length
   };
+}
+
+// Session state management helpers
+function getSessionState(): ContextState | null {
+  try {
+    const saved = sessionStorage.getItem('syna_session_state');
+    return saved ? JSON.parse(saved) : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveSessionState(state: ContextState) {
+  try {
+    // Only save essential state, not full conversation history
+    const stateToSave = {
+      ...state,
+      contexts: state.contexts.map(ctx => ({
+        ...ctx,
+        conversationHistory: ctx.conversationHistory.slice(-10) // Keep recent messages only
+      }))
+    };
+    sessionStorage.setItem('syna_session_state', JSON.stringify(stateToSave));
+  } catch (error) {
+    console.warn('Failed to save session state:', error);
+  }
+}
+
+function hasExplicitLogout(): boolean {
+  return localStorage.getItem('syna_explicit_logout') === 'true';
+}
+
+// Utility to clear session state on explicit logout
+export function clearSessionState() {
+  sessionStorage.removeItem('syna_session_state');
+  localStorage.setItem('syna_explicit_logout', 'true');
+}
+
+// Utility to reset logout flag on new session
+export function resetLogoutFlag() {
+  localStorage.removeItem('syna_explicit_logout');
 }

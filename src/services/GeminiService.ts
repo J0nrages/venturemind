@@ -1,6 +1,7 @@
 import { supabase } from '../lib/supabase';
 import { apiClient } from '../lib/api';
 import { StrategicService } from './StrategicService';
+import { UserSettingsService, type ModelConfiguration } from './UserSettingsService';
 import { cleanAndParseJSON, safeJsonParse } from '../utils/jsonParser';
 
 export interface GeminiResponse {
@@ -22,6 +23,18 @@ export interface DocumentClassification {
 }
 
 export class GeminiService {
+  // Cache for user model configurations
+  private static modelConfigCache = new Map<string, ModelConfiguration>();
+  
+  // Clear cache when user settings are updated
+  static clearModelConfigCache(userId?: string): void {
+    if (userId) {
+      this.modelConfigCache.delete(userId);
+    } else {
+      this.modelConfigCache.clear();
+    }
+  }
+
   // Check if Gemini is available and initialize if needed
   static async initialize(userId: string): Promise<boolean> {
     console.log('🔑 GeminiService.initialize called for user:', userId);
@@ -53,8 +66,40 @@ export class GeminiService {
     }
   }
 
+  // Get user's model configuration
+  static async getUserModelConfig(userId: string, agentId?: string): Promise<ModelConfiguration> {
+    const cacheKey = `${userId}:${agentId || 'default'}`;
+    
+    // Check cache first
+    if (this.modelConfigCache.has(cacheKey)) {
+      return this.modelConfigCache.get(cacheKey)!;
+    }
+    
+    try {
+      const userSettings = await UserSettingsService.loadUserSettings(userId);
+      const modelPrefs = userSettings.model_preferences;
+      
+      // Use agent-specific model if configured
+      const modelName = agentId && modelPrefs.agent_specific_models[agentId] 
+        ? modelPrefs.agent_specific_models[agentId]
+        : modelPrefs.default_model;
+      
+      const config = modelPrefs.models[modelName] || modelPrefs.models[modelPrefs.default_model];
+      
+      // Cache the configuration
+      this.modelConfigCache.set(cacheKey, config);
+      
+      return config;
+    } catch (error) {
+      console.error('Error getting user model config:', error);
+      const defaultConfig = UserSettingsService.DEFAULT_MODEL_PREFERENCES.models['gemini-2.5-flash'];
+      this.modelConfigCache.set(cacheKey, defaultConfig);
+      return defaultConfig;
+    }
+  }
+
   // Generate content with Gemini through backend API
-  static async generateContent(prompt: string, context?: string): Promise<GeminiResponse> {
+  static async generateContent(prompt: string, context?: string, userId?: string, agentId?: string): Promise<GeminiResponse> {
     console.log('🔄 GeminiService.generateContent called with:', {
       prompt: prompt.substring(0, 100) + '...',
       hasContext: !!context,
@@ -64,19 +109,26 @@ export class GeminiService {
     try {
       const fullPrompt = context ? `${context}\n\n${prompt}` : prompt;
 
-      console.log('📡 Making API call to /api/v1/agents/generate...');
+      // Get user's model configuration
+      const modelConfig = userId 
+        ? await this.getUserModelConfig(userId, agentId)
+        : UserSettingsService.DEFAULT_MODEL_PREFERENCES.models['gemini-2.5-flash'];
+
+      console.log('📡 Making API call to /api/v1/agents/generate with model:', modelConfig.model_name);
       const response = await apiClient.post<{
         content: string;
         confidence: number;
         reasoning: string;
       }>('/api/v1/agents/generate', {
         prompt: fullPrompt,
-        model: 'gemini-2.5-flash',
+        model: modelConfig.model_name,
         config: {
-          temperature: 0.7,
-          topK: 40,
-          topP: 0.95,
-          maxOutputTokens: 2048,
+          temperature: modelConfig.temperature,
+          topK: modelConfig.top_k,
+          topP: modelConfig.top_p,
+          maxOutputTokens: modelConfig.max_output_tokens,
+          presencePenalty: modelConfig.presence_penalty,
+          frequencyPenalty: modelConfig.frequency_penalty,
         }
       });
 
@@ -158,7 +210,7 @@ Guidelines:
 - Be precise and actionable
 `;
 
-      const response = await this.generateContent(classificationPrompt);
+      const response = await this.generateContent(classificationPrompt, undefined, documents[0]?.user_id);
       
       try {
         // Parse JSON response with markdown cleanup
@@ -228,7 +280,7 @@ Respond as a strategic business advisor who:
 Generate a helpful strategic response:
 `;
 
-      const response = await this.generateContent(responsePrompt);
+      const response = await this.generateContent(responsePrompt, undefined, userId);
       return response.content;
     } catch (error) {
       console.error('Failed to generate contextual response:', error);
@@ -281,7 +333,7 @@ Guidelines:
 - Be specific and measurable where possible
 `;
 
-      const response = await this.generateContent(initiativePrompt);
+      const response = await this.generateContent(initiativePrompt, undefined, userId);
       
       try {
         const initiatives = cleanAndParseJSON(response.content);
@@ -374,7 +426,7 @@ Please:
 Return only the improved content:
 `;
 
-      const response = await this.generateContent(improvementPrompt);
+      const response = await this.generateContent(improvementPrompt, undefined, undefined);
       return response.content;
     } catch (error) {
       console.error('Failed to improve document content:', error);
