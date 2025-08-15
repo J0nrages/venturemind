@@ -1132,11 +1132,12 @@ export default function DocumentMemory() {
           transition={{ duration: 0.5, delay: 0.3 }}
           className="flex-1 bg-card/80 backdrop-blur-xl border border-border/50 rounded-xl flex flex-col"
         >
-          {/* Chat Header */}
+          {/* Ledger Header */}
           <div className="p-4 border-b border-border/50">
             <div className="flex items-center gap-2">
               <MessageCircle className="w-5 h-5 text-emerald-600" />
-              <h2 className="text-lg font-semibold text-foreground">AI Assistant</h2>
+              <h2 className="text-lg font-semibold text-foreground">Ledger</h2>
+              <span className="text-sm text-muted-foreground ml-2">Activity log & conversation history</span>
               {aiStatus === 'no-key' && (
                 <a
                   href="/settings"
@@ -1148,10 +1149,18 @@ export default function DocumentMemory() {
             </div>
           </div>
 
-          {/* Messages */}
-          <div ref={messagesScrollRef} className="flex-1 overflow-auto scrollbar-safari chat-scroll p-4 space-y-4">
-            {messages.map(message => (
-              <ThreadedChatMessage
+          {/* Messages - Updated to match ConversationSpine style */}
+          <div ref={messagesScrollRef} className="flex-1 overflow-y-auto px-4 pt-4 pb-4">
+            <div className="mx-auto w-full h-full max-w-5xl px-2 sm:px-4">
+              <div className="min-h-full flex flex-col justify-end gap-6">
+                {messages.map(message => (
+                  <motion.div
+                    key={message.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.05 }}
+                  >
+                    <ThreadedChatMessage
                 key={message.id}
                 message={message}
                 onArchive={(messageId) => threading.archiveMessage(messageId)}
@@ -1177,33 +1186,33 @@ export default function DocumentMemory() {
                 onRetry={retryMessage}
                 showArchived={threading.showArchived}
                 isRoot={!message.parent_message_id}
-              />
-            ))}
-            
-            {loading && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="flex justify-start"
-              >
-                <Card className="bg-card/80 backdrop-blur-xl border-border/50 px-4 py-2 rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <Loader2 className="w-4 h-4 animate-spin text-emerald-600" />
-                    <span className="text-sm text-muted-foreground">
-                      {aiStatus === 'working' ? 'AI is analyzing...' : 'Processing...'}
-                    </span>
+                    />
+                  </motion.div>
+                ))}
+                
+                {loading && (
+                  <div className="flex justify-start">
+                    <div className="bg-white/80 backdrop-blur-sm border border-gray-200 p-3 rounded-2xl shadow-sm">
+                      <div className="flex items-center gap-2">
+                        <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
+                        <span className="text-sm text-gray-600">
+                          {aiStatus === 'working' ? 'AI is analyzing...' : 'Processing...'}
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                </Card>
-              </motion.div>
-            )}
-            
-            <div ref={messagesEndRef} />
+                )}
+                
+                <div ref={messagesEndRef} />
+              </div>
+            </div>
           </div>
 
-          {/* Chat Input */}
-          <div className="p-4 border-t border-border/50">
-            <div className="flex gap-3">
-              <input
+          {/* Chat Input - Updated to match ConversationSpine style */}
+          <div className="relative p-4 border-t border-gray-200 bg-white/50 backdrop-blur-sm">
+            <div className="max-w-2xl mx-auto">
+              <div className="relative">
+                <input
                 ref={chatInputRef}
                 type="text"
                 value={currentMessage}
@@ -1214,16 +1223,22 @@ export default function DocumentMemory() {
                     ? "Tell me about your business or share information to save..." 
                     : "Share information to organize in your documents..."
                 }
-                className="flex-1 px-4 py-3 border border-border/50 rounded-xl bg-card/60 backdrop-blur-md text-foreground placeholder:text-muted-foreground transition-all duration-200 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:bg-card/80 hover:bg-card/70 hover:border-border/70"
+                  className="w-full bg-white/80 border-0 rounded-xl px-4 py-3 pr-12 focus:outline-none focus:ring-0 transition-colors resize-none min-h-[44px] shadow-sm"
                 disabled={loading}
-              />
-              <button
-                onClick={handleSendMessage}
-                disabled={!currentMessage.trim() || loading}
-                className="px-4 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:shadow-md active:scale-95"
-              >
-                <Send className="w-4 h-4" />
-              </button>
+                />
+                <Button
+                  onClick={handleSendMessage}
+                  disabled={!currentMessage.trim() || loading}
+                  size="icon"
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 rounded-lg bg-gray-800 hover:bg-gray-900 disabled:bg-gray-400"
+                >
+                  {loading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Send className="w-4 h-4" />
+                  )}
+                </Button>
+              </div>
             </div>
           </div>
         </motion.div>

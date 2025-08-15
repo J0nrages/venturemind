@@ -427,86 +427,94 @@ export function ConversationSpine({
 
       {/* Messages Area with Context-Aware Styling */}
       <div ref={messagesScrollRef} className={cn(
-        "flex-1 overflow-y-auto space-y-3",
-        unbounded ? "p-0" : "px-4 pt-4 pb-40" // extra bottom padding so bubbles don't sit at viewport edge
+        "flex-1 overflow-y-auto",
+        unbounded ? "p-0" : "px-4 pt-4 pb-4"
       )}>
-        {messages.map((message, index) => (
-          <motion.div
-            key={message.id}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.05 }}
-          >
-            <ThreadedChatMessage
-              message={message}
-              onArchive={(messageId) => threading.archiveMessage(messageId)}
-              onRestore={(messageId) => threading.restoreMessage(messageId)}
-              onReply={(messageId, quotedText) => {
-                const parentMessage = messages.find(m => m.id === messageId);
-                setReplyModal({
-                  isOpen: true,
-                  messageId,
-                  quotedText,
-                  parentMessage: parentMessage?.content
-                });
-              }}
-              onBranch={(messageId, selectedText) => {
-                const parentMessage = messages.find(m => m.id === messageId);
-                setBranchModal({
-                  isOpen: true,
-                  messageId,
-                  selectedText,
-                  parentMessage: parentMessage?.content
-                });
-              }}
-              onThread={(messageId, selectedText) => {
-                const parentMessage = messages.find(m => m.id === messageId);
-                setThreadModal({
-                  isOpen: true,
-                  messageId,
-                  selectedText,
-                  parentMessage: parentMessage?.content
-                });
-              }}
-              onSpawnAgent={(agentId, selectedText) => {
-                const prefetchData = AgentOrchestrator.getPrefetchedData(agentId, context.id);
-                const newContextId = spawnAgentWorkstream(agentId, context.id, prefetchData, `${agentId} - ${selectedText.substring(0, 30)}...`);
-                toast.success(`Spawned ${agentId} workstream`);
-              }}
-              showArchived={threading.showArchived}
-              isRoot={!message.parent_message_id}
-              depth={0}
-              contextId={context.id}
-              userId={user?.id}
-              className="mb-2"
-            />
-          </motion.div>
-        ))}
-        
-        {loading && (
-          <div className="flex justify-start">
-            <div className="bg-white/80 backdrop-blur-sm border border-gray-200 p-3 rounded-2xl shadow-sm">
-              <div className="flex items-center gap-2">
-                <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
-                <span className="text-sm text-gray-600">
-                  {context.title} AI is thinking...
-                </span>
-              </div>
-              {sseState.activeActions.length > 0 && (
-                <div className="mt-1 text-xs text-gray-500">
-                  {sseState.activeActions[0].replace('_', ' ')}
+        <div className={cn(
+          "mx-auto w-full h-full",
+          unbounded ? "max-w-4xl px-4 sm:px-6" : "max-w-5xl px-2 sm:px-4"
+        )}>
+          <div className="min-h-full flex flex-col justify-end gap-6">
+            {messages.map((message, index) => (
+              <motion.div
+                key={message.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05 }}
+              >
+                <ThreadedChatMessage
+                  message={message}
+                  onArchive={(messageId) => threading.archiveMessage(messageId)}
+                  onRestore={(messageId) => threading.restoreMessage(messageId)}
+                  onReply={(messageId, quotedText) => {
+                    const parentMessage = messages.find(m => m.id === messageId);
+                    setReplyModal({
+                      isOpen: true,
+                      messageId,
+                      quotedText,
+                      parentMessage: parentMessage?.content
+                    });
+                  }}
+                  onBranch={(messageId, selectedText) => {
+                    const parentMessage = messages.find(m => m.id === messageId);
+                    setBranchModal({
+                      isOpen: true,
+                      messageId,
+                      selectedText,
+                      parentMessage: parentMessage?.content
+                    });
+                  }}
+                  onThread={(messageId, selectedText) => {
+                    const parentMessage = messages.find(m => m.id === messageId);
+                    setThreadModal({
+                      isOpen: true,
+                      messageId,
+                      selectedText,
+                      parentMessage: parentMessage?.content
+                    });
+                  }}
+                  onSpawnAgent={(agentId, selectedText) => {
+                    const prefetchData = AgentOrchestrator.getPrefetchedData(agentId, context.id);
+                    const newContextId = spawnAgentWorkstream(agentId, context.id, prefetchData, `${agentId} - ${selectedText.substring(0, 30)}...`);
+                    toast.success(`Spawned ${agentId} workstream`);
+                  }}
+                  showArchived={threading.showArchived}
+                  isRoot={!message.parent_message_id}
+                  depth={0}
+                  contextId={context.id}
+                  userId={user?.id}
+                  className="mb-2"
+                />
+              </motion.div>
+            ))}
+
+            {loading && (
+              <div className="flex justify-start">
+                <div className="bg-white/80 backdrop-blur-sm border border-gray-200 p-3 rounded-2xl shadow-sm">
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
+                    <span className="text-sm text-gray-600">
+                      {context.title} AI is thinking...
+                    </span>
+                  </div>
+                  {sseState.activeActions.length > 0 && (
+                    <div className="mt-1 text-xs text-gray-500">
+                      {sseState.activeActions[0].replace('_', ' ')}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
+              </div>
+            )}
+
+            <div ref={messagesEndRef} />
           </div>
-        )}
-        
-        <div ref={messagesEndRef} />
+        </div>
       </div>
 
       {/* Enhanced ChatGPT-style Input Area - Hidden in unbounded mode */}
       {!unbounded && (
-        <div className="p-4 border-t border-gray-200 bg-white/50 backdrop-blur-sm">
+        <div className="relative p-4 border-t border-gray-200 bg-white/50 backdrop-blur-sm">
+        <div className="max-w-2xl mx-auto">
         {/* Message Stats */}
         {showStats && messageStats.lastLatency && (
           <div className="mb-3 flex items-center gap-4 text-xs text-gray-500">
@@ -613,7 +621,7 @@ export function ConversationSpine({
               onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && sendMessage()}
               placeholder="Type your message here..."
               disabled={loading}
-              className="flex-1 bg-white border-gray-300 rounded-xl px-4 py-3 pr-12 focus:border-gray-400 focus:ring-0 transition-colors resize-none min-h-[44px]"
+              className="flex-1 bg-white/80 border-0 rounded-xl px-4 py-3 pr-12 focus:outline-none focus:ring-0 transition-colors resize-none min-h-[44px] shadow-sm"
             />
             <Button
               onClick={sendMessage}
@@ -670,6 +678,7 @@ export function ConversationSpine({
             </div>
           </div>
         )}
+      </div>
       </div>
       )}
 

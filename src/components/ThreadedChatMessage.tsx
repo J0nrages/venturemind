@@ -326,10 +326,10 @@ export default function ThreadedChatMessage({
       <Card
         ref={messageRef}
         className={`group relative ${
-          message.sender === 'user' 
-            ? 'ml-auto max-w-xs lg:max-w-md bg-emerald-600 text-white' 
-            : 'mr-auto max-w-xs lg:max-w-md bg-card border-border'
-        } ${isArchived ? 'bg-muted border-dashed' : ''}`}
+          message.sender === 'user'
+            ? 'ml-auto bg-primary text-primary-foreground'
+            : 'mr-auto bg-card border border-border'
+        } ${'max-w-[65%] sm:max-w-[60%] lg:max-w-[55%]'} ${isArchived ? 'bg-muted border-dashed' : ''}`}
         onMouseEnter={() => setShowActions(true)}
         onMouseLeave={() => setShowActions(false)}
       >

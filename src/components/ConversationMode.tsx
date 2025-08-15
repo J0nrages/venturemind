@@ -6,8 +6,9 @@ import { cn } from '@/lib/utils';
 
 // Static gradient background (no animation for better performance)
 function AnimatedBackground() {
+  // Theme-aware gradient using shadcn tokens
   return (
-    <div className="fixed inset-0 overflow-hidden bg-gradient-to-br from-purple-600/90 via-blue-600/90 to-indigo-600/90" />
+    <div className="fixed inset-0 overflow-hidden bg-[radial-gradient(ellipse_at_top_left,_hsl(var(--primary)/0.25),_transparent_40%),_radial-gradient(ellipse_at_bottom_right,_hsl(var(--secondary)/0.25),_transparent_45%),_linear-gradient(to_br,_hsl(var(--background)),_hsl(var(--background)))]" />
   );
 }
 
