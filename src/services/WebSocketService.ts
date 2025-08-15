@@ -124,8 +124,16 @@ export class WebSocketService extends EventEmitter {
 
   private buildWebSocketUrl(sessionId: string): string {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const host = import.meta.env.VITE_API_URL?.replace(/^https?:\/\//, '') || 'localhost:8000';
-    return `${protocol}//${host}/ws/conversation/${sessionId}?token=${this.token}`;
+    
+    // If VITE_API_URL is set and we're not in dev mode, use it for the WebSocket connection
+    // Otherwise, use the current host (works for both Vite dev proxy and same-origin production)
+    if (import.meta.env.VITE_API_URL && !import.meta.env.DEV) {
+      const apiHost = import.meta.env.VITE_API_URL.replace(/^https?:\/\//, '');
+      return `${protocol}//${apiHost}/ws/conversation/${sessionId}?token=${this.token}`;
+    }
+    
+    // Default: use current host (works for Vite proxy in dev, and same-origin in production)
+    return `${protocol}//${window.location.host}/ws/conversation/${sessionId}?token=${this.token}`;
   }
 
   private setupEventHandlers(): void {

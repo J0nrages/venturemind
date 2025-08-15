@@ -27,9 +27,11 @@ export function useSSEConnection(userId: string | null) {
     if (!userId || eventSourceRef.current) return;
 
     try {
-      // Point to backend API on port 8000
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-      const eventSource = new EventSource(`${apiUrl}/api/events?user_id=${userId}`);
+      // Use VITE_API_URL if set, otherwise use relative path
+      const baseUrl = import.meta.env.VITE_API_URL || '';
+      const sseUrl = `${baseUrl}/api/events?user_id=${userId}`;
+      
+      const eventSource = new EventSource(sseUrl);
       eventSourceRef.current = eventSource;
 
       eventSource.onopen = () => {

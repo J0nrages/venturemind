@@ -41,14 +41,24 @@ export function useWebSocket(userId: string | null, sessionId?: string) {
     setState(prev => ({ ...prev, connecting: true, error: null }));
 
     try {
-      // Connect to actual backend WebSocket endpoint
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-      const wsUrl = apiUrl.replace('http', 'ws');
+      // In development, use relative path so Vite proxy handles it
+      // In production, use the full API URL
       const sessionId = generateSessionId();
+      let wsUrl: string;
       
-      console.log(`🔌 Connecting WebSocket to: ${wsUrl}/ws/conversation/${sessionId}`);
+      if (import.meta.env.DEV) {
+        // Use relative path - Vite will proxy this
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        wsUrl = `${protocol}//${window.location.host}/ws/conversation/${sessionId}`;
+      } else {
+        // Production: use configured API URL
+        const apiUrl = import.meta.env.VITE_API_URL || '';
+        wsUrl = `${apiUrl.replace('http', 'ws')}/ws/conversation/${sessionId}`;
+      }
       
-      const ws = new WebSocket(`${wsUrl}/ws/conversation/${sessionId}`);
+      console.log(`🔌 Connecting WebSocket to: ${wsUrl}`);
+      
+      const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
 
       ws.onopen = () => {

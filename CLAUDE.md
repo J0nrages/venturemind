@@ -2,6 +2,15 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## CRITICAL: Architecture Documentation
+
+**IMPORTANT**: Always read [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) first when working on this project. It contains:
+- Complete documentation index for all project docs
+- Full system architecture details
+- Directory structures for frontend and backend
+- Component relationships and patterns
+- Current issues and solutions
+
 ## Commands
 
 ### Development
@@ -14,6 +23,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Architecture Overview
 
 This is a React + TypeScript business intelligence dashboard application built with Vite and Supabase.
+
+For detailed architecture documentation, see [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)
 
 ### Tech Stack
 - **Frontend**: React 18, TypeScript, Vite

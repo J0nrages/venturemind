@@ -1,5 +1,24 @@
 # Syna Architecture Documentation
 
+## Documentation Index
+
+This document serves as the primary architecture reference. All other documentation files are listed here:
+
+### Core Documentation
+- **[ARCHITECTURE.md](./ARCHITECTURE.md)** - This document - Complete system architecture (CRITICAL - READ FIRST)
+- **[DEPLOYMENT.md](./DEPLOYMENT.md)** - Deployment strategies for self-hosted and cloud environments
+- **[../CLAUDE.md](../CLAUDE.md)** - Claude Code guidance and quick reference
+- **[../README.md](../README.md)** - Project overview and getting started
+
+### Implementation & Reports
+- **[SYNA_UNIFIED_IMPLEMENTATION_PLAN.md](./SYNA_UNIFIED_IMPLEMENTATION_PLAN.md)** - Unified implementation roadmap
+- **[SYNA_UI_ALIGNMENT_REPORT.md](./SYNA_UI_ALIGNMENT_REPORT.md)** - UI alignment and design system report
+- **[SYNA_UI_TRANSFORMATION_REPORT.md](./SYNA_UI_TRANSFORMATION_REPORT.md)** - UI transformation progress report
+- **[LLM_OBSERVABILITY_ANALYSIS.md](./LLM_OBSERVABILITY_ANALYSIS.md)** - LLM observability and monitoring analysis
+
+### Backend Documentation
+- **[../backend/README.md](../backend/README.md)** - Backend-specific setup and configuration
+
 ## Executive Summary
 
 Syna is a sophisticated AI-powered business intelligence platform built with a modern, service-oriented architecture. The system features a React/TypeScript frontend with a Python FastAPI backend, centered around a multi-agent AI system for intelligent task orchestration and real-time collaboration.

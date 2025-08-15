@@ -2,7 +2,8 @@
  * API client for backend communication
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+// Use VITE_API_URL if set, otherwise use relative paths (works with proxies)
+const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
 export interface ApiResponse<T> {
   data?: T;
@@ -241,9 +242,14 @@ export const marketplaceApi = {
 
 // WebSocket connection
 export function createWebSocketConnection(endpoint: string = '/ws'): WebSocket {
-  const wsUrl = API_BASE_URL.replace(/^http/, 'ws') + endpoint;
-  const token = localStorage.getItem('auth_token');
+  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
   
+  // If API_BASE_URL is set, use it; otherwise use current host
+  const wsUrl = API_BASE_URL 
+    ? API_BASE_URL.replace(/^http/, 'ws') + endpoint
+    : `${protocol}//${window.location.host}${endpoint}`;
+  
+  const token = localStorage.getItem('auth_token');
   const ws = new WebSocket(token ? `${wsUrl}?token=${token}` : wsUrl);
   
   ws.onopen = () => {
@@ -263,7 +269,7 @@ export function createWebSocketConnection(endpoint: string = '/ws'): WebSocket {
 
 // SSE connection
 export function createSSEConnection(endpoint: string): EventSource {
-  const url = `${API_BASE_URL}${endpoint}`;
+  const url = API_BASE_URL ? `${API_BASE_URL}${endpoint}` : endpoint;
   const token = localStorage.getItem('auth_token');
   
   const eventSource = new EventSource(

@@ -762,45 +762,8 @@ export class ConversationService {
     }
   }
 
-  // ===== THREADING & BRANCHING METHODS =====
-
-  // Archive a message (soft delete)
-  static async archiveMessage(messageId: string, userId: string): Promise<boolean> {
-    try {
-      const { error } = await supabase
-        .from('conversation_messages')
-        .update({
-          archived_at: new Date().toISOString(),
-          archived_by: userId
-        })
-        .eq('id', messageId)
-        .eq('user_id', userId); // Security: only archive own messages
-
-      return !error;
-    } catch (error) {
-      console.error('Error archiving message:', error);
-      return false;
-    }
-  }
-
-  // Restore archived message
-  static async restoreMessage(messageId: string, userId: string): Promise<boolean> {
-    try {
-      const { error } = await supabase
-        .from('conversation_messages')
-        .update({
-          archived_at: null,
-          archived_by: null
-        })
-        .eq('id', messageId)
-        .eq('user_id', userId);
-
-      return !error;
-    } catch (error) {
-      console.error('Error restoring message:', error);
-      return false;
-    }
-  }
+  // ===== THREADING & BRANCHING METHODS ===== 
+  // Note: archiveMessage and restoreMessage are defined above in the main methods section
 
   // Create reply to specific message
   static async createReply(
