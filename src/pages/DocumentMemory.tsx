@@ -380,7 +380,8 @@ export default function DocumentMemory() {
         content: currentMessage,
         sender: 'user',
         document_updates: [],
-        context_confidence: 0
+        context_confidence: 0,
+        thread_id: contextId
       };
 
       const savedUserMessage = await ConversationService.saveMessage(userMessage);
@@ -409,7 +410,8 @@ export default function DocumentMemory() {
         content: aiResult.response,
         sender: 'ai',
         document_updates: aiResult.documentUpdates,
-        context_confidence: aiResult.confidence
+        context_confidence: aiResult.confidence,
+        thread_id: contextId
       };
 
       const savedAiMessage = await ConversationService.saveMessage(aiMessage);

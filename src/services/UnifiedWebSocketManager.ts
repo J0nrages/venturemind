@@ -41,19 +41,24 @@ class UnifiedWebSocketManager {
   private static instance: UnifiedWebSocketManager;
   private ws: WebSocket | null = null;
   private subscriptions: Map<string, ChannelSubscription> = new Map();
+  private subscribedChannels: Set<string> = new Set(); // Track what we've already subscribed to
   private messageQueue: WebSocketMessage[] = [];
   private reconnectAttempts = 0;
-  private maxReconnectAttempts = 5;
-  private reconnectDelay = 1000;
+  private maxReconnectAttempts = 10; // Increased from 5 to 10
+  private reconnectDelay = 2000; // Start with 2 seconds
+  private maxReconnectDelay = 30000; // Max 30 seconds
   private heartbeatInterval: NodeJS.Timeout | null = null;
+  private reconnectTimeout: NodeJS.Timeout | null = null;
   private isConnected = false;
   private isConnecting = false;
+  private hasFailed = false; // Track if we've exhausted retries
   private useDirectDevEndpoint = true;
   private sessionId: string | null = null;
   private userId: string | null = null;
   private token: string | null = null;
-  private statusListeners: Set<(status: { connected: boolean; sessionId: string | null; subscriptions: number; queuedMessages: number; }) => void> = new Set();
+  private statusListeners: Set<(status: { connected: boolean; sessionId: string | null; subscriptions: number; queuedMessages: number; failed: boolean; }) => void> = new Set();
   private debug: boolean = import.meta.env.VITE_DEBUG_WS === 'true';
+  private lastError: string | null = null;
 
   private constructor() {
     // Private constructor for singleton
@@ -70,9 +75,15 @@ class UnifiedWebSocketManager {
    * Initialize WebSocket connection with authentication
    */
   public async connect(userId: string): Promise<void> {
+    // Reset failure state if attempting to reconnect manually
+    if (this.hasFailed) {
+      this.hasFailed = false;
+      this.reconnectAttempts = 0;
+    }
+
     // Prevent multiple connections
     if (this.ws?.readyState === WebSocket.OPEN) {
-      console.log('[WSManager] Already connected');
+      if (this.debug) console.log('[WSManager] Already connected');
       return;
     }
     if (this.isConnecting) {
@@ -102,6 +113,7 @@ class UnifiedWebSocketManager {
       this.setupEventHandlers();
     } catch (error) {
       console.error('[WSManager] Connection failed:', error);
+      this.lastError = error instanceof Error ? error.message : 'Unknown connection error';
       this.scheduleReconnect();
     }
   }
@@ -114,10 +126,13 @@ class UnifiedWebSocketManager {
     callback: (message: WebSocketMessage) => void,
     contextId?: string
   ): string {
+    // Create unique key for tracking backend subscriptions
+    const channelKey = `${channel}:${contextId || 'global'}`;
+    
     // Deduplicate identical subscriptions
     for (const [existingId, sub] of this.subscriptions.entries()) {
       if (sub.channel === channel && sub.contextId === contextId && sub.callback === callback) {
-        console.log(`[WSManager] Reusing existing subscription ${existingId} for ${channel}`);
+        if (this.debug) console.log(`[WSManager] Reusing existing subscription ${existingId}`);
         return existingId;
       }
     }
@@ -132,8 +147,9 @@ class UnifiedWebSocketManager {
 
     if (this.debug) console.log(`[WSManager] Subscribed to ${channel} (${subscriptionId})`);
     
-    // Notify backend about subscription (only once per unique channel/context)
-    if (this.isConnected) {
+    // Only send subscribe message if we haven't already subscribed to this channel/context combo
+    if (this.isConnected && !this.subscribedChannels.has(channelKey)) {
+      this.subscribedChannels.add(channelKey);
       this.send({
         id: crypto.randomUUID(),
         channel: 'system',
@@ -151,24 +167,36 @@ class UnifiedWebSocketManager {
    */
   public unsubscribe(subscriptionId: string): void {
     const subscription = this.subscriptions.get(subscriptionId);
-    if (subscription) {
-      this.subscriptions.delete(subscriptionId);
-      
-      // Notify backend about unsubscription
-      if (this.isConnected) {
-        this.send({
-          id: crypto.randomUUID(),
-          channel: 'system',
-          type: 'unsubscribe',
-          payload: { 
-            channel: subscription.channel, 
-            contextId: subscription.contextId 
-          },
-          timestamp: new Date().toISOString()
-        });
+    if (!subscription) return;
+
+    const channelKey = `${subscription.channel}:${subscription.contextId || 'global'}`;
+    
+    this.subscriptions.delete(subscriptionId);
+    if (this.debug) console.log(`[WSManager] Unsubscribed from ${subscriptionId}`);
+
+    // Check if any other subscriptions exist for this channel/context
+    let hasOtherSubscriptions = false;
+    for (const [, sub] of this.subscriptions) {
+      if (sub.channel === subscription.channel && sub.contextId === subscription.contextId) {
+        hasOtherSubscriptions = true;
+        break;
       }
     }
-    this.notifyStatus();
+
+    // Only unsubscribe from backend if no other subscriptions exist
+    if (this.isConnected && !hasOtherSubscriptions) {
+      this.subscribedChannels.delete(channelKey);
+      this.send({
+        id: crypto.randomUUID(),
+        channel: 'system',
+        type: 'unsubscribe',
+        payload: { 
+          channel: subscription.channel, 
+          contextId: subscription.contextId 
+        },
+        timestamp: new Date().toISOString()
+      });
+    }
   }
 
   /**
@@ -177,28 +205,84 @@ class UnifiedWebSocketManager {
   public send(message: Omit<WebSocketMessage, 'userId'>): void {
     const fullMessage: WebSocketMessage = {
       ...message,
-      userId: this.userId || undefined,
-      timestamp: message.timestamp || new Date().toISOString()
+      userId: this.userId || undefined
     };
 
+    // Send immediately if connected
     if (this.isConnected && this.ws?.readyState === WebSocket.OPEN) {
-      this.ws.send(JSON.stringify(fullMessage));
-      if (this.debug) console.log(`[WSManager] Sent message: ${message.type} on ${message.channel}`);
+      try {
+        this.ws.send(JSON.stringify(fullMessage));
+        if (this.debug) console.log('[WSManager] Sent:', fullMessage.type, 'on', fullMessage.channel);
+      } catch (error) {
+        console.error('[WSManager] Send failed:', error);
+        this.messageQueue.push(fullMessage);
+      }
     } else {
-      // Queue message if not connected
+      // Queue message for later
       this.messageQueue.push(fullMessage);
-      if (this.debug) console.log(`[WSManager] Queued message: ${message.type}`);
+      if (this.debug) console.log('[WSManager] Queued message');
     }
   }
 
   /**
-   * Send conversation message
+   * Add status listener
    */
-  public sendConversationMessage(
-    content: string, 
-    contextId: string,
-    metadata?: any
-  ): void {
+  public onStatusChange(callback: (status: { connected: boolean; sessionId: string | null; subscriptions: number; queuedMessages: number; failed: boolean; }) => void): () => void {
+    this.statusListeners.add(callback);
+    // Immediately notify of current status
+    callback({
+      connected: this.isConnected,
+      sessionId: this.sessionId,
+      subscriptions: this.subscriptions.size,
+      queuedMessages: this.messageQueue.length,
+      failed: this.hasFailed
+    });
+    
+    // Return unsubscribe function
+    return () => {
+      this.statusListeners.delete(callback);
+    };
+  }
+
+  /**
+   * Get current connection status
+   */
+  public getStatus() {
+    return {
+      connected: this.isConnected,
+      connecting: this.isConnecting,
+      sessionId: this.sessionId,
+      subscriptions: this.subscriptions.size,
+      queuedMessages: this.messageQueue.length,
+      reconnectAttempts: this.reconnectAttempts,
+      failed: this.hasFailed,
+      lastError: this.lastError
+    };
+  }
+
+  /**
+   * Get subscriptions count by channel
+   */
+  public getSubscriptionStats() {
+    const stats: Record<ChannelType, number> = {
+      conversation: 0,
+      agent: 0,
+      document: 0,
+      system: 0,
+      prefetch: 0
+    };
+
+    this.subscriptions.forEach(sub => {
+      stats[sub.channel]++;
+    });
+
+    return stats;
+  }
+
+  /**
+   * Convenience: send a conversation message from the user
+   */
+  public sendConversationMessage(content: string, contextId: string, metadata?: any): void {
     this.send({
       id: crypto.randomUUID(),
       channel: 'conversation',
@@ -210,17 +294,19 @@ class UnifiedWebSocketManager {
   }
 
   /**
-   * Send agent control message
+   * Convenience: control an agent (pause/resume/stop)
    */
   public sendAgentControl(
     agentId: string,
     action: 'pause' | 'resume' | 'stop',
     contextId?: string
   ): void {
+    const type =
+      action === 'pause' ? 'agent_pause' : action === 'resume' ? 'agent_resume' : 'agent_stop';
     this.send({
       id: crypto.randomUUID(),
       channel: 'agent',
-      type: `agent_${action}`,
+      type,
       payload: { agentId, action },
       agentId,
       contextId,
@@ -229,13 +315,9 @@ class UnifiedWebSocketManager {
   }
 
   /**
-   * Send document collaboration message
+   * Convenience: broadcast a document edit operation
    */
-  public sendDocumentEdit(
-    documentId: string,
-    operation: any,
-    contextId?: string
-  ): void {
+  public sendDocumentEdit(documentId: string, operation: any, contextId?: string): void {
     this.send({
       id: crypto.randomUUID(),
       channel: 'document',
@@ -247,18 +329,14 @@ class UnifiedWebSocketManager {
   }
 
   /**
-   * Request agent prefetch analysis
+   * Convenience: ask backend to analyze a prompt for agent prefetching
    */
-  public requestPrefetch(
-    agentId: string,
-    message: string,
-    contextId: string
-  ): void {
+  public requestPrefetch(agentId: string, message: string, contextId: string): void {
     this.send({
       id: crypto.randomUUID(),
       channel: 'prefetch',
       type: 'analyze_for_prefetch',
-      payload: { message },
+      payload: { agentId, message },
       agentId,
       contextId,
       timestamp: new Date().toISOString()
@@ -269,75 +347,53 @@ class UnifiedWebSocketManager {
    * Disconnect WebSocket
    */
   public disconnect(): void {
-    this.reconnectAttempts = this.maxReconnectAttempts; // Prevent auto-reconnect
-    
+    if (this.reconnectTimeout) {
+      clearTimeout(this.reconnectTimeout);
+      this.reconnectTimeout = null;
+    }
+
     if (this.heartbeatInterval) {
       clearInterval(this.heartbeatInterval);
       this.heartbeatInterval = null;
     }
 
     if (this.ws) {
-      this.ws.close(1000, 'User disconnect');
+      this.ws.close(1000, 'User disconnected');
       this.ws = null;
     }
 
     this.isConnected = false;
-    this.messageQueue = [];
-    this.subscriptions.clear();
-    
-    if (this.debug) console.log('[WSManager] Disconnected');
+    this.isConnecting = false;
+    this.subscribedChannels.clear();
+    this.reconnectAttempts = 0;
+    this.hasFailed = false;
+    this.notifyStatus();
   }
 
   /**
-   * Get connection status
+   * Force reconnect
    */
-  public getStatus(): {
-    connected: boolean;
-    sessionId: string | null;
-    subscriptions: number;
-    queuedMessages: number;
-  } {
-    return {
-      connected: this.isConnected,
-      sessionId: this.sessionId,
-      subscriptions: this.subscriptions.size,
-      queuedMessages: this.messageQueue.length
-    };
+  public async reconnect(): Promise<void> {
+    this.disconnect();
+    if (this.userId) {
+      await this.connect(this.userId);
+    }
   }
 
-  // Private methods
-
-  private notifyStatus(): void {
-    const status = this.getStatus();
-    this.statusListeners.forEach((listener) => {
-      try { listener(status); } catch {}
-    });
-  }
-
-  public addStatusListener(listener: (status: { connected: boolean; sessionId: string | null; subscriptions: number; queuedMessages: number; }) => void): () => void {
-    this.statusListeners.add(listener);
-    // Emit current status immediately
-    try { listener(this.getStatus()); } catch {}
-    return () => {
-      this.statusListeners.delete(listener);
-    };
+  /**
+   * Clean up resources
+   */
+  public cleanup(): void {
+    this.disconnect();
+    this.subscriptions.clear();
+    this.subscribedChannels.clear();
+    this.messageQueue = [];
+    this.statusListeners.clear();
   }
 
   private async loadToken(): Promise<void> {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.access_token) {
-        // URL-safe token for query param usage
-        this.token = encodeURIComponent(session.access_token);
-        console.log('[WSManager] Using Supabase token');
-      } else {
-        this.token = 'anonymous';
-        console.log('[WSManager] Using anonymous token');
-      }
-    } catch (error) {
-      console.warn('[WSManager] Failed to get token:', error);
-      this.token = 'anonymous';
-    }
+    const { data: { session } } = await supabase.auth.getSession();
+    this.token = session?.access_token || null;
   }
 
   private buildWebSocketUrl(): string {
@@ -362,9 +418,12 @@ class UnifiedWebSocketManager {
 
     this.ws.onopen = () => {
       if (this.debug) console.log('[WSManager] Connected');
+      console.log('[WSManager] WebSocket connected successfully');
       this.isConnected = true;
       this.isConnecting = false;
       this.reconnectAttempts = 0;
+      this.reconnectDelay = 2000; // Reset delay
+      this.lastError = null;
       
       // Send authentication
       this.send({
@@ -375,18 +434,25 @@ class UnifiedWebSocketManager {
         timestamp: new Date().toISOString()
       });
 
-      // Re-subscribe all channels
-      // Re-subscribe unique channel/context pairs only once
-      const uniqueKeys = new Set<string>();
+      // Re-subscribe to unique channels only
+      this.subscribedChannels.clear();
+      const uniqueChannels = new Map<string, { channel: ChannelType; contextId?: string }>();
+      
       this.subscriptions.forEach((sub) => {
         const key = `${sub.channel}:${sub.contextId || 'global'}`;
-        if (uniqueKeys.has(key)) return;
-        uniqueKeys.add(key);
+        if (!uniqueChannels.has(key)) {
+          uniqueChannels.set(key, { channel: sub.channel, contextId: sub.contextId });
+        }
+      });
+
+      // Send subscribe messages for unique channels
+      uniqueChannels.forEach((value, key) => {
+        this.subscribedChannels.add(key);
         this.send({
           id: crypto.randomUUID(),
           channel: 'system',
           type: 'subscribe',
-          payload: { channel: sub.channel, contextId: sub.contextId },
+          payload: { channel: value.channel, contextId: value.contextId },
           timestamp: new Date().toISOString()
         });
       });
@@ -406,27 +472,42 @@ class UnifiedWebSocketManager {
         const message = JSON.parse(event.data) as WebSocketMessage;
         this.handleMessage(message);
       } catch (error) {
-        console.error('[WSManager] Failed to parse message:', error);
+        if (this.debug) console.error('[WSManager] Failed to parse message:', error);
       }
     };
 
     this.ws.onerror = (error) => {
-      console.error('[WSManager] Error:', error);
+      console.error('[WSManager] WebSocket error occurred');
+      this.lastError = 'WebSocket connection error';
+      if (this.debug) console.error('[WSManager] Error details:', error);
     };
 
     this.ws.onclose = (event) => {
-      console.log(`[WSManager] Closed: ${event.code} - ${event.reason}`);
+      const wasConnected = this.isConnected;
       this.isConnected = false;
       this.isConnecting = false;
+      this.subscribedChannels.clear();
       
       if (this.heartbeatInterval) {
         clearInterval(this.heartbeatInterval);
         this.heartbeatInterval = null;
       }
 
-      // Auto-reconnect if not intentional close
-      if (event.code !== 1000 && this.reconnectAttempts < this.maxReconnectAttempts) {
-        this.scheduleReconnect();
+      if (event.code === 1000) {
+        // Normal closure
+        console.log('[WSManager] WebSocket closed normally');
+      } else {
+        // Abnormal closure
+        console.error(`[WSManager] WebSocket closed abnormally: ${event.code} - ${event.reason || 'No reason provided'}`);
+        this.lastError = `Connection closed: ${event.reason || 'Unknown reason'}`;
+        
+        // Auto-reconnect if not intentional close and haven't exceeded max attempts
+        if (wasConnected && this.reconnectAttempts < this.maxReconnectAttempts) {
+          this.scheduleReconnect();
+        } else if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+          console.error('[WSManager] Max reconnection attempts reached. WebSocket will not reconnect automatically.');
+          this.hasFailed = true;
+        }
       }
 
       // Broadcast status
@@ -443,34 +524,47 @@ class UnifiedWebSocketManager {
 
     // Route to subscribers
     this.subscriptions.forEach((subscription) => {
-      // Match channel and optional context
-      if (subscription.channel === message.channel) {
-        if (!subscription.contextId || subscription.contextId === message.contextId) {
-          subscription.callback(message);
-        }
+      // Check channel match
+      if (subscription.channel !== message.channel) return;
+      
+      // Check context match (if specified)
+      if (subscription.contextId && subscription.contextId !== message.contextId) return;
+      
+      // Deliver message
+      try {
+        subscription.callback(message);
+      } catch (error) {
+        console.error('[WSManager] Subscriber error:', error);
       }
     });
   }
 
   private handleSystemMessage(message: WebSocketMessage): void {
+    if (this.debug) console.log('[WSManager] System message:', message.type);
+    
     switch (message.type) {
-      case 'pong':
-        // Heartbeat response
-        break;
-      case 'authenticated':
-        if (this.debug) console.log('[WSManager] Authenticated successfully');
+      case 'welcome':
+        if (this.debug) console.log('[WSManager] Server welcomed connection');
         break;
       case 'error':
         console.error('[WSManager] Server error:', message.payload);
+        this.lastError = message.payload?.message || 'Server error';
+        break;
+      case 'pong':
+        // Heartbeat response
         break;
       default:
-        if (this.debug) console.log('[WSManager] System message:', message.type);
+        if (this.debug) console.log('[WSManager] Unknown system message:', message.type);
     }
   }
 
   private startHeartbeat(): void {
+    if (this.heartbeatInterval) {
+      clearInterval(this.heartbeatInterval);
+    }
+
     this.heartbeatInterval = setInterval(() => {
-      if (this.isConnected) {
+      if (this.isConnected && this.ws?.readyState === WebSocket.OPEN) {
         this.send({
           id: crypto.randomUUID(),
           channel: 'system',
@@ -483,31 +577,56 @@ class UnifiedWebSocketManager {
   }
 
   private flushMessageQueue(): void {
-    while (this.messageQueue.length > 0) {
-      const message = this.messageQueue.shift();
-      if (message) {
-        this.send(message);
-      }
-    }
-    this.notifyStatus();
+    if (this.messageQueue.length === 0) return;
+    
+    if (this.debug) console.log(`[WSManager] Flushing ${this.messageQueue.length} queued messages`);
+    
+    const messages = [...this.messageQueue];
+    this.messageQueue = [];
+    
+    messages.forEach(msg => this.send(msg));
   }
 
   private scheduleReconnect(): void {
-    this.reconnectAttempts++;
-    const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1);
-    
-    if (this.debug) console.log(`[WSManager] Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts})`);
-    
-    // After a couple of failed attempts in dev, try direct backend endpoint
-    if (import.meta.env.DEV && this.reconnectAttempts >= 2) {
-      this.useDirectDevEndpoint = true;
+    if (this.hasFailed) {
+      console.log('[WSManager] Connection failed permanently. Manual reconnection required.');
+      return;
     }
+
+    if (this.reconnectTimeout) {
+      clearTimeout(this.reconnectTimeout);
+    }
+
+    this.reconnectAttempts++;
     
-    setTimeout(() => {
+    // Calculate delay with exponential backoff
+    const delay = Math.min(this.reconnectDelay * Math.pow(1.5, this.reconnectAttempts - 1), this.maxReconnectDelay);
+    
+    console.log(`[WSManager] Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
+    
+    this.reconnectTimeout = setTimeout(async () => {
       if (this.userId) {
-        this.connect(this.userId);
+        await this.connect(this.userId);
       }
     }, delay);
+  }
+
+  private notifyStatus(): void {
+    const status = {
+      connected: this.isConnected,
+      sessionId: this.sessionId,
+      subscriptions: this.subscriptions.size,
+      queuedMessages: this.messageQueue.length,
+      failed: this.hasFailed
+    };
+    
+    this.statusListeners.forEach(listener => {
+      try {
+        listener(status);
+      } catch (error) {
+        console.error('[WSManager] Status listener error:', error);
+      }
+    });
   }
 }
 

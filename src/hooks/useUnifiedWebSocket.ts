@@ -80,7 +80,7 @@ export function useUnifiedWebSocket(
     subscriptionId.current = wsManager.subscribe(channel, handleMessage, contextId);
 
     // Listen to connection status updates directly
-    const removeStatusListener = wsManager.addStatusListener((next) => {
+    const removeStatusListener = wsManager.onStatusChange((next) => {
       setConnected(next.connected);
       setStatus(next);
     });

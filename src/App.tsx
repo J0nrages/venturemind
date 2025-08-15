@@ -24,13 +24,14 @@ import ModernChatSidebar from './components/ModernChatSidebar';
 import { useChat } from './contexts/ChatContext';
 import Dialog from './components/Dialog';
 import ConversationMode from './components/ConversationMode';
+// import ConversationMode from './components/SafeConversationMode';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, Grid3X3, ArrowLeft } from 'lucide-react';
 import { cleanupInvalidSessions, migrateOldContextData } from './utils/sessionCleanup';
 
 function AppContent() {
   const { isOpen, position, toggleChat, setPosition } = useChat();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
   const [synaMode, setSynaMode] = useState(true); // Default to SYNA mode
   
   // Check if user prefers SYNA mode (could be stored in localStorage)
@@ -51,6 +52,18 @@ function AppContent() {
     localStorage.setItem('syna-mode', newMode.toString());
   };
   
+  // Show loading state while auth is being determined
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-purple-50/30 to-blue-50/30 dark:from-gray-950 dark:via-purple-950/20 dark:to-blue-950/20">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-gray-600 dark:text-gray-400">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       {/* SYNA Mode Toggle - Only show when authenticated */}
@@ -95,8 +108,11 @@ function AppContent() {
               <Route path="/auth" element={<Auth />} />
               
               <Route element={<AuthGuard />}>
-                <Route path="*" element={<ConversationMode />} />
+                <Route path="/" element={<ConversationMode />} />
+                <Route path="/*" element={<ConversationMode />} />
               </Route>
+              
+              <Route path="*" element={<Navigate to="/auth" replace />} />
             </Routes>
           </motion.div>
         ) : (

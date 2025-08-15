@@ -288,7 +288,7 @@ export function ConversationSpine({
         sender: 'user',
         document_updates: [],
         context_confidence: 0,
-        context_id: context.id
+        thread_id: context.id
       };
       
       await ConversationService.saveMessage(userMsg);
@@ -309,7 +309,7 @@ export function ConversationSpine({
         sender: 'ai',
         document_updates: response.updatedDocuments || [],
         context_confidence: response.contextConfidence || 0,
-        context_id: context.id
+        thread_id: context.id
       };
       
       await ConversationService.saveMessage(aiMsg);
@@ -428,7 +428,7 @@ export function ConversationSpine({
       {/* Messages Area with Context-Aware Styling */}
       <div ref={messagesScrollRef} className={cn(
         "flex-1 overflow-y-auto space-y-3",
-        unbounded ? "p-0" : "p-4" // No padding in unbounded mode
+        unbounded ? "p-0" : "px-4 pt-4 pb-40" // extra bottom padding so bubbles don't sit at viewport edge
       )}>
         {messages.map((message, index) => (
           <motion.div
@@ -675,12 +675,12 @@ export function ConversationSpine({
 
       {/* Floating Input for Unbounded Mode */}
       {unbounded && (
-        <div className="fixed bottom-32 left-1/2 transform -translate-x-1/2 z-30 w-full max-w-2xl px-5">
+        <div className="fixed bottom-24 left-1/2 transform -translate-x-1/2 z-30 w-full max-w-2xl px-5">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="bg-white/95 backdrop-blur-lg rounded-2xl shadow-2xl p-4 border border-white/20"
+            className="bg-background/95 backdrop-blur-lg rounded-2xl shadow-2xl p-4 border border-border"
           >
             <div className="flex items-center gap-3">
               <button 
@@ -710,12 +710,12 @@ export function ConversationSpine({
                   onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && sendMessage()}
                   placeholder="Type your message here..."
                   disabled={loading}
-                  className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-2 bg-card border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
                 <button 
                   onClick={sendMessage}
                   disabled={loading || !currentMessage.trim()}
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:bg-gray-400"
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1.5 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-colors disabled:bg-muted"
                 >
                   {loading ? (
                     <Loader2 className="w-4 h-4 animate-spin" />

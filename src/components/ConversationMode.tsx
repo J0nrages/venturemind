@@ -4,24 +4,10 @@ import ContextSwitcher from './ContextSwitcher';
 import { useContexts } from '../contexts/ContextProvider';
 import { cn } from '@/lib/utils';
 
-// Animated background component
+// Static gradient background (no animation for better performance)
 function AnimatedBackground() {
   return (
-    <motion.div
-      className="fixed inset-0 overflow-hidden"
-      animate={{
-        background: [
-          'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          'linear-gradient(135deg, #764ba2 0%, #667eea 100%)',
-          'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        ]
-      }}
-      transition={{
-        duration: 10,
-        ease: 'easeInOut',
-        repeat: Infinity,
-      }}
-    />
+    <div className="fixed inset-0 overflow-hidden bg-gradient-to-br from-purple-600/90 via-blue-600/90 to-indigo-600/90" />
   );
 }
 

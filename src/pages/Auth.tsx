@@ -153,161 +153,168 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-purple-50/30 to-blue-50/30 dark:from-gray-950 dark:via-purple-950/20 dark:to-blue-950/20 flex items-center justify-center p-4">
-      {/* Glassmorphic Card */}
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <motion.div
-        initial={{ opacity: 0, y: 20, scale: 0.95 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.3, ease: "easeOut" }}
-        className="relative max-w-md w-full"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.2 }}
+        className="w-full max-w-sm"
       >
-        {/* Background blur effect */}
-        <div className="absolute inset-0 bg-gradient-to-r from-purple-400/20 to-blue-400/20 blur-3xl" />
-        
-        {/* Main card */}
-        <div 
-          className="relative bg-white/80 dark:bg-gray-900/80 backdrop-blur-2xl rounded-3xl shadow-2xl border border-gray-200/50 dark:border-gray-700/50 p-8 overflow-hidden"
-          style={{
-            boxShadow: '0 20px 40px -15px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.1) inset',
-          }}
-        >
-          {/* Subtle gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-transparent to-blue-500/5 pointer-events-none" />
+        {/* Card container */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
           
-          {/* Logo */}
-          <div className="flex items-center justify-center mb-8 relative">
-            <div className="flex items-center space-x-3">
-              <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-purple-600 to-blue-600 rounded-2xl blur-lg opacity-60" />
-                <div className="relative w-14 h-14 bg-gradient-to-br from-purple-600 to-blue-600 rounded-2xl flex items-center justify-center shadow-xl transform hover:scale-105 transition-transform">
-                  <FileText className="w-8 h-8 text-white" />
-                </div>
-              </div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">SYNA</h1>
+          {/* Logo and Title */}
+          <div className="flex items-center justify-center gap-3 mb-8">
+            <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-blue-600 rounded-lg flex items-center justify-center">
+              <FileText className="w-5 h-5 text-white" />
             </div>
+            <span className="text-2xl font-semibold text-gray-900">SYNA</span>
           </div>
 
-          <h2 className="text-2xl font-semibold text-center mb-8 text-gray-900 dark:text-white">
+          {/* Title */}
+          <h1 className="text-lg font-medium text-center text-gray-900 mb-2">
             {isForgotPassword 
-              ? 'Reset Password'
+              ? 'Reset your password'
               : isSignUp 
-                ? 'Create an account' 
+                ? 'Create your account' 
                 : 'Welcome back'}
-          </h2>
+          </h1>
+          
+          {!isForgotPassword && (
+            <p className="text-sm text-gray-500 text-center mb-6">
+              {isSignUp 
+                ? 'Sign up to get started'
+                : 'Sign in to your account'}
+            </p>
+          )}
 
-          <form onSubmit={isForgotPassword ? handleForgotPassword : handleAuth} className="space-y-6">
-            <div>
-              <Label htmlFor="email" className="text-gray-700 dark:text-gray-300">
-                Email address
+          {/* Form */}
+          <form onSubmit={isForgotPassword ? handleForgotPassword : handleAuth} className="space-y-5">
+            {/* Email field */}
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-sm font-normal text-gray-700 block">
+                Email
               </Label>
               <Input
                 id="email"
                 type="email"
                 value={email}
                 onChange={(e) => handleInputChange('email', e.target.value)}
-                className={`mt-2 bg-white/50 dark:bg-gray-800/50 border-gray-300/50 dark:border-gray-600/50 ${
-                  errors.email ? 'border-red-500' : ''
-                }`}
-                placeholder="you@example.com"
+                className={`h-10 text-sm ${errors.email ? 'border-red-500' : ''}`}
+                placeholder="m@example.com"
               />
               {errors.email && (
-                <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
-                  <AlertCircle className="w-4 h-4" />
+                <p className="text-xs text-red-600 flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3" />
                   {errors.email}
                 </p>
               )}
             </div>
 
+            {/* Password field */}
             {!isForgotPassword && (
-              <div>
-                <Label htmlFor="password" className="text-gray-700 dark:text-gray-300">
-                  Password
-                </Label>
-                <div className="relative mt-2">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password" className="text-sm font-normal text-gray-700">
+                    Password
+                  </Label>
+                  {!isSignUp && (
+                    <button
+                      type="button"
+                      onClick={() => setIsForgotPassword(true)}
+                      className="text-xs text-gray-500 hover:text-gray-700 transition-colors"
+                    >
+                      Forgot your password?
+                    </button>
+                  )}
+                </div>
+                <div className="relative">
                   <Input
                     id="password"
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => handleInputChange('password', e.target.value)}
-                    className={`pr-10 bg-white/50 dark:bg-gray-800/50 border-gray-300/50 dark:border-gray-600/50 ${
-                      errors.password ? 'border-red-500' : ''
-                    }`}
+                    className={`h-10 pr-10 text-sm ${errors.password ? 'border-red-500' : ''}`}
                     placeholder="••••••••"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none transition-colors"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                   >
                     {showPassword ? (
-                      <EyeOff className="w-5 h-5" />
+                      <EyeOff className="w-4 h-4" />
                     ) : (
-                      <Eye className="w-5 h-5" />
+                      <Eye className="w-4 h-4" />
                     )}
                   </button>
                 </div>
                 {errors.password && (
-                  <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
-                    <AlertCircle className="w-4 h-4" />
+                  <p className="text-xs text-red-600 flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3" />
                     {errors.password}
                   </p>
                 )}
               </div>
             )}
 
-            <Button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5"
-              size="lg"
-            >
-              {loading 
-                ? 'Loading...' 
-                : isForgotPassword
-                  ? 'Send Reset Instructions'
-                  : isSignUp 
-                    ? 'Sign Up' 
-                    : 'Sign In'}
-            </Button>
+            {/* Submit button with consistent spacing */}
+            <div className="pt-1">
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full h-10 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-sm font-medium rounded-lg shadow-sm transition-all hover:shadow-md hover:from-purple-700 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading 
+                  ? 'Loading...' 
+                  : isForgotPassword
+                    ? 'Send Instructions'
+                    : isSignUp 
+                      ? 'Sign Up' 
+                      : 'Login'}
+              </button>
+            </div>
           </form>
 
-          <div className="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
+          {/* Footer links */}
+          <div className="mt-6 text-center">
             {isForgotPassword ? (
-              <Button
+              <button
                 onClick={resetView}
-                variant="link"
-                className="text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 p-0 h-auto font-medium"
+                className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
               >
-                Back to Sign In
-              </Button>
+                Back to login
+              </button>
             ) : (
-              <>
-                {!isSignUp && (
-                  <Button
-                    onClick={() => setIsForgotPassword(true)}
-                    variant="link"
-                    className="text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 p-0 h-auto font-medium block mb-2 mx-auto"
-                  >
-                    Forgot your password?
-                  </Button>
-                )}
-                <p>
-                  {isSignUp ? 'Already have an account?' : "Don't have an account?"}{' '}
-                  <Button
-                    onClick={() => {
-                      setIsSignUp(!isSignUp);
-                      setErrors({});
-                    }}
-                    variant="link"
-                    className="text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 p-0 h-auto font-medium"
-                  >
-                    {isSignUp ? 'Sign In' : 'Sign Up'}
-                  </Button>
-                </p>
-              </>
+              <p className="text-sm text-gray-600">
+                {isSignUp ? 'Already have an account?' : "Don't have an account?"}{' '}
+                <button
+                  onClick={() => {
+                    setIsSignUp(!isSignUp);
+                    setErrors({});
+                  }}
+                  className="text-gray-900 hover:underline font-medium"
+                >
+                  {isSignUp ? 'Sign in' : 'Sign up'}
+                </button>
+              </p>
             )}
           </div>
         </div>
+
+        {/* Terms and privacy */}
+        {!isForgotPassword && (
+          <p className="mt-4 text-xs text-center text-gray-500">
+            By clicking continue, you agree to our{' '}
+            <a href="#" className="underline hover:text-gray-700">
+              Terms of Service
+            </a>{' '}
+            and{' '}
+            <a href="#" className="underline hover:text-gray-700">
+              Privacy Policy
+            </a>
+          </p>
+        )}
       </motion.div>
     </div>
   );

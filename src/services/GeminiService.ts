@@ -243,7 +243,8 @@ Guidelines:
     message: string, 
     documentUpdated: string | null,
     conversationHistory: any[] = [],
-    strategicInsights?: any
+    strategicInsights?: any,
+    userId?: string
   ): Promise<string> {
     try {
       // Build conversation context

@@ -1,10 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Primary: Use cloud Supabase configuration
+// Always use cloud Supabase as primary
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-// Create single client with primary (cloud) configuration
+// Create single client with cloud configuration
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // Helper to detect if we're using local or cloud

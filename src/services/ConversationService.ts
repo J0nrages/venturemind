@@ -460,7 +460,8 @@ export class ConversationService {
             message,
             documentUpdated,
             history,
-            isMissionStatement ? { initiatives: [], swotUpdates: [] } : undefined
+            isMissionStatement ? { initiatives: [], swotUpdates: [] } : undefined,
+            userId
           );
           console.log('AI generated response:', response);
         } catch (responseError) {
@@ -1034,7 +1035,10 @@ export class ConversationService {
             {
               contextType: context.type,
               systemPrompt: contextPrompt,
-              availableAgents: context.agents.map((a: any) => a.type),
+              availableAgents: (
+                // Prefer active agents, fall back to full available pool
+                (context as any)?.activeAgents || (context as any)?.availableAgents || []
+              ).map((a: any) => a.type),
               activeSurfaces: Object.keys(context.surfaces).filter(
                 (key) => context.surfaces[key]?.visible
               )
