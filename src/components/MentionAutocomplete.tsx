@@ -220,54 +220,35 @@ export function MentionAutocomplete({
     <AnimatePresence>
       <motion.div
         ref={dropdownRef}
-        initial={{ opacity: 0, y: 10 }}
+        initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: 10 }}
+        exit={{ opacity: 0, y: -10 }}
         transition={{ duration: 0.15, ease: 'easeOut' }}
-        className="absolute inset-x-0 bottom-0 flex flex-col-reverse"
+        className="absolute inset-x-0 bottom-full"
       >
-        {/* Input area - at the bottom, matching original input */}
-        <div className="bg-background rounded-xl border border-border/20 shadow-[0_2px_8px_rgba(0,0,0,0.08)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.2)]">
-          <div className="px-4 py-3">
-            <div className="flex items-center">
-              {/* Full text with mention highlighted */}
-              {context && fullText && (
-                <>
-                  <span className="text-base text-foreground">
-                    {fullText.substring(0, context.startIndex)}
-                  </span>
-                  <span className="text-base text-primary font-medium">
-                    {context.triggerChar}{context.query}
-                  </span>
-                  <span className="text-base text-muted-foreground animate-pulse">|</span>
-                  <span className="text-base text-foreground">
-                    {fullText.substring(context.endIndex)}
-                  </span>
-                </>
+        {/* Suggestions dropdown */}
+        <div className="bg-background rounded-xl border border-border shadow-xl overflow-hidden">
+          {/* Header with ESC hint */}
+          <div className="px-3 py-2 border-b border-border/10 bg-secondary/30 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Command className="w-3.5 h-3.5 text-muted-foreground" />
+              <span className="text-xs font-medium text-muted-foreground">
+                {context?.triggerChar === '/' ? 'Commands' : 
+                 context?.triggerChar === '@' ? 'Mentions' :
+                 context?.triggerChar === '#' ? 'Workspaces' : 'Search'}
+              </span>
+              {suggestions.length > 0 && (
+                <span className="text-xs text-muted-foreground">
+                  • {suggestions.length} results
+                </span>
               )}
-              <div className="ml-auto flex items-center gap-2">
-                {suggestions.length > 0 && (
-                  <span className="text-xs text-muted-foreground">
-                    {suggestions.length} results
-                  </span>
-                )}
-                <kbd className="text-xs px-1.5 py-0.5 bg-secondary/60 rounded">
-                  ESC
-                </kbd>
-              </div>
             </div>
+            <kbd className="text-xs px-1.5 py-0.5 bg-secondary/60 rounded">
+              ESC
+            </kbd>
           </div>
-        </div>
-
-        {/* Suggestions that appear to extend upward from input */}
-        <motion.div 
-          initial={{ height: 0, opacity: 0 }}
-          animate={{ height: 'auto', opacity: 1 }}
-          exit={{ height: 0, opacity: 0 }}
-          transition={{ duration: 0.2 }}
-          className="mb-2 bg-background rounded-xl border border-border/20 shadow-[0_-4px_12px_rgba(0,0,0,0.08)] dark:shadow-[0_-4px_12px_rgba(0,0,0,0.2)] overflow-hidden"
-        >
-          <div ref={scrollContainerRef} className="max-h-[320px] overflow-y-auto scrollbar-thin">
+          
+          <div ref={scrollContainerRef} className="max-h-[280px] overflow-y-auto scrollbar-thin">
           {loading ? (
             <div className="px-3 py-6 text-center">
               <div className="inline-flex items-center gap-2 text-sm text-muted-foreground">
@@ -280,11 +261,17 @@ export function MentionAutocomplete({
               <p className="text-sm font-medium text-muted-foreground">No results found</p>
               {context.query.length === 0 ? (
                 <p className="text-xs text-muted-foreground mt-1">
-                  Start typing to search agents, files, and people
+                  {context.triggerChar === '/' ? 'Start typing to search commands' :
+                   context.triggerChar === '@' ? 'Start typing to search agents, files, and people' :
+                   context.triggerChar === '#' ? 'Start typing to search workspaces and projects' :
+                   'Start typing to search'}
                 </p>
               ) : (
                 <p className="text-xs text-muted-foreground mt-1">
-                  Try a different search term
+                  {context.triggerChar === '/' ? 'No matching commands' :
+                   context.triggerChar === '@' ? 'No matching agents or people' :
+                   context.triggerChar === '#' ? 'No matching workspaces' :
+                   'Try a different search term'}
                 </p>
               )}
             </div>
@@ -369,7 +356,7 @@ export function MentionAutocomplete({
             </div>
           )}
           </div>
-        </motion.div>
+        </div>
       </motion.div>
     </AnimatePresence>
   );

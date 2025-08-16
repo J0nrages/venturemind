@@ -115,6 +115,12 @@ class Settings(BaseSettings):
         description="OpenTelemetry endpoint"
     )
     
+    # Performance Toggles
+    enable_gzip: bool = Field(default=True, description="Enable Gzip compression (production)")
+    enable_rate_limit: bool = Field(default=True, description="Enable rate limiting (production)")
+    enable_request_logging: bool = Field(default=True, description="Enable request logging (development)")
+    cache_preflight_max_age: int = Field(default=86400, description="CORS preflight cache duration (seconds)")
+    
     # Feature Flags
     enable_agents: bool = Field(default=True, description="Enable agent system")
     enable_approvals: bool = Field(default=True, description="Enable approval workflows")

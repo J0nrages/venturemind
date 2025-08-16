@@ -6,11 +6,14 @@
   "scripts": {
     "predev": "bun install && bun run backend:setup",
     "dev:cleanup": "lsof -ti:5173 | xargs -r kill -9 2>/dev/null || true && lsof -ti:8000 | xargs -r kill -9 2>/dev/null || true && cd backend && docker compose down 2>/dev/null || true",
+    "dev:frontend": "vite --host --clearScreen false",
+    "dev:backend": "cd backend && uv run uvicorn app.main:app --reload --reload-dir app --host 127.0.0.1 --port 8000 --log-level warning",
     "dev:vite": "vite",
     "dev:fastapi": "cd backend && uv run uvicorn app.main:app --reload --port 8000",
     "dev:valkey": "cd backend && docker compose up valkey",
     "dev:services": "cd backend && docker compose up valkey || echo 'Valkey not running - Redis operations will fail'",
-    "dev": "bun run dev:cleanup && concurrently --kill-others-on-fail --names \"Supabase,Valkey,Vite,FastAPI\" --prefix-colors \"green,cyan,magenta,blue\" \"supabase status\" \"bun run dev:services\" \"bun run dev:vite\" \"bun run dev:fastapi\"",
+    "dev": "bun run dev:cleanup && concurrently -k -p \"[{name}]\" -n \"Backend,Frontend,Services\" -c \"yellow,cyan,green\" \"bun run dev:backend\" \"bun run dev:frontend\" \"bun run dev:services\"",
+    "dev:full": "bun run dev:cleanup && concurrently --kill-others-on-fail --names \"Supabase,Valkey,Vite,FastAPI\" --prefix-colors \"green,cyan,magenta,blue\" \"supabase status\" \"bun run dev:services\" \"bun run dev:vite\" \"bun run dev:fastapi\"",
     "dev:local-lens": "concurrently --kill-others-on-fail --names \"Supabase,Valkey,Vite,FastAPI,LocalLens\" --prefix-colors \"green,cyan,magenta,blue,white\" \"supabase status\" \"bun run dev:services\" \"bun run dev:vite\" \"bun run dev:fastapi\" \"local-lens\"",
     "build": "vite build",
     "lint": "eslint .",
@@ -19,7 +22,13 @@
     "backend:start": "cd backend && uv run uvicorn app.main:app --port 8000",
     "docker:up": "cd backend && docker compose up -d",
     "docker:down": "cd backend && docker compose down",
-    "docker:logs": "cd backend && docker compose logs -f"
+    "docker:logs": "cd backend && docker compose logs -f",
+    "test:smoke": "./tests/performance/test-perf.sh",
+    "start:local": "./scripts/start-local.sh",
+    "test:api": "curl -s -f http://127.0.0.1:8000/health >/dev/null && echo '✓ API OK' || (echo '✗ API FAIL'; exit 1)",
+    "test:ws": "python3 -c \"import websocket; ws = websocket.create_connection('ws://127.0.0.1:8000/ws/unified/test?token=test', timeout=1); ws.close(); print('✓ WebSocket OK')\" || (echo '✗ WebSocket FAIL'; exit 1)",
+    "test:frontend": "curl -s -f http://localhost:5173 >/dev/null && echo '✓ Frontend OK' || (echo '✗ Frontend FAIL'; exit 1)",
+    "test:all": "bun run test:api && bun run test:ws && bun run test:frontend && echo '✅ All tests passed'"
   },
   "dependencies": {
     "@langchain/core": "^0.3.68",

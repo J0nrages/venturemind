@@ -389,7 +389,7 @@ export default function UnifiedChatInput({
           
           {/* Mention Autocomplete - Extending upward from input */}
           {showMentionAutocomplete && mentionContext && (
-            <div className="absolute inset-x-0 bottom-0 z-50">
+            <div className="absolute inset-x-0 bottom-full -mb-12 z-50">
               <MentionAutocomplete
                 isOpen={showMentionAutocomplete}
                 context={mentionContext}
@@ -630,7 +630,7 @@ export default function UnifiedChatInput({
             
             {/* Mention Autocomplete - Extending upward from input */}
             {showMentionAutocomplete && mentionContext && (
-              <div className="absolute inset-x-0 bottom-0 z-50">
+              <div className="absolute inset-x-0 bottom-full -mb-12 z-50">
                 <MentionAutocomplete
                   isOpen={showMentionAutocomplete}
                   context={mentionContext}

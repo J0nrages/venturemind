@@ -34,53 +34,67 @@ logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """
-    Manage application lifecycle.
-    Initialize connections and cleanup on shutdown.
+    Manage application lifecycle with non-blocking startup.
+    Initialize connections in background to speed up startup.
     """
     logger.info(f"Starting {settings.app_name} v{settings.app_version}")
     logger.info(f"Environment: {settings.environment}")
     
-    # Initialize connections
-    try:
-        # Initialize Redis
-        await redis_manager.connect()
-        logger.info("Redis connection established")
-    except Exception as e:
-        logger.error(f"Failed to connect to Redis: {e}")
-        # Continue without Redis if it's not critical
-    
-    # Start background workers
     import asyncio
-    summarization_task = None
-    try:
-        summarization_task = asyncio.create_task(run_summarization_worker())
-        logger.info("Thread summarization worker started")
-    except Exception as e:
-        logger.error(f"Failed to start summarization worker: {e}")
     
-    # TODO: Initialize Supabase client
-    # TODO: Initialize observability
+    # Non-blocking Redis connection (kick off without awaiting)
+    redis_task = asyncio.create_task(initialize_redis())
+    
+    # Non-blocking worker startup
+    summarization_task = asyncio.create_task(start_background_worker())
+    
+    # Store tasks for cleanup
+    app.state.redis_task = redis_task
+    app.state.summarization_task = summarization_task
+    
+    # TODO: Initialize Supabase client (non-blocking)
+    # TODO: Initialize observability (non-blocking)
     
     yield
     
-    # Stop background workers
-    if summarization_task:
-        summarization_task.cancel()
+    # Cleanup
+    logger.info("Shutting down...")
+    
+    # Cancel and cleanup summarization worker
+    if app.state.summarization_task:
+        app.state.summarization_task.cancel()
         try:
-            await summarization_task
+            await app.state.summarization_task
         except asyncio.CancelledError:
             logger.info("Summarization worker stopped")
         except Exception as e:
             logger.error(f"Error stopping summarization worker: {e}")
     
-    # Cleanup
-    logger.info("Shutting down...")
-    
+    # Ensure Redis is disconnected
     try:
         await redis_manager.disconnect()
         logger.info("Redis connection closed")
     except Exception as e:
         logger.error(f"Error closing Redis connection: {e}")
+
+
+async def initialize_redis():
+    """Initialize Redis connection in background."""
+    try:
+        await redis_manager.connect()
+        logger.info("Redis connection established")
+    except Exception as e:
+        logger.error(f"Failed to connect to Redis: {e}")
+        # Continue without Redis if it's not critical
+
+
+async def start_background_worker():
+    """Start summarization worker in background."""
+    try:
+        await run_summarization_worker()
+        logger.info("Thread summarization worker started")
+    except Exception as e:
+        logger.error(f"Failed to start summarization worker: {e}")
 
 
 # Create FastAPI app
@@ -94,12 +108,8 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# Add ASGI middleware - now WebSocket compatible for SYNA's real-time architecture
-app.add_middleware(ErrorHandlingMiddleware)
-app.add_middleware(RequestLoggingMiddleware)
-# app.add_middleware(RateLimitMiddleware)  # Temporarily disabled to debug WebSocket 400
-
-# CORS configuration - automatically selects production or development origins
+# Middleware order optimized for performance and WebSocket compatibility
+# 1) CORS FIRST - handles preflight requests fast, doesn't block WebSocket
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
@@ -107,18 +117,34 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
     expose_headers=["X-Request-ID"],
+    max_age=settings.cache_preflight_max_age if settings.is_production else 3600,  # Configurable cache
 )
 
 # Log CORS configuration for debugging
 logger.info(f"CORS origins configured: {settings.cors_origins}")
 logger.info(f"Environment: {settings.environment}")
 
-# Trusted host middleware (security)
+# 2) Production-only middleware (security, compression)
 if settings.is_production:
+    # Trusted hosts for security
     app.add_middleware(
         TrustedHostMiddleware,
         allowed_hosts=["*.syna.ai", "localhost"],
     )
+    # TODO: Add GZipMiddleware when available
+    # from fastapi.middleware.gzip import GZipMiddleware
+    # app.add_middleware(GZipMiddleware, minimum_size=500)
+
+# 3) Development-only lightweight logging
+if settings.debug and settings.enable_request_logging:
+    app.add_middleware(RequestLoggingMiddleware)
+
+# 4) Rate limiting (production only, after CORS)
+if settings.is_production and settings.enable_rate_limit:
+    app.add_middleware(RateLimitMiddleware)
+
+# 5) Error handling LAST (executes first on the way in)
+app.add_middleware(ErrorHandlingMiddleware)
 
 # Health check endpoint
 @app.get("/health")
