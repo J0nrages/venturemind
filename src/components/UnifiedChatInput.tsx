@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Send, 
@@ -9,12 +9,16 @@ import {
   Loader2,
   Clock,
   Hash,
-  Zap
+  Zap,
+  Settings,
+  ChevronUp
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { UserSettingsService, type ModelConfiguration } from '../services/UserSettingsService';
+import { MentionService, MentionContext, MentionItem } from '../services/MentionService';
+import MentionAutocomplete from './MentionAutocomplete';
 
 export interface UnifiedChatInputProps {
   value: string;
@@ -39,6 +43,8 @@ export interface UnifiedChatInputProps {
     lastSpeed?: number;
   };
   userId?: string;
+  showSettingsBar?: boolean;
+  onSettingsToggle?: (show: boolean) => void;
 }
 
 export default function UnifiedChatInput({
@@ -59,16 +65,26 @@ export default function UnifiedChatInput({
   webSearchEnabled = true,
   onWebSearchToggle,
   stats,
-  userId
+  userId,
+  showSettingsBar = false,
+  onSettingsToggle
 }: UnifiedChatInputProps) {
   const [showModelDropdown, setShowModelDropdown] = useState(false);
   const [localSelectedModel, setLocalSelectedModel] = useState(selectedModel);
+  const [mentionContext, setMentionContext] = useState<MentionContext | null>(null);
+  const [showMentionAutocomplete, setShowMentionAutocomplete] = useState(false);
+  const [cursorPosition, setCursorPosition] = useState(0);
+  const [localShowSettingsBar, setLocalShowSettingsBar] = useState(showSettingsBar);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const modelDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setLocalSelectedModel(selectedModel);
   }, [selectedModel]);
+
+  useEffect(() => {
+    setLocalShowSettingsBar(showSettingsBar);
+  }, [showSettingsBar]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -134,7 +150,63 @@ export default function UnifiedChatInput({
     }, 0);
   };
 
+  const handleInputChange = useCallback((newValue: string) => {
+    onChange(newValue);
+    
+    // Check for mentions
+    const textarea = textareaRef.current;
+    if (textarea) {
+      const cursorPos = textarea.selectionStart || 0;
+      setCursorPosition(cursorPos);
+      
+      const mention = MentionService.detectMention(newValue, cursorPos);
+      setMentionContext(mention);
+      setShowMentionAutocomplete(!!mention);
+    }
+  }, [onChange]);
+
+  const handleMentionSelect = useCallback((item: MentionItem) => {
+    if (mentionContext) {
+      const newValue = MentionService.replaceMention(value, mentionContext, item);
+      onChange(newValue);
+      setShowMentionAutocomplete(false);
+      setMentionContext(null);
+      
+      // Refocus textarea and move cursor after the mention
+      setTimeout(() => {
+        if (textareaRef.current) {
+          textareaRef.current.focus();
+          // Position cursor after the mention (trigger + name + space)
+          const newCursorPos = mentionContext.startIndex + 1 + item.name.length + 1;
+          textareaRef.current.setSelectionRange(newCursorPos, newCursorPos);
+        }
+      }, 0);
+    }
+  }, [value, mentionContext, onChange]);
+
+  const handleSettingsToggle = () => {
+    const newState = !localShowSettingsBar;
+    setLocalShowSettingsBar(newState);
+    onSettingsToggle?.(newState);
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    // Let mention autocomplete handle its own keyboard events
+    if (showMentionAutocomplete) {
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'Tab') {
+        return; // Let autocomplete handle navigation
+      }
+      if (e.key === 'Enter') {
+        // Only prevent send if autocomplete is showing
+        return;
+      }
+      if (e.key === 'Escape') {
+        setShowMentionAutocomplete(false);
+        setMentionContext(null);
+        return;
+      }
+    }
+    
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       onSend();
@@ -249,12 +321,20 @@ export default function UnifiedChatInput({
             <Textarea
               ref={textareaRef}
               value={value}
-              onChange={(e) => onChange(e.target.value)}
+              onChange={(e) => handleInputChange(e.target.value)}
               onKeyDown={handleKeyDown}
+              onSelect={(e) => {
+                const textarea = e.currentTarget;
+                setCursorPosition(textarea.selectionStart || 0);
+              }}
               placeholder={placeholder}
               disabled={loading}
-              className="w-full bg-background border border-border/20 rounded-xl px-4 py-3 pr-12 focus:outline-none focus:ring-1 focus:ring-ring/10 focus:border-border/30 transition-all resize-none overflow-y-auto scrollbar-safari-thin shadow-[0_2px_8px_rgba(0,0,0,0.08)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.2)]"
-              style={{ minHeight: '44px' }}
+              className={cn(
+                "w-full bg-background border rounded-xl px-4 py-3 pr-14 focus:outline-none focus:ring-1 focus:ring-ring/20 transition-all resize-none overflow-y-auto scrollbar-safari-thin shadow-sm",
+                value.includes('@') && "border-primary/30 focus:border-primary/50",
+                !value.includes('@') && "border-border/50 focus:border-border/60"
+              )}
+              style={{ minHeight: '48px' }}
               rows={1}
               autoFocus
             />
@@ -262,7 +342,7 @@ export default function UnifiedChatInput({
               onClick={onSend}
               disabled={loading || !value.trim()}
               size="icon"
-              className="absolute right-2 bottom-2 h-8 w-8 rounded-full bg-primary hover:bg-primary/90 disabled:bg-muted transition-all"
+              className="absolute right-3 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-primary hover:bg-primary/90 disabled:bg-muted transition-all"
               type="button"
             >
               {loading ? (
@@ -284,6 +364,25 @@ export default function UnifiedChatInput({
               )}
             </Button>
           </div>
+          
+          {/* Mention Autocomplete - Extending upward from input */}
+          {showMentionAutocomplete && mentionContext && (
+            <div className="absolute inset-x-0 bottom-0 z-50">
+              <MentionAutocomplete
+                isOpen={showMentionAutocomplete}
+                context={mentionContext}
+                onSelect={handleMentionSelect}
+                onClose={() => {
+                  setShowMentionAutocomplete(false);
+                  setMentionContext(null);
+                }}
+                userId={userId}
+                projectPath="/home/jon/Projects/syna"
+                fullText={value}
+                cursorPosition={cursorPosition}
+              />
+            </div>
+          )}
         </motion.div>
       ) : (
         <div className={wrapperClass}>
@@ -379,12 +478,23 @@ export default function UnifiedChatInput({
               <Textarea
                 ref={textareaRef}
                 value={value}
-                onChange={(e) => onChange(e.target.value)}
+                onChange={(e) => handleInputChange(e.target.value)}
                 onKeyDown={handleKeyDown}
+                onSelect={(e) => {
+                  const textarea = e.currentTarget;
+                  setCursorPosition(textarea.selectionStart || 0);
+                }}
                 placeholder={placeholder}
                 disabled={loading}
-                className="w-full bg-background border border-border/20 rounded-xl px-4 py-3 pr-12 focus:outline-none focus:ring-1 focus:ring-ring/10 focus:border-border/30 transition-all resize-none overflow-y-auto scrollbar-safari-thin shadow-[0_2px_8px_rgba(0,0,0,0.08)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.2)]"
-                style={{ minHeight: '44px' }}
+                className={cn(
+                  "w-full border rounded-xl px-4 py-3 pr-14 focus:outline-none focus:ring-1 focus:ring-ring/20 transition-all resize-none overflow-y-auto scrollbar-safari-thin",
+                  value.includes('@') && "border-primary/30 focus:border-primary/50",
+                  !value.includes('@') && "border-border/50 focus:border-border/60"
+                )}
+                style={{ 
+                  minHeight: '48px',
+                  background: 'var(--background)'
+                }}
                 rows={1}
                 autoFocus
               />
@@ -392,7 +502,7 @@ export default function UnifiedChatInput({
                 onClick={onSend}
                 disabled={loading || !value.trim()}
                 size="icon"
-                className="absolute right-2 bottom-2 h-8 w-8 rounded-full bg-primary hover:bg-primary/90 disabled:bg-muted transition-all"
+                className="absolute right-3 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-primary hover:bg-primary/90 disabled:bg-muted transition-all"
                 type="button"
               >
                 {loading ? (
@@ -414,6 +524,25 @@ export default function UnifiedChatInput({
                 )}
               </Button>
             </div>
+            
+            {/* Mention Autocomplete - Extending upward from input */}
+            {showMentionAutocomplete && mentionContext && (
+              <div className="absolute inset-x-0 bottom-0 z-50">
+                <MentionAutocomplete
+                  isOpen={showMentionAutocomplete}
+                  context={mentionContext}
+                  onSelect={handleMentionSelect}
+                  onClose={() => {
+                    setShowMentionAutocomplete(false);
+                    setMentionContext(null);
+                  }}
+                  userId={userId}
+                  projectPath="/home/jon/Projects/syna"
+                  fullText={value}
+                  cursorPosition={cursorPosition}
+                />
+              </div>
+            )}
           </div>
         </div>
       )}

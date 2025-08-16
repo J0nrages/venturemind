@@ -45,6 +45,9 @@ export interface Agent {
   currentTask?: string;
   avatar?: string;
   capabilities: string[];
+  description?: string;
+  icon?: string;
+  color?: string;
 }
 
 export interface SurfaceContent {
@@ -117,54 +120,75 @@ export const AVAILABLE_AGENTS: Agent[] = [
   // Engineering agents
   {
     id: 'engineer-primary',
-    name: '@Engineer',
+    name: 'Engineer',
     type: 'engineer',
     status: 'idle',
     capabilities: ['code_generation', 'debugging', 'architecture', 'testing'],
+    description: 'Senior Software Engineer',
+    icon: '🤖',
+    color: '#10B981'
   },
   {
     id: 'critic-eng',
-    name: '@Critic',
+    name: 'Critic',
     type: 'critic',
     status: 'idle',
     capabilities: ['code_review', 'security_audit', 'performance_analysis'],
+    description: 'Code Review Specialist',
+    icon: '🤖',
+    color: '#F59E0B'
   },
   {
     id: 'tester-eng',
-    name: '@Tester',
+    name: 'Tester',
     type: 'tester',
     status: 'idle',
     capabilities: ['unit_testing', 'integration_testing', 'e2e_testing'],
+    description: 'QA Engineer',
+    icon: '🤖',
+    color: '#8B5CF6'
   },
   // Business/Strategy agents
   {
     id: 'writer-business',
-    name: '@Writer',
+    name: 'Writer',
     type: 'writer',
     status: 'idle',
     capabilities: ['investor_updates', 'pitch_decks', 'financial_narratives', 'requirements', 'documentation'],
+    description: 'Technical Writer',
+    icon: '🤖',
+    color: '#3B82F6'
   },
   {
     id: 'analyst-business',
-    name: '@Analyst',
+    name: 'Analyst',
     type: 'analyst',
     status: 'idle',
     capabilities: ['market_analysis', 'competitive_research', 'metrics_analysis', 'user_research'],
+    description: 'Business Analyst',
+    icon: '🤖',
+    color: '#EC4899'
   },
   {
     id: 'planner-business',
-    name: '@Planner',
+    name: 'Planner',
     type: 'planner',
     status: 'idle',
     capabilities: ['strategy_planning', 'timeline_planning', 'milestone_tracking', 'roadmap_planning', 'sprint_management'],
+    description: 'Project Manager',
+    icon: '🤖',
+    color: '#06B6D4'
   },
   // Operations agents
   {
     id: 'ops-primary',
-    name: '@Ops',
+    name: 'Ops',
     type: 'ops',
     status: 'idle',
     capabilities: ['deployment', 'monitoring', 'scaling', 'infrastructure'],
+    description: 'DevOps Engineer',
+    icon: '🤖',
+    color: '#EF4444'
   },
 ];
 
