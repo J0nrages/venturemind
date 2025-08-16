@@ -99,7 +99,7 @@ export class GeminiService {
   }
 
   // Generate content with Gemini through backend API
-  static async generateContent(prompt: string, context?: string, userId?: string, agentId?: string): Promise<GeminiResponse> {
+  static async generateContent(prompt: string, context?: any, userId?: string, agentId?: string): Promise<GeminiResponse> {
     console.log('🔄 GeminiService.generateContent called with:', {
       prompt: prompt.substring(0, 100) + '...',
       hasContext: !!context,
@@ -107,7 +107,9 @@ export class GeminiService {
     });
 
     try {
-      const fullPrompt = context ? `${context}\n\n${prompt}` : prompt;
+      const fullPrompt = typeof context === 'string' && context.trim().length > 0
+        ? `${context}\n\n${prompt}`
+        : prompt;
 
       // Get user's model configuration
       const modelConfig = userId 
@@ -129,7 +131,9 @@ export class GeminiService {
           maxOutputTokens: modelConfig.max_output_tokens,
           presencePenalty: modelConfig.presence_penalty,
           frequencyPenalty: modelConfig.frequency_penalty,
-        }
+        },
+        // Pass structured context to let backend craft the final system prompt
+        ...(context && typeof context === 'object' ? { context } : {})
       });
 
       console.log('📡 API Response:', {
@@ -182,32 +186,29 @@ export class GeminiService {
         .join('\n');
 
       const classificationPrompt = `
-You are an intelligent business assistant that routes messages to documents AND suggests strategic actions.
+You are SYNA. Classify the user message and propose a concrete document update.
 
 Available Documents:
 ${documentContext}
 
 User Message: "${message}"
 
-Analyze the message and respond with a JSON object containing:
+Return JSON only:
 {
   "documentName": "exact name of the best matching document or null",
-  "confidence": number between 0-1,
-  "reasoning": "brief explanation of why this document was chosen",
-  "suggestedUpdate": "a well-formatted addition to the document that incorporates the user's message",
+  "confidence": number (0..1),
+  "reasoning": "brief, specific rationale",
+  "suggestedUpdate": "well-formatted content to add to the document (markdown ok)",
   "strategicInsights": {
-    "initiatives": ["suggested strategic initiative titles based on the message"],
-    "swotUpdates": ["SWOT items that could be added/updated based on this insight"]
+    "initiatives": ["1-3 concise initiative titles if relevant"],
+    "swotUpdates": ["category: item"]
   }
 }
 
-Guidelines:
-- Only route to documents that are clearly relevant (confidence > 0.3)
-- If no document is clearly relevant, return documentName as null
-- Always provide strategic insights even if no document match
-- Suggest 1-3 strategic initiatives that could emerge from this message
-- Identify potential SWOT updates (format as "category: item")
-- Be precise and actionable
+Rules:
+- Only route if clearly relevant (>0.3). Else, documentName=null
+- Prefer concrete, succinct updates over generic advice
+- Never guess. If unsure, keep confidence low and suggest one clarifying question in reasoning
 `;
 
       const response = await this.generateContent(classificationPrompt, undefined, documents[0]?.user_id);
@@ -260,25 +261,19 @@ Strategic Opportunities Identified:
 ` : '';
 
       const responsePrompt = `
-You are a strategic business assistant that provides insights and actionable recommendations.
+You are SYNA. Start warm; adapt to tone. Respond with action-first guidance.
 
 Recent conversation:
 ${recentHistory}
 
 User's latest message: "${message}"
 ${documentUpdated ? `Document updated: ${documentUpdated}` : 'No document was updated'}
-
 ${strategicContext}
 
-Respond as a strategic business advisor who:
-1. Acknowledges the user's input thoughtfully
-2. ${documentUpdated ? `Confirms the document update and explains why it was relevant` : `Provides strategic insights based on the message`}
-3. Suggests actionable next steps or strategic considerations
-4. Asks engaging follow-up questions when appropriate
-5. Maintains a professional but friendly tone
-6. Keeps responses concise (2-3 sentences max)
-
-Generate a helpful strategic response:
+Reply rules:
+- Prefer a concrete next step (tool, surface, or agent) in 1–2 sentences
+- For planning requests, give a compact, structured outline
+- If context is insufficient, ask one crisp clarifying question and propose a next step
 `;
 
       const response = await this.generateContent(responsePrompt, undefined, userId);

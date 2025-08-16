@@ -34,36 +34,11 @@ export class GeminiToolService extends GeminiService {
       // Get user's model configuration (defaults to gemini-2.5-flash)
       const modelConfig = await this.getUserModelConfig(userId);
       
-      // Prepare the prompt with tool awareness
-      const systemPrompt = `You are SYNA, an AI assistant that can interact with the user's workspace.
-You have access to tools that can:
-- Open surfaces (documents, dashboards, metrics) when the user asks to see something
-- Create new documents and content
-- Summon specialized agents to help with tasks
-- Analyze data and metrics
-
-When the user asks to see, show, or open something, use the attach_surface tool.
-When they ask to create something new, use the create_document tool.
-When they need specialized help, use the summon_agent tool.
-
-Available surfaces you can open:
-- business-plan: Business planning and strategy
-- proforma: Financial projections and models
-- metrics: Key business metrics and KPIs
-- revenue: Revenue analysis and forecasting
-- strategy: Strategic planning and initiatives
-- swot-analysis: SWOT analysis
-- customers: Customer data and insights
-- documents: Document management
-- settings: Application settings
-
-Current context: ${context.type} workspace
-Active surfaces: ${Object.keys(context.surfaces).filter(s => context.surfaces[s]?.visible).join(', ') || 'none'}`;
+      // Do not compose prompts on the client. Provide structured context only; backend crafts system prompt.
 
       // Build the request with tools
       const requestBody = {
         prompt: message,
-        system: systemPrompt,
         model: modelConfig.model_name || 'gemini-2.5-flash',
         config: {
           temperature: modelConfig.temperature || 0.7,
@@ -71,7 +46,12 @@ Active surfaces: ${Object.keys(context.surfaces).filter(s => context.surfaces[s]
           topP: modelConfig.top_p || 0.95,
           maxOutputTokens: modelConfig.max_output_tokens || 1024,
         },
-        tools: toolsConfig.tools // Include tool definitions
+        tools: toolsConfig.tools,
+        context: {
+          type: context?.type,
+          activeSurfaces: Object.keys(context?.surfaces || {}).filter((s) => context?.surfaces?.[s]?.visible),
+          activeAgents: (context?.activeAgents || []).map((a: any) => a.type)
+        }
       };
 
       console.log('🔧 Calling Gemini 2.5 Flash with tools:', {

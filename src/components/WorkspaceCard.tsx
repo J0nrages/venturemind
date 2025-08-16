@@ -2,7 +2,8 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Context } from '../types/context';
-import MainChat from './MainChat';
+import { MainChat } from './MainChat';
+import { WorkspaceView } from './WorkspaceView';
 import AgentRail from './AgentRail';
 import Surface from './Surface';
 import PageSurface from './PageSurface';
@@ -204,10 +205,9 @@ export default function ContextCard({
               "absolute inset-0 overflow-y-auto scrollbar-hide",
               isUnbounded ? "pt-10 pb-40 bg-transparent" : "pt-20 pb-32", // More space at bottom for floating input, transparent background
             )}>
-              <MainChat 
+              <WorkspaceView
                 context={context}
                 isActive={position === 'active'}
-                unbounded={isUnbounded}
               />
             </div>
           </div>

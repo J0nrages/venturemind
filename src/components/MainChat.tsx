@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Bot, 
@@ -41,14 +42,17 @@ interface ConversationSpineProps {
   isActive: boolean;
   className?: string;
   unbounded?: boolean;
+  onNavigate?: (page: 'settings' | 'projects' | 'workflows' | 'ledger') => void;
 }
 
 export function MainChat({ 
   context, 
   isActive, 
   className,
-  unbounded = false
+  unbounded = false,
+  onNavigate
 }: ConversationSpineProps) {
+  const navigate = useNavigate();
   const [messages, setMessages] = useState<ConversationMessage[]>([]);
   const [currentMessage, setCurrentMessage] = useState('');
   const [documents, setDocuments] = useState<UserDocument[]>([]);
@@ -422,13 +426,13 @@ export function MainChat({
       {/* Messages Area with Context-Aware Styling */}
       <div ref={messagesScrollRef} className={cn(
         "flex-1 overflow-y-auto scrollbar-safari",
-        unbounded ? "pb-20" : "px-4 pt-4 pb-6"
+        unbounded ? "" : "px-4 pt-4 pb-8"  // No bottom padding in unbounded mode - let it extend to bottom
       )}>
         <div className={cn(
-          "mx-auto w-full h-full",
+          "mx-auto w-full",
           unbounded ? "max-w-4xl px-4 sm:px-6" : "max-w-5xl px-2 sm:px-4"
         )}>
-          <div className="min-h-full flex flex-col justify-end gap-3">
+          <div className="flex flex-col gap-3">
             {messages.map((message, index) => (
               <motion.div
                 key={message.id}
@@ -501,13 +505,15 @@ export function MainChat({
             )}
 
             <div ref={messagesEndRef} />
+            {/* Spacer to account for floating input - matches bottom-24 position plus input height */}
+            {unbounded && <div className="h-40" />}
           </div>
         </div>
       </div>
 
       {/* Enhanced ChatGPT-style Input Area - Hidden in unbounded mode */}
       {!unbounded && (
-        <div className="relative p-4 border-t border-border bg-background/50 backdrop-blur-sm">
+        <div className="relative p-4 bg-background/50 backdrop-blur-sm">
         <div className="max-w-2xl mx-auto">
         {/* Message Stats */}
         {showStats && messageStats.lastLatency && (
@@ -667,6 +673,22 @@ export function MainChat({
           webSearchEnabled={webSearchEnabled}
           onWebSearchToggle={setWebSearchEnabled}
           userId={user?.id}
+          onNavigate={onNavigate || ((page) => {
+            switch(page) {
+              case 'settings':
+                navigate('/settings');
+                break;
+              case 'projects':
+                navigate('/business-plan');
+                break;
+              case 'workflows':
+                navigate('/strategy');
+                break;
+              case 'ledger':
+                navigate('/document-memory');
+                break;
+            }
+          })}
         />
       )}
       

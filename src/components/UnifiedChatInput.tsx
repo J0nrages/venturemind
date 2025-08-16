@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Send, 
   Brain,
@@ -11,7 +11,10 @@ import {
   Hash,
   Zap,
   Settings,
-  ChevronUp
+  ChevronUp,
+  FolderOpen,
+  Workflow,
+  FileText
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -45,6 +48,7 @@ export interface UnifiedChatInputProps {
   userId?: string;
   showSettingsBar?: boolean;
   onSettingsToggle?: (show: boolean) => void;
+  onNavigate?: (page: 'settings' | 'projects' | 'workflows' | 'ledger') => void;
 }
 
 export default function UnifiedChatInput({
@@ -67,7 +71,8 @@ export default function UnifiedChatInput({
   stats,
   userId,
   showSettingsBar = false,
-  onSettingsToggle
+  onSettingsToggle,
+  onNavigate
 }: UnifiedChatInputProps) {
   const [showModelDropdown, setShowModelDropdown] = useState(false);
   const [localSelectedModel, setLocalSelectedModel] = useState(selectedModel);
@@ -75,6 +80,7 @@ export default function UnifiedChatInput({
   const [showMentionAutocomplete, setShowMentionAutocomplete] = useState(false);
   const [cursorPosition, setCursorPosition] = useState(0);
   const [localShowSettingsBar, setLocalShowSettingsBar] = useState(showSettingsBar);
+  const [showMenuSurface, setShowMenuSurface] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const modelDropdownRef = useRef<HTMLDivElement>(null);
 
@@ -314,6 +320,22 @@ export default function UnifiedChatInput({
                 <Paperclip className="w-4 h-4" />
               </button>
             )}
+
+            {/* Menu Toggle - Right aligned */}
+            <div className="ml-auto">
+              <button
+                onClick={() => setShowMenuSurface(!showMenuSurface)}
+                className={`flex items-center gap-1 px-2 py-1 rounded-md transition-all ${
+                  showMenuSurface 
+                    ? 'text-primary bg-primary/10 hover:bg-primary/20' 
+                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+                }`}
+                title="Open menu"
+                type="button"
+              >
+                <Settings className={`w-4 h-4 transition-transform ${showMenuSurface ? 'rotate-45' : ''}`} />
+              </button>
+            </div>
           </div>
 
           {/* Message Input */}
@@ -383,6 +405,71 @@ export default function UnifiedChatInput({
               />
             </div>
           )}
+
+          {/* Expandable Menu Surface */}
+          <AnimatePresence>
+            {showMenuSurface && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="overflow-hidden"
+              >
+                <div className="pt-3 pb-1 border-t border-border/20 mt-3">
+                  <div className="grid grid-cols-4 gap-2">
+                    <button
+                      onClick={() => {
+                        onNavigate?.('settings');
+                        setShowMenuSurface(false);
+                      }}
+                      className="flex flex-col items-center gap-1 p-3 rounded-lg hover:bg-secondary/50 transition-colors group"
+                      type="button"
+                    >
+                      <Settings className="w-5 h-5 text-muted-foreground group-hover:text-foreground" />
+                      <span className="text-xs text-muted-foreground group-hover:text-foreground">Settings</span>
+                    </button>
+                    
+                    <button
+                      onClick={() => {
+                        onNavigate?.('projects');
+                        setShowMenuSurface(false);
+                      }}
+                      className="flex flex-col items-center gap-1 p-3 rounded-lg hover:bg-secondary/50 transition-colors group"
+                      type="button"
+                    >
+                      <FolderOpen className="w-5 h-5 text-muted-foreground group-hover:text-foreground" />
+                      <span className="text-xs text-muted-foreground group-hover:text-foreground">Projects</span>
+                    </button>
+                    
+                    <button
+                      onClick={() => {
+                        onNavigate?.('workflows');
+                        setShowMenuSurface(false);
+                      }}
+                      className="flex flex-col items-center gap-1 p-3 rounded-lg hover:bg-secondary/50 transition-colors group"
+                      type="button"
+                    >
+                      <Workflow className="w-5 h-5 text-muted-foreground group-hover:text-foreground" />
+                      <span className="text-xs text-muted-foreground group-hover:text-foreground">Workflows</span>
+                    </button>
+                    
+                    <button
+                      onClick={() => {
+                        onNavigate?.('ledger');
+                        setShowMenuSurface(false);
+                      }}
+                      className="flex flex-col items-center gap-1 p-3 rounded-lg hover:bg-secondary/50 transition-colors group"
+                      type="button"
+                    >
+                      <FileText className="w-5 h-5 text-muted-foreground group-hover:text-foreground" />
+                      <span className="text-xs text-muted-foreground group-hover:text-foreground">Ledger</span>
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
       ) : (
         <div className={wrapperClass}>
@@ -471,6 +558,22 @@ export default function UnifiedChatInput({
                   <Paperclip className="w-4 h-4" />
                 </button>
               )}
+
+              {/* Menu Toggle - Right aligned */}
+              <div className="ml-auto">
+                <button
+                  onClick={() => setShowMenuSurface(!showMenuSurface)}
+                  className={`flex items-center gap-1 px-2 py-1 rounded-md transition-all ${
+                    showMenuSurface 
+                      ? 'text-primary bg-primary/10 hover:bg-primary/20' 
+                      : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+                  }`}
+                  title="Open menu"
+                  type="button"
+                >
+                  <Settings className={`w-4 h-4 transition-transform ${showMenuSurface ? 'rotate-45' : ''}`} />
+                </button>
+              </div>
             </div>
 
             {/* Message Input */}
@@ -543,6 +646,71 @@ export default function UnifiedChatInput({
                 />
               </div>
             )}
+
+            {/* Expandable Menu Surface */}
+            <AnimatePresence>
+              {showMenuSurface && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="overflow-hidden"
+                >
+                  <div className="pt-3 pb-1 border-t border-border/20 mt-3">
+                    <div className="grid grid-cols-4 gap-2">
+                      <button
+                        onClick={() => {
+                          onNavigate?.('settings');
+                          setShowMenuSurface(false);
+                        }}
+                        className="flex flex-col items-center gap-1 p-3 rounded-lg hover:bg-secondary/50 transition-colors group"
+                        type="button"
+                      >
+                        <Settings className="w-5 h-5 text-muted-foreground group-hover:text-foreground" />
+                        <span className="text-xs text-muted-foreground group-hover:text-foreground">Settings</span>
+                      </button>
+                      
+                      <button
+                        onClick={() => {
+                          onNavigate?.('projects');
+                          setShowMenuSurface(false);
+                        }}
+                        className="flex flex-col items-center gap-1 p-3 rounded-lg hover:bg-secondary/50 transition-colors group"
+                        type="button"
+                      >
+                        <FolderOpen className="w-5 h-5 text-muted-foreground group-hover:text-foreground" />
+                        <span className="text-xs text-muted-foreground group-hover:text-foreground">Projects</span>
+                      </button>
+                      
+                      <button
+                        onClick={() => {
+                          onNavigate?.('workflows');
+                          setShowMenuSurface(false);
+                        }}
+                        className="flex flex-col items-center gap-1 p-3 rounded-lg hover:bg-secondary/50 transition-colors group"
+                        type="button"
+                      >
+                        <Workflow className="w-5 h-5 text-muted-foreground group-hover:text-foreground" />
+                        <span className="text-xs text-muted-foreground group-hover:text-foreground">Workflows</span>
+                      </button>
+                      
+                      <button
+                        onClick={() => {
+                          onNavigate?.('ledger');
+                          setShowMenuSurface(false);
+                        }}
+                        className="flex flex-col items-center gap-1 p-3 rounded-lg hover:bg-secondary/50 transition-colors group"
+                        type="button"
+                      >
+                        <FileText className="w-5 h-5 text-muted-foreground group-hover:text-foreground" />
+                        <span className="text-xs text-muted-foreground group-hover:text-foreground">Ledger</span>
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
       )}
