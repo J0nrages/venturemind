@@ -111,3 +111,4 @@ If `/mcp` shows no servers:
 2. Check JSON syntax is valid
 3. Try restarting Claude Code or reloading the project
 4. Run `/doctor` for diagnostics
+- We're in August 2025 - keep that in mind when searching the web
