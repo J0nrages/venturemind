@@ -342,7 +342,7 @@ export default function UnifiedChatInput({
               onClick={onSend}
               disabled={loading || !value.trim()}
               size="icon"
-              className="absolute right-3 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-primary hover:bg-primary/90 disabled:bg-muted transition-all"
+              className="absolute right-3 bottom-2 h-8 w-8 rounded-full bg-primary hover:bg-primary/90 disabled:bg-muted transition-all"
               type="button"
             >
               {loading ? (
@@ -502,7 +502,7 @@ export default function UnifiedChatInput({
                 onClick={onSend}
                 disabled={loading || !value.trim()}
                 size="icon"
-                className="absolute right-3 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-primary hover:bg-primary/90 disabled:bg-muted transition-all"
+                className="absolute right-3 bottom-2 h-8 w-8 rounded-full bg-primary hover:bg-primary/90 disabled:bg-muted transition-all"
                 type="button"
               >
                 {loading ? (

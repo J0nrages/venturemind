@@ -21,6 +21,7 @@ import { ConversationMessage } from '../services/ChatService';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
 import { useThreading, SelectionAnalysis } from '../hooks/useMessageReplies';
+import { FormattedMessage } from './FormattedMessage';
 
 interface ThreadedChatMessageProps {
   message: ConversationMessage;
@@ -346,7 +347,9 @@ export default function ThreadedChatMessage({
 
           {/* Message content */}
           <div className="prose prose-sm max-w-none">
-            <p className="text-sm mb-0 select-text">{message.content}</p>
+            <p className="text-sm mb-0 select-text">
+              <FormattedMessage content={message.content} />
+            </p>
           </div>
 
           {/* Document updates */}
