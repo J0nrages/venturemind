@@ -47,7 +47,7 @@ import PresenceIndicator from '../components/PresenceIndicator';
 import ThreadedChatMessage from '../components/MessageWithReplies';
 import ReplyModal from '../components/ReplyModal';
 import BranchModal from '../components/BranchModal';
-import UnifiedChatInput from '../components/UnifiedChatInput';
+import { Composer } from '@/features/chat';
 import { useThreading } from '../hooks/useMessageReplies';
 import { useScrollVisibility } from '../hooks/useScrollVisibility';
 import toast from 'react-hot-toast';
@@ -1209,21 +1209,19 @@ export default function DocumentMemory() {
             </div>
           </div>
 
-          {/* Unified Chat Input */}
-          <UnifiedChatInput
-            value={currentMessage}
-            onChange={setCurrentMessage}
-            onSend={handleSendMessage}
+          {/* Chat Input */}
+          <Composer
+            onSend={(message) => {
+              setCurrentMessage(message);
+              handleSendMessage();
+            }}
             loading={loading}
             placeholder={
               aiStatus === 'working' 
                 ? "Tell me about your business or share information to save..." 
                 : "Share information to organize in your documents..."
             }
-            showModelSelector={false}
-            showWebSearch={false}
             showAttachment={false}
-            userId={user?.id}
           />
         </motion.div>
 

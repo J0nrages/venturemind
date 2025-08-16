@@ -44,66 +44,123 @@ Syna is an AI-powered operating system built with a modern, service-oriented arc
 └─────────────────┘    └─────────────────┘    └─────────────────┘
 ```
 
-## Frontend Architecture (`/src`) - With Terminology Mapping
+## Frontend Architecture (`/src`) - Current State (August 2025)
 
-### Directory Structure with Current → Target Names
+### Component Directory Structure & Purpose
 
 ```
 src/
 ├── components/
-│   ├── [WORKSPACE MANAGEMENT - needs renaming]
-│   │   ├── ContextProvider.tsx        → WorkspaceProvider.tsx
-│   │   ├── ContextCard.tsx           → WorkspaceCard.tsx
-│   │   ├── ContextSwitcher.tsx       → WorkspaceSwitcher.tsx
-│   │   ├── ContextMenu.tsx           → (keep - different context)
-│   │   └── SynaApp.tsx               → ProjectContainer.tsx
+│   ├── [WORKSPACE MANAGEMENT]
+│   │   ├── WorkspaceCard.tsx          # Card UI for workspace selection/preview
+│   │   ├── WorkspaceSwitcher.tsx      # Alt+Tab style workspace switching interface
+│   │   ├── WorkspaceView.tsx          # Main workspace container with chat + surfaces
+│   │   └── ContextMenu.tsx            # Right-click menu for workspace actions
 │   │
-│   ├── [CHAT COMPONENTS - needs clarification]
-│   │   ├── ConversationSpine.tsx     → MainChat.tsx
-│   │   ├── ThreadedChatMessage.tsx   → MessageWithReplies.tsx
-│   │   ├── ThreadSidebar.tsx         → RepliesSidebar.tsx
-│   │   ├── ModernChatSidebar.tsx     → FloatingChat.tsx
-│   │   └── BranchModal.tsx           → (keep - creates workspace)
+│   ├── [CHAT COMPONENTS]
+│   │   ├── MainChat.tsx               # Primary chat interface (739 lines - main conversation UI)
+│   │   ├── MessageWithReplies.tsx     # Message component with nested reply threading
+│   │   ├── UnifiedChatInput.tsx       # Unified input with mentions, model selector, commands
+│   │   ├── ModernChatSidebar.tsx      # Floating sidebar chat for secondary conversations
+│   │   ├── RepliesSidebar.tsx         # Sidebar showing message reply threads
+│   │   ├── ReplyModal.tsx             # Modal for composing message replies
+│   │   └── BranchModal.tsx            # Modal for creating workspace branches
 │   │
-│   ├── [SURFACES - correctly named]
-│   │   ├── Surface.tsx               ✓
-│   │   ├── PageSurface.tsx           ✓
-│   │   └── CollaborativeEditor.tsx   ✓
+│   ├── [MENTION SYSTEM]
+│   │   ├── MentionAutocomplete.tsx    # Dropdown for @ mention suggestions
+│   │   ├── MentionHighlighter.tsx     # Highlights @ mentions in text
+│   │   ├── MentionTextarea.tsx        # Main textarea with mention support
+│   │   ├── MentionTextarea2.tsx       # Alternative mention implementation
+│   │   └── SimpleMentionTextarea.tsx  # Lightweight mention textarea variant
 │   │
-│   ├── [AGENT VISUALIZATION - needs addition]
-│   │   ├── AgentRail.tsx             → AgentStatusBar.tsx
-│   │   ├── [NEW] AgentCursor.tsx     (colored cursor visual)
-│   │   ├── [NEW] AgentBubble.tsx     (thought bubble)
-│   │   └── AgenticAIChatOrchestrator.tsx ✓
+│   ├── [DOCUMENT SURFACES]
+│   │   ├── Surface.tsx                # Base surface component for documents
+│   │   ├── PageSurface.tsx            # Page-specific surface implementation
+│   │   └── CollaborativeEditor.tsx    # Real-time collaborative document editor
 │   │
-│   └── [LEDGER - needs extraction]
-│       └── [NEW] Ledger.tsx          (extract from DocumentMemory)
+│   ├── [AGENT VISUALIZATION]
+│   │   ├── AgentRail.tsx              # Side rail showing active agent status
+│   │   └── AgenticAIChatOrchestrator.tsx # Orchestrates multi-agent conversations
+│   │
+│   ├── [UI COMPONENTS - shadcn/ui]
+│   │   └── ui/
+│   │       ├── button.tsx             # Reusable button component
+│   │       ├── card.tsx               # Card container component
+│   │       ├── dialog.tsx             # Modal dialog component
+│   │       ├── sidebar.tsx            # Sidebar navigation component
+│   │       └── [20+ more]             # Complete UI component library
+│   │
+│   └── [SHARED/UTILITY COMPONENTS]
+│       ├── AuthGuard.tsx              # Route protection for authenticated users
+│       ├── ErrorBoundary.tsx          # Error handling wrapper component
+│       ├── Sidebar.tsx                # Main app navigation sidebar
+│       ├── SimpleSidebar.tsx          # Minimal sidebar variant
+│       ├── PageHeader.tsx             # Consistent page header component
+│       ├── PageLayout.tsx             # Page wrapper with common layout
+│       ├── FormattedMessage.tsx       # Message formatting with markdown
+│       ├── PresenceIndicator.tsx      # Shows user online status
+│       └── ThemeToggle.tsx            # Dark/light mode switcher
 
 ├── contexts/
-│   ├── ContextProvider.tsx           → WorkspaceContext.tsx
-│   ├── ChatContext.tsx               ✓
-│   └── ThemeContext.tsx             ✓
+│   └── WorkspaceProvider.tsx          # Global workspace state and context management
 
 ├── hooks/
-│   ├── useThreading.ts               → useMessageReplies.ts
-│   ├── useWebSocketChat.ts          ✓
-│   └── [NEW] useWorkspace.ts        (workspace management)
+│   ├── useMessageReplies.ts          # Handles message reply threading logic
+│   ├── useSSEConnection.ts           # Server-Sent Events for real-time updates
+│   ├── useBusinessData.ts            # Business plan data management
+│   ├── useStrategicData.ts           # Strategic planning data hooks
+│   └── useWebSocket.ts               # WebSocket connection management
 
 ├── pages/
-│   ├── [PROJECT LEVEL]
-│   │   ├── [NEW] ProjectDashboard.tsx (project overview)
-│   │   └── [NEW] ProjectSettings.tsx  (project config)
+│   ├── [BUSINESS PLANNING]
+│   │   ├── BusinessPlan.tsx          # Main business planning interface
+│   │   ├── BusinessSetup.tsx         # Initial business configuration wizard
+│   │   ├── Strategy.tsx              # Strategic planning and goal setting
+│   │   └── SwotAnalysis.tsx          # SWOT analysis tool
 │   │
-│   └── [EXISTING PAGES]
-│       ├── DocumentMemory.tsx        (contains Ledger - extract)
-│       ├── ModernDashboard.tsx       ✓
-│       └── BusinessPlan.tsx          ✓
+│   ├── [FINANCIAL MANAGEMENT]
+│   │   ├── ProformaPage.tsx          # Financial projections and pro forma
+│   │   ├── Metrics.tsx               # KPI tracking and analytics
+│   │   ├── Revenue.tsx               # Revenue tracking and forecasting
+│   │   └── Customers.tsx             # Customer management interface
+│   │
+│   ├── [COLLABORATION & AI]
+│   │   ├── Documents.tsx             # Document management interface
+│   │   ├── DocumentMemory.tsx        # Document history and ledger view
+│   │   └── AIProcessing.tsx          # AI task processing dashboard
+│   │
+│   └── [SYSTEM PAGES]
+│       ├── Auth.tsx                  # Login/signup authentication flow
+│       ├── Settings.tsx              # User and system settings
+│       ├── ModernDashboard.tsx       # Main application dashboard
+│       └── Integrations.tsx          # Third-party service integrations
 
 └── services/
-    ├── ConversationService.ts        → ChatService.ts
-    ├── [NEW] WorkspaceService.ts     (manage workspaces)
-    ├── [NEW] ContextObjectService.ts (version tracking)
-    └── AgentOrchestrator.ts          ✓
+    ├── [AI & CHAT SERVICES]
+    │   ├── ChatService.ts            # Core chat functionality and message handling
+    │   ├── GeminiService.ts          # Google Gemini AI integration
+    │   ├── GeminiToolService.ts     # Tool calling for Gemini models
+    │   ├── MentionService.ts         # @ mention parsing and handling
+    │   └── ToolExecutor.ts           # Execute AI-suggested tools
+    │
+    ├── [AGENT ORCHESTRATION]
+    │   ├── AgentOrchestrator.ts      # Multi-agent coordination logic
+    │   └── AgentOrchestrationService.ts # Agent suggestion and management
+    │
+    ├── [BUSINESS LOGIC]
+    │   ├── BusinessService.ts        # Business plan data operations
+    │   ├── StrategicService.ts       # Strategic planning operations
+    │   └── ProformaService.ts        # Financial projection calculations
+    │
+    ├── [DOCUMENT MANAGEMENT]
+    │   ├── DocumentService.ts        # Basic document CRUD operations
+    │   └── CollaborativeDocumentService.ts # Real-time collaboration
+    │
+    ├── [REAL-TIME & INTEGRATION]
+    │   ├── UnifiedWebSocketManager.ts # WebSocket connection pooling
+    │   ├── SSEService.ts             # Server-Sent Events handling
+    │   ├── IntegrationService.ts     # External service integrations
+    │   └── UserSettingsService.ts    # User preferences and config
 ```
 
 ## Backend Architecture (`/backend`) - Aligned Terminology
@@ -171,6 +228,55 @@ CREATE TABLE ledger_entries (
     project_id UUID REFERENCES projects(id)
 );
 ```
+
+## Component Connection & Data Flow
+
+### Primary Application Flow
+
+```
+App.tsx
+  ├─> AuthGuard (authentication check)
+  └─> Router
+      ├─> ModernDashboard (/)
+      │   └─> WorkspaceSwitcher
+      │       └─> WorkspaceView
+      │           ├─> MainChat (primary conversation)
+      │           └─> Surface(s) (documents/dashboards)
+      │
+      └─> [Page Routes] (/business-plan, /strategy, etc.)
+          └─> PageLayout
+              ├─> Sidebar (navigation)
+              ├─> PageHeader
+              └─> [Page Content]
+```
+
+### Key Component Interactions
+
+1. **MainChat ↔ UnifiedChatInput**
+   - MainChat manages conversation state and history
+   - UnifiedChatInput handles user input with mentions, model selection
+   - Connected via props: value, onChange, onSend
+
+2. **WorkspaceProvider ↔ Components**
+   - Provides global workspace context to all child components
+   - Components access via useContexts() hook
+   - Manages: active workspace, agents, threading
+
+3. **Services ↔ Supabase**
+   - All services communicate with Supabase for data persistence
+   - Real-time updates via SSEService and WebSocket
+   - Authentication handled through supabase.auth
+
+4. **Agent Orchestration Flow**
+   ```
+   User Input → ChatService → AgentOrchestrator
+                                    ↓
+                            AgentOrchestrationService
+                                    ↓
+                            GeminiService (AI processing)
+                                    ↓
+                            Response → MainChat UI
+   ```
 
 ## Component Relationships with New Terminology
 
@@ -253,6 +359,7 @@ interface WebSocketMessage {
 - Hook names
 - Service method names
 
+
 ## Performance Considerations
 
 ### Workspace Management
@@ -269,6 +376,12 @@ interface WebSocketMessage {
 - Pagination for historical entries
 - Real-time streaming for live updates
 - Indexed by timestamp, actor, and target
+
+### MainChat Optimization
+- Virtual scrolling for long conversations
+- Debounced typing indicators
+- Optimistic UI updates for messages
+- Cached model configurations
 
 ## Testing Strategy for Migration
 
@@ -295,5 +408,5 @@ interface WebSocketMessage {
 ---
 
 **Last Updated**: August 2025
-**Architecture Version**: 4.0 (Terminology Aligned)
-**Status**: Ready for Migration Implementation
+**Architecture Version**: 4.1 (Current State Documentation)
+**Status**: Active Development - Partially Migrated Terminology

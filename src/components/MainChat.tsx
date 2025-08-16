@@ -1,4 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+/**
+ * MainChat - Refactored with new architecture
+ * Fully integrated with Omnibox, Composer, and modular chat components
+ */
+
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -8,11 +13,7 @@ import {
   Activity,
   Sparkles,
   AlertCircle,
-  MoreHorizontal,
   Brain,
-  ChevronDown,
-  Search,
-  Paperclip,
   Clock,
   Hash,
   Zap
@@ -23,21 +24,34 @@ import { DocumentService, UserDocument } from '../services/DocumentService';
 import { useSSEConnection } from '../hooks/useSSEConnection';
 import { useThreading } from '../hooks/useMessageReplies';
 import { useContexts } from '../contexts/WorkspaceProvider';
-import { AgentOrchestrator, PrefetchData } from '../services/AgentOrchestrator';
+import { AgentOrchestrator } from '../services/AgentOrchestrator';
 import { Context } from '../types/context';
 import { AgentOrchestrationService } from '../services/AgentOrchestrationService';
-import { UserSettingsService, type ModelConfiguration, type UserModelPreferences } from '../services/UserSettingsService';
+import { UserSettingsService, type ModelConfiguration } from '../services/UserSettingsService';
 import { GeminiService } from '../services/GeminiService';
 import MessageWithReplies from './MessageWithReplies';
 import ReplyModal from './ReplyModal';
 import BranchModal from './BranchModal';
 import ContextMenu from './ContextMenu';
-import UnifiedChatInput from './UnifiedChatInput';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import toast from 'react-hot-toast';
 
-interface ConversationSpineProps {
+// Import refactored components
+import { 
+  Composer, 
+  Omnibox, 
+  useOmnibox,
+  Panels,
+  useChatStore,
+  chatActions,
+  parsePrefix,
+  shouldOpenOmnibox,
+  commandRouter,
+  type MentionPill
+} from '@/features/chat';
+
+interface MainChatProps {
   context: Context;
   isActive: boolean;
   className?: string;
@@ -51,29 +65,26 @@ export function MainChat({
   className,
   unbounded = false,
   onNavigate
-}: ConversationSpineProps) {
+}: MainChatProps) {
   const navigate = useNavigate();
   const [messages, setMessages] = useState<ConversationMessage[]>([]);
-  const [currentMessage, setCurrentMessage] = useState('');
   const [documents, setDocuments] = useState<UserDocument[]>([]);
   const [loading, setLoading] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [aiStatus, setAiStatus] = useState<'unknown' | 'working' | 'error' | 'no-key'>('unknown');
-  const [showContextMenu, setShowContextMenu] = useState(false);
   const [agentSuggestions, setAgentSuggestions] = useState<any[]>([]);
   
-  // Model selector and chat features state
+  // Model and settings state
   const [selectedModel, setSelectedModel] = useState('gemini-2.5-flash');
   const [availableModels, setAvailableModels] = useState<Record<string, ModelConfiguration>>({});
   const [webSearchEnabled, setWebSearchEnabled] = useState(true);
-  const [showModelDropdown, setShowModelDropdown] = useState(false);
   const [messageStats, setMessageStats] = useState<{
     lastLatency?: number;
     lastTokens?: number;
     lastSpeed?: number;
   }>({});
   
-  // Settings for stats display
+  // Settings from context
   const { userSettings } = useContexts();
   const showStats = userSettings?.ui_preferences?.show_message_stats ?? false;
   
@@ -104,27 +115,27 @@ export function MainChat({
     parentMessage: undefined
   });
   
-  const [threadModal, setThreadModal] = useState<{
-    isOpen: boolean;
-    messageId: string;
-    selectedText?: string;
-    parentMessage?: string;
-  }>({
-    isOpen: false,
-    messageId: '',
-    selectedText: undefined,
-    parentMessage: undefined
-  });
-  
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesScrollRef = useRef<HTMLDivElement>(null);
-  const modelDropdownRef = useRef<HTMLDivElement>(null);
   
-  // SSE connection for real-time orchestration updates
+  // SSE connection for real-time updates
   const sseState = useSSEConnection(user?.id);
   
   // Threading functionality
   const threading = useThreading(user?.id);
+  
+  // Omnibox hook
+  const omnibox = useOmnibox({
+    userId: user?.id,
+    workspaceId: context.id,
+    enabled: isActive,
+    onExecute: async (command, result) => {
+      console.log('Command executed:', command, result);
+    }
+  });
+
+  // Sync with chat store
+  const { setActivePanel } = useChatStore();
 
   // Initialize chat when active
   useEffect(() => {
@@ -144,22 +155,6 @@ export function MainChat({
     scrollToBottom();
   }, [messages]);
 
-  // Note: Input focus is now handled within UnifiedChatInput component
-
-  // Click outside handler for model dropdown
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (modelDropdownRef.current && !modelDropdownRef.current.contains(event.target as Node)) {
-        setShowModelDropdown(false);
-      }
-    };
-
-    if (showModelDropdown) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
-    }
-  }, [showModelDropdown]);
-
   // Load context-specific conversation history
   useEffect(() => {
     if (context.conversationHistory.length > 0) {
@@ -171,7 +166,8 @@ export function MainChat({
         created_at: msg.timestamp.toISOString(),
         document_updates: [],
         context_confidence: 0,
-        parent_message_id: undefined
+        parent_message_id: undefined,
+        thread_id: context.id
       }));
       setMessages(contextMessages);
     }
@@ -192,16 +188,8 @@ export function MainChat({
 
   const loadMessages = async (userId: string) => {
     try {
-      // Load context-specific messages
       const messagesData = await ConversationService.getConversationHistory(userId, 30, context.id);
       setMessages(messagesData);
-      
-      // Don't create any default messages
-      // if (messagesData.length === 0) {
-      //   const welcomeMessage = getContextWelcomeMessage(userId);
-      //   await ConversationService.saveMessage(welcomeMessage);
-      //   setMessages([{ ...welcomeMessage, id: '1', created_at: new Date().toISOString() } as ConversationMessage]);
-      // }
     } catch (error) {
       console.error('Error loading messages:', error);
     }
@@ -244,8 +232,6 @@ export function MainChat({
     }
   };
 
-  // Removed hardcoded welcome message function
-
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ 
       behavior: 'smooth',
@@ -254,19 +240,34 @@ export function MainChat({
     });
   };
 
-  const sendMessage = async () => {
-    if (!currentMessage.trim() || loading || !user) return;
+  const sendMessage = async (content: string, mentions?: MentionPill[]) => {
+    if (!content.trim() || loading || !user) return;
+    
+    // Check for command prefix
+    const parsed = parsePrefix(content, content.length);
+    if (parsed && shouldOpenOmnibox(parsed.mode)) {
+      // Execute as command
+      const result = await commandRouter.route(parsed, {
+        userId: user.id,
+        workspaceId: context.id,
+        documentId: undefined
+      });
+      
+      if (!result.success) {
+        toast.error(result.error || 'Command failed');
+      }
+      return;
+    }
     
     setLoading(true);
-    const userMessage = currentMessage;
-    setCurrentMessage('');
     const startTime = Date.now();
     
     try {
-      // Clear model config cache to ensure we use latest settings
+      // Clear model config cache
       GeminiService.clearModelConfigCache(user.id);
-      // Check for agent suggestions before sending
-      const suggestions = AgentOrchestrationService.suggestAgents(userMessage, context.activeAgents);
+      
+      // Check for agent suggestions
+      const suggestions = AgentOrchestrationService.suggestAgents(content, context.activeAgents);
       if (suggestions.length > 0) {
         setAgentSuggestions(suggestions);
       }
@@ -279,10 +280,10 @@ export function MainChat({
         }
       }
       
-      // Save user message with context
+      // Save user message
       const userMsg: Omit<ConversationMessage, 'id' | 'created_at'> = {
         user_id: user.id,
-        content: userMessage,
+        content,
         sender: 'user',
         document_updates: [],
         context_confidence: 0,
@@ -290,11 +291,16 @@ export function MainChat({
       };
       
       await ConversationService.saveMessage(userMsg);
-      setMessages(prev => [...prev, { ...userMsg, id: Date.now().toString(), created_at: new Date().toISOString() } as ConversationMessage]);
+      const tempUserMsg = { 
+        ...userMsg, 
+        id: Date.now().toString(), 
+        created_at: new Date().toISOString() 
+      } as ConversationMessage;
+      setMessages(prev => [...prev, tempUserMsg]);
       
-      // Process with context-aware AI
+      // Process with AI
       const response = await ConversationService.processWithContextualAI(
-        userMessage, 
+        content, 
         user.id, 
         documents,
         context
@@ -311,12 +317,17 @@ export function MainChat({
       };
       
       await ConversationService.saveMessage(aiMsg);
-      setMessages(prev => [...prev, { ...aiMsg, id: (Date.now() + 1).toString(), created_at: new Date().toISOString() } as ConversationMessage]);
+      const tempAiMsg = { 
+        ...aiMsg, 
+        id: (Date.now() + 1).toString(), 
+        created_at: new Date().toISOString() 
+      } as ConversationMessage;
+      setMessages(prev => [...prev, tempAiMsg]);
       
-      // Calculate message stats
+      // Calculate stats
       const endTime = Date.now();
       const latency = endTime - startTime;
-      const estimatedTokens = Math.ceil((userMessage.length + response.response.length) / 4); // Rough estimate
+      const estimatedTokens = Math.ceil((content.length + response.response.length) / 4);
       const tokensPerSecond = Math.round((estimatedTokens / latency) * 1000);
       
       setMessageStats({
@@ -325,16 +336,21 @@ export function MainChat({
         lastSpeed: tokensPerSecond
       });
       
-      // Reload documents if any were updated
+      // Reload documents if updated
       if (response.updatedDocuments?.length > 0) {
         await loadDocuments(user.id);
         toast.success(`Updated ${response.updatedDocuments.length} document(s)`);
       }
     } catch (error) {
       toast.error('Failed to send message');
+      console.error('Send message error:', error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleOpenOmnibox = (mode: 'inline', query: string) => {
+    omnibox.open(mode, query);
   };
 
   const getAIStatusIndicator = () => {
@@ -366,67 +382,67 @@ export function MainChat({
   };
 
   return (
-    <div className={cn("flex flex-col h-full", className)}>
-      {/* Context Header with Management Options - Hidden in unbounded mode */}
+    <div className={cn("flex flex-col h-full relative", className)}>
+      {/* Context Header - Hidden in unbounded mode */}
       {!unbounded && (
         <div className="p-4 border-b border-border bg-gradient-to-br from-secondary/30 to-background">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div 
-              className="p-2.5 rounded-xl backdrop-blur-sm"
-              style={{ backgroundColor: context.color.secondary }}
-            >
-              <Brain className="w-5 h-5" style={{ color: context.color.primary }} />
-            </div>
-            <div>
-              <h3 className="font-semibold text-sm text-foreground">{context.title}</h3>
-              <div className="flex items-center gap-2 mt-0.5">
-                {getAIStatusIndicator()}
-                {sseState.connected && (
-                  <div className="flex items-center gap-1">
-                    <Activity className="w-3 h-3 text-blue-500 animate-pulse" />
-                    <span className="text-xs text-blue-600">Live</span>
-                  </div>
-                )}
-                {context.activeAgents.length > 0 && (
-                  <div className="flex items-center gap-1">
-                    <span className="text-xs text-muted-foreground">
-                      {context.activeAgents.length} agent{context.activeAgents.length > 1 ? 's' : ''} active
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-          
-          {/* Context Management */}
-          <div className="flex items-center gap-2">
-            {context.activeAgents.map(agent => (
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
               <div 
-                key={agent.id}
-                className="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700"
-                title={`${agent.name} - ${agent.status}`}
+                className="p-2.5 rounded-xl backdrop-blur-sm"
+                style={{ backgroundColor: context.color.secondary }}
               >
-                {agent.name}
+                <Brain className="w-5 h-5" style={{ color: context.color.primary }} />
               </div>
-            ))}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
-              onClick={() => setShowContextMenu(true)}
-            >
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
+              <div>
+                <h3 className="font-semibold text-sm text-foreground">{context.title}</h3>
+                <div className="flex items-center gap-2 mt-0.5">
+                  {getAIStatusIndicator()}
+                  {sseState.connected && (
+                    <div className="flex items-center gap-1">
+                      <Activity className="w-3 h-3 text-blue-500 animate-pulse" />
+                      <span className="text-xs text-blue-600">Live</span>
+                    </div>
+                  )}
+                  {context.activeAgents.length > 0 && (
+                    <div className="flex items-center gap-1">
+                      <span className="text-xs text-muted-foreground">
+                        {context.activeAgents.length} agent{context.activeAgents.length > 1 ? 's' : ''} active
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+            
+            {/* Context Management */}
+            <div className="flex items-center gap-2">
+              {context.activeAgents.map(agent => (
+                <div 
+                  key={agent.id}
+                  className="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700"
+                  title={`${agent.name} - ${agent.status}`}
+                >
+                  {agent.name}
+                </div>
+              ))}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => setActivePanel('now')}
+              >
+                <Hash className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
-      </div>
       )}
 
-      {/* Messages Area with Context-Aware Styling */}
+      {/* Messages Area */}
       <div ref={messagesScrollRef} className={cn(
         "flex-1 overflow-y-auto scrollbar-safari",
-        unbounded ? "" : "px-4 pt-4 pb-8"  // No bottom padding in unbounded mode - let it extend to bottom
+        unbounded ? "" : "px-4 pt-4 pb-8"
       )}>
         <div className={cn(
           "mx-auto w-full",
@@ -463,17 +479,21 @@ export function MainChat({
                     });
                   }}
                   onThread={(messageId, selectedText) => {
-                    const parentMessage = messages.find(m => m.id === messageId);
-                    setThreadModal({
-                      isOpen: true,
-                      messageId,
-                      selectedText,
-                      parentMessage: parentMessage?.content
-                    });
+                    const newThreadId = threadContext(
+                      context.id, 
+                      `Thread: ${selectedText?.substring(0, 30)}...`, 
+                      selectedText || ''
+                    );
+                    toast.success('New thread created');
                   }}
                   onSpawnAgent={(agentId, selectedText) => {
                     const prefetchData = AgentOrchestrator.getPrefetchedData(agentId, context.id);
-                    const newContextId = spawnAgentWorkstream(agentId, context.id, prefetchData, `${agentId} - ${selectedText.substring(0, 30)}...`);
+                    const newContextId = spawnAgentWorkstream(
+                      agentId, 
+                      context.id, 
+                      prefetchData, 
+                      `${agentId} - ${selectedText?.substring(0, 30)}...`
+                    );
                     toast.success(`Spawned ${agentId} workstream`);
                   }}
                   showArchived={threading.showArchived}
@@ -505,192 +525,102 @@ export function MainChat({
             )}
 
             <div ref={messagesEndRef} />
-            {/* Spacer to account for floating input - matches bottom-24 position plus input height */}
             {unbounded && <div className="h-40" />}
           </div>
         </div>
       </div>
 
-      {/* Enhanced ChatGPT-style Input Area - Hidden in unbounded mode */}
-      {!unbounded && (
+      {/* Composer Input */}
+      {unbounded ? (
+        // Floating input for unbounded mode
+        <div className="fixed bottom-24 left-1/2 transform -translate-x-1/2 z-30 w-full max-w-2xl px-5">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="bg-background/95 backdrop-blur-lg rounded-2xl shadow-2xl p-4 border border-border"
+          >
+            <Composer
+              onSend={sendMessage}
+              onOpenOmnibox={handleOpenOmnibox}
+              loading={loading}
+              autoFocus
+            />
+          </motion.div>
+        </div>
+      ) : (
+        // Regular input
         <div className="relative p-4 bg-background/50 backdrop-blur-sm">
-        <div className="max-w-2xl mx-auto">
-        {/* Message Stats */}
-        {showStats && messageStats.lastLatency && (
-          <div className="mb-3 flex items-center gap-4 text-xs text-muted-foreground">
-            <div className="flex items-center gap-1">
-              <Clock className="w-3 h-3" />
-              <span>{(messageStats.lastLatency / 1000).toFixed(1)}s</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Hash className="w-3 h-3" />
-              <span>{messageStats.lastTokens} tokens</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Zap className="w-3 h-3" />
-              <span>{messageStats.lastSpeed} tok/sec</span>
-            </div>
-          </div>
-        )}
-        
-        {/* Model Selector and Controls */}
-        <div className="mb-3 flex items-center gap-2 text-sm">
-          {/* Model Selector */}
-          <div className="relative" ref={modelDropdownRef}>
-            <button
-              onClick={() => setShowModelDropdown(!showModelDropdown)}
-              className="flex items-center gap-1 px-2 py-1 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-md transition-colors"
-              disabled={loading}
-            >
-              <Brain className="w-4 h-4" />
-              <span className="font-medium">{selectedModel}</span>
-              <ChevronDown className="w-3 h-3" />
-            </button>
+          <div className="max-w-2xl mx-auto">
+            {showStats && messageStats.lastLatency && (
+              <div className="mb-3 flex items-center gap-4 text-xs text-muted-foreground">
+                <div className="flex items-center gap-1">
+                  <Clock className="w-3 h-3" />
+                  <span>{(messageStats.lastLatency / 1000).toFixed(1)}s</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Hash className="w-3 h-3" />
+                  <span>{messageStats.lastTokens} tokens</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Zap className="w-3 h-3" />
+                  <span>{messageStats.lastSpeed} tok/sec</span>
+                </div>
+              </div>
+            )}
             
-            {showModelDropdown && (
-              <div className="absolute bottom-full left-0 mb-1 bg-popover border border-border rounded-lg shadow-lg py-1 min-w-48 z-10">
-                {Object.entries(availableModels).map(([modelName, config]) => (
+            <Composer
+              onSend={sendMessage}
+              onOpenOmnibox={handleOpenOmnibox}
+              loading={loading}
+              autoFocus
+            />
+            
+            {aiStatus === 'no-key' && (
+              <div className="mt-2 p-2 bg-amber-50 backdrop-blur-sm border border-amber-200 rounded-lg">
+                <p className="text-xs text-amber-700">
+                  Enhanced AI features require setup.{' '}
+                  <a href="/settings" className="underline hover:text-amber-800">
+                    Add your API key
+                  </a>
+                </p>
+              </div>
+            )}
+
+            {/* Agent Suggestions */}
+            {agentSuggestions.length > 0 && (
+              <div className="mt-3">
+                <div className="text-xs text-muted-foreground mb-2">Suggested agents:</div>
+                <div className="flex flex-wrap gap-2">
+                  {agentSuggestions.map((suggestion, index) => (
+                    <button
+                      key={index}
+                      onClick={() => {
+                        addAgentToContext(context.id, suggestion.agent.id);
+                        setAgentSuggestions(prev => prev.filter((_, i) => i !== index));
+                        toast.success(`${suggestion.agent.name} added`);
+                      }}
+                      className="px-2 py-1 text-xs bg-blue-50 text-blue-700 rounded-full hover:bg-blue-100 transition-colors flex items-center gap-1"
+                    >
+                      {suggestion.agent.name}
+                      <span className="text-blue-500">({Math.round(suggestion.confidence)}%)</span>
+                    </button>
+                  ))}
                   <button
-                    key={modelName}
-                    onClick={() => {
-                      setSelectedModel(modelName);
-                      setShowModelDropdown(false);
-                      // Update user preference immediately
-                      if (user?.id) {
-                        UserSettingsService.loadUserSettings(user.id).then(settings => {
-                          UserSettingsService.saveUserSettings(user.id, {
-                            ...settings,
-                            model_preferences: {
-                              ...settings.model_preferences,
-                              default_model: modelName
-                            }
-                          });
-                        });
-                      }
-                    }}
-                    className={`w-full text-left px-3 py-2 hover:bg-secondary transition-colors ${
-                      selectedModel === modelName ? 'bg-primary/10 text-primary' : 'text-foreground'
-                    }`}
+                    onClick={() => setAgentSuggestions([])}
+                    className="px-2 py-1 text-xs bg-secondary text-muted-foreground rounded-full hover:bg-secondary/80"
                   >
-                    <div className="font-medium">{modelName}</div>
-                    <div className="text-xs text-muted-foreground">
-                      Max: {config.max_output_tokens} tokens • Temp: {config.temperature}
-                    </div>
+                    Dismiss
                   </button>
-                ))}
+                </div>
               </div>
             )}
           </div>
-
-          {/* Hide input controls in unbounded mode */}
-          {!unbounded && (
-            <>
-              {/* Web Search Toggle */}
-              <button
-                onClick={() => setWebSearchEnabled(!webSearchEnabled)}
-                className={`flex items-center gap-1 px-2 py-1 rounded-md transition-colors ${
-                  webSearchEnabled 
-                    ? 'text-blue-600 bg-blue-50 hover:bg-blue-100' 
-                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
-                }`}
-                title={webSearchEnabled ? 'Web search enabled' : 'Web search disabled'}
-              >
-                <Search className="w-4 h-4" />
-                <span className="text-xs font-medium">Search</span>
-              </button>
-
-              {/* Attachment placeholder */}
-              <button
-                className="flex items-center gap-1 px-2 py-1 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-md transition-colors"
-                title="Attach files (coming soon)"
-                disabled
-              >
-                <Paperclip className="w-4 h-4" />
-              </button>
-            </>
-          )}
         </div>
-
-        
-        {!unbounded && aiStatus === 'no-key' && (
-          <div className="mt-2 p-2 bg-amber-50 backdrop-blur-sm border border-amber-200 rounded-lg">
-            <p className="text-xs text-amber-700">
-              Enhanced AI features require setup.{' '}
-              <a href="/settings" className="underline hover:text-amber-800">
-                Add your API key
-              </a>
-            </p>
-          </div>
-        )}
-
-        {/* Agent Suggestions */}
-        {agentSuggestions.length > 0 && (
-          <div className="mt-3">
-            <div className="text-xs text-muted-foreground mb-2">Suggested agents for this conversation:</div>
-            <div className="flex flex-wrap gap-2">
-              {agentSuggestions.map((suggestion, index) => (
-                <button
-                  key={index}
-                  onClick={() => {
-                    addAgentToContext(context.id, suggestion.agent.id);
-                    setAgentSuggestions(prev => prev.filter((_, i) => i !== index));
-                    toast.success(`${suggestion.agent.name} added to conversation`);
-                  }}
-                  className="px-2 py-1 text-xs bg-blue-50 text-blue-700 rounded-full hover:bg-blue-100 transition-colors flex items-center gap-1"
-                  title={suggestion.reason}
-                >
-                  {suggestion.agent.name}
-                  <span className="text-blue-500">({Math.round(suggestion.confidence)}%)</span>
-                </button>
-              ))}
-              <button
-                onClick={() => setAgentSuggestions([])}
-                className="px-2 py-1 text-xs bg-secondary text-muted-foreground rounded-full hover:bg-secondary/80 transition-colors"
-              >
-                Dismiss
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-      </div>
       )}
 
-      {/* Floating Input for Unbounded Mode */}
-      {unbounded && (
-        <UnifiedChatInput
-          value={currentMessage}
-          onChange={setCurrentMessage}
-          onSend={sendMessage}
-          loading={loading}
-          placeholder="Type your message here..."
-          floating={true}
-          showStats={showStats}
-          stats={messageStats}
-          modelOptions={availableModels}
-          selectedModel={selectedModel}
-          onModelChange={setSelectedModel}
-          webSearchEnabled={webSearchEnabled}
-          onWebSearchToggle={setWebSearchEnabled}
-          userId={user?.id}
-          onNavigate={onNavigate || ((page) => {
-            switch(page) {
-              case 'settings':
-                navigate('/settings');
-                break;
-              case 'projects':
-                navigate('/business-plan');
-                break;
-              case 'workflows':
-                navigate('/strategy');
-                break;
-              case 'ledger':
-                navigate('/document-memory');
-                break;
-            }
-          })}
-        />
-      )}
+      {/* Side Panels */}
+      <Panels />
       
       {/* Modals */}
       <ReplyModal
@@ -713,24 +643,30 @@ export function MainChat({
         parentMessage={branchModal.parentMessage}
       />
       
-      {/* Thread Modal - using BranchModal as placeholder until dedicated component is created */}
-      <BranchModal
-        isOpen={threadModal.isOpen}
-        onClose={() => setThreadModal(prev => ({ ...prev, isOpen: false }))}
-        onSubmit={(content) => {
-          // Create a thread context instead of a branch
-          const newThreadId = threadContext(context.id, `Thread: ${threadModal.selectedText?.substring(0, 30)}...`, threadModal.selectedText || '');
-          toast.success('New thread created');
-        }}
-        selectedText={threadModal.selectedText}
-        parentMessage={threadModal.parentMessage}
-      />
-
-      {/* Context Menu */}
       <ContextMenu
         contextId={context.id}
-        isOpen={showContextMenu}
-        onClose={() => setShowContextMenu(false)}
+        isOpen={false}
+        onClose={() => {}}
+      />
+
+      {/* Omnibox */}
+      <Omnibox
+        open={omnibox.isOpen}
+        onOpenChange={(open) => open ? omnibox.open() : omnibox.close()}
+        mode={omnibox.mode}
+        initialQuery={omnibox.initialQuery}
+        initialMode={omnibox.initialMode}
+        onSelect={(value, type) => {
+          if (type === 'command') {
+            commandRouter.route(parsePrefix(value, value.length)!, {
+              userId: user?.id,
+              workspaceId: context.id
+            });
+          }
+        }}
+        position={omnibox.position}
+        userId={user?.id}
+        workspaceId={context.id}
       />
     </div>
   );

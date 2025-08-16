@@ -7,7 +7,8 @@ import {
   FileText,
   MessageSquare,
   X,
-  GripVertical
+  GripVertical,
+  Square
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { MainChat } from './MainChat';
